@@ -1,0 +1,28 @@
+Private Sub LoadBooking(bookingId As Integer)
+        booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            MessageBox.Show("Booking not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        If SessionManager.IsAuthenticated() AndAlso booking.UserId.HasValue AndAlso booking.UserId.Value <> SessionManager.CurrentUser.Id Then
+            MessageBox.Show("Access denied. You can only view your own bookings.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        flight = FlightRepository.GetById(booking.FlightId)
+
+        lblDetails.Text = "Booking ID: #" & booking.Id & vbCrLf &
+                         "Flight Number: " & flight.FlightNumber & vbCrLf &
+                         "Route: " & flight.Origin & " → " & flight.Destination & vbCrLf &
+                         "Departure Date: " & flight.DepartureDate.ToString("yyyy-MM-dd") & vbCrLf &
+                         "Departure Time: " & flight.DepartureTime.ToString("hh\:mm") & vbCrLf &
+                         "Arrival Time: " & flight.ArrivalTime.ToString("hh\:mm") & vbCrLf &
+                         "Passenger Name: " & booking.PassengerName & vbCrLf &
+                         "Passenger Email: " & booking.PassengerEmail & vbCrLf &
+                         "Seat Number: " & If(String.IsNullOrEmpty(booking.SeatNumber), "N/A", booking.SeatNumber) & vbCrLf &
+                         "Price: " & flight.Price.ToString("C") & vbCrLf &
+                         "Booking Date: " & booking.BookingDate.ToString("yyyy-MM-dd HH:mm")
+    End Sub

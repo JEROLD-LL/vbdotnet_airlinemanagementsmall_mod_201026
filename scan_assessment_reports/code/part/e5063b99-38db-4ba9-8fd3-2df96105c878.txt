@@ -1,0 +1,9 @@
+Private Sub CheckSession()
+        SessionManager.CheckTimeout()
+        If Not SessionManager.IsAuthenticated() Then
+            Me.Hide()
+            Dim loginForm As New LoginForm()
+            loginForm.Show()
+            Me.Close()
+        End If
+    End Sub

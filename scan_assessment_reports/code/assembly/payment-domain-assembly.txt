@@ -1,0 +1,11 @@
+
+==================================================
+Part: BeginTransaction (CTRL-125)
+Type: controller
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Data/DatabaseHelper.vb
+==================================================
+Public Shared Function BeginTransaction() As NpgsqlTransaction
+        Dim conn As NpgsqlConnection = GetConnection()
+        conn.Open()
+        Return conn.BeginTransaction()
+    End Function

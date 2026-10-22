@@ -1,0 +1,4 @@
+Private Sub ProfileToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim profileForm As New ProfileForm()
+        profileForm.ShowDialog()
+    End Sub

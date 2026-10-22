@@ -1,0 +1,6 @@
+Private Function GetSelectedBookingId() As Integer?
+        If dgvBookings.SelectedRows.Count > 0 Then
+            Return Convert.ToInt32(dgvBookings.SelectedRows(0).Cells("Id").Value)
+        End If
+        Return Nothing
+    End Function

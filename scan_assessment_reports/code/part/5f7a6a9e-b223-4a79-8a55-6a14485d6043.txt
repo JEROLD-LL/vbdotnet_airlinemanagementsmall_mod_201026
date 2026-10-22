@@ -1,0 +1,15 @@
+Public Shared Function Create(flight As Flight) As Integer
+        Dim query As String = "INSERT INTO Flight (flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at) VALUES (@flight_number, @origin, @destination, @departure_date, @departure_time, @arrival_time, @price, @available_seats, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@created_at", flight.CreatedAt)
+        ))
+        Return id
+    End Function

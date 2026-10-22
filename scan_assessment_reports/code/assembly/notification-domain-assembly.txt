@@ -1,0 +1,26 @@
+
+==================================================
+Part: ValidateEmail (PRT-007)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/ValidationHelper.vb
+==================================================
+Public Shared Function ValidateEmail(email As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(email) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(email, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        End If
+        Return errors
+    End Function
+
+==================================================
+Part: EmailExists (PRT-140)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function EmailExists(email As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE email = @email"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@email", email)))
+        Return count > 0
+    End Function

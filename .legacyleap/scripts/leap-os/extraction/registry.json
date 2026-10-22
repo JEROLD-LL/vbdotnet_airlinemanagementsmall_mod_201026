@@ -1,0 +1,338 @@
+{
+  "extractor_version": "extract-application-domain-1.0",
+  "run_order": [
+    "capability",
+    "actor",
+    "data_entity",
+    "business_rule",
+    "process_flow",
+    "interface",
+    "integration",
+    "architecture_element",
+    "technology_dependency",
+    "non_functional_control",
+    "constraint",
+    "glossary_term"
+  ],
+  "domains": {
+    "capability": {
+      "item_type": "Capability",
+      "dataset_key": "capability",
+      "key_prefix": "cap",
+      "summary": "What the application enables the business to do",
+      "categories": [
+        "operations",
+        "lifecycle",
+        "reporting",
+        "administration",
+        "external_connectivity",
+        "security"
+      ],
+      "item_fields": [
+        "purpose",
+        "business_impact",
+        "owning_assembly_id",
+        "maturity_signal"
+      ],
+      "evidence_roles": ["IMPLEMENTS", "EXPOSES", "ORCHESTRATES"],
+      "relates_to": [
+        { "kind": "REALISED_BY", "target_domain": "process_flow" },
+        { "kind": "GOVERNED_BY", "target_domain": "business_rule" }
+      ]
+    },
+    "actor": {
+      "item_type": "Actor",
+      "dataset_key": "actor",
+      "key_prefix": "act",
+      "summary": "Human roles and system identities that interact with the application",
+      "categories": [
+        "operator",
+        "manager_supervisor",
+        "administrator",
+        "external_party",
+        "system_account"
+      ],
+      "item_fields": [
+        "role_description",
+        "goals",
+        "activities",
+        "permission_level",
+        "access_constraints"
+      ],
+      "evidence_roles": ["AUTHENTICATES", "AUTHORIZES", "RESTRICTS"],
+      "relates_to": [
+        { "kind": "PERFORMS", "target_domain": "process_flow" }
+      ]
+    },
+    "data_entity": {
+      "item_type": "DataEntity",
+      "dataset_key": "data_entity",
+      "key_prefix": "de",
+      "summary": "Business data objects the application creates, reads, updates, or deletes",
+      "categories": [
+        "master",
+        "transactional",
+        "reference_lookup",
+        "configuration",
+        "audit_log"
+      ],
+      "item_fields": [
+        "purpose",
+        "key_fields",
+        "sources",
+        "sinks",
+        "lifecycle_stages",
+        "owning_store"
+      ],
+      "evidence_roles": ["DEFINES", "READS", "WRITES", "TRANSFORMS"],
+      "relates_to": [
+        { "kind": "GOVERNED_BY", "target_domain": "business_rule" }
+      ]
+    },
+    "business_rule": {
+      "item_type": "BusinessRule",
+      "dataset_key": "business_rule",
+      "key_prefix": "br",
+      "summary": "Domain logic the application enforces: validation, calculation, decisions, and state changes",
+      "categories": [
+        "validation",
+        "calculation",
+        "decision",
+        "invariant",
+        "authorization",
+        "state_transition"
+      ],
+      "item_fields": [
+        "rule_entity",
+        "rule_field",
+        "rule_condition",
+        "rule_outcome",
+        "rule_impact",
+        "rule_calculation",
+        "rule_identifiers"
+      ],
+      "evidence_roles": [
+        "DEFINES_THRESHOLD",
+        "ENFORCES",
+        "REPORTS",
+        "PERSISTS"
+      ],
+      "relates_to": [
+        { "kind": "APPLIES_TO", "target_domain": "data_entity" },
+        { "kind": "ENFORCED_IN", "target_domain": "process_flow" },
+        { "kind": "RESTRICTS", "target_domain": "actor" },
+        { "kind": "CAPTURED_BY", "target_domain": "interface" }
+      ]
+    },
+    "process_flow": {
+      "item_type": "ProcessFlow",
+      "dataset_key": "process_flow",
+      "key_prefix": "pf",
+      "summary": "End-to-end business processes from trigger through outcome",
+      "categories": [
+        "transaction",
+        "query_report",
+        "batch_scheduled",
+        "authentication",
+        "integration",
+        "maintenance"
+      ],
+      "item_fields": [
+        "trigger",
+        "actor_key",
+        "goal",
+        "flow_steps",
+        "decision_branches",
+        "alternate_paths",
+        "outcome"
+      ],
+      "evidence_roles": ["ENTRY_POINT", "STEP", "BRANCH", "PERSISTS"],
+      "relates_to": [
+        { "kind": "USES_ENTITY", "target_domain": "data_entity" },
+        { "kind": "PERFORMED_BY", "target_domain": "actor" },
+        { "kind": "ENFORCES", "target_domain": "business_rule" }
+      ]
+    },
+    "interface": {
+      "item_type": "Interface",
+      "dataset_key": "interface",
+      "key_prefix": "ui",
+      "summary": "User-facing surfaces where people initiate work or consume information",
+      "categories": [
+        "data_entry",
+        "monitoring_dashboard",
+        "reporting_print",
+        "admin_configuration",
+        "notification"
+      ],
+      "item_fields": [
+        "surface_type",
+        "purpose",
+        "capabilities_offered",
+        "information_displayed",
+        "entry_point_part_id"
+      ],
+      "evidence_roles": ["RENDERS", "CAPTURES", "DISPLAYS"],
+      "relates_to": [
+        { "kind": "TRIGGERS", "target_domain": "process_flow" },
+        { "kind": "CAPTURES", "target_domain": "business_rule" }
+      ]
+    },
+    "integration": {
+      "item_type": "Integration",
+      "dataset_key": "integration",
+      "key_prefix": "int",
+      "summary": "Connections to external systems, files, messaging, and remote services",
+      "categories": [
+        "inbound_api",
+        "outbound_api",
+        "file_batch",
+        "messaging",
+        "database_link",
+        "desktop_os"
+      ],
+      "item_fields": [
+        "external_system",
+        "direction",
+        "protocol",
+        "data_exchanged",
+        "trigger",
+        "failure_handling"
+      ],
+      "evidence_roles": ["CALLS_EXTERNAL", "RECEIVES", "TRANSFORMS"],
+      "relates_to": [
+        { "kind": "EXCHANGES", "target_domain": "data_entity" },
+        { "kind": "PART_OF", "target_domain": "process_flow" }
+      ]
+    },
+    "architecture_element": {
+      "item_type": "ArchitectureElement",
+      "dataset_key": "architecture_element",
+      "key_prefix": "ae",
+      "summary": "Structural modules and layers that organise the codebase",
+      "categories": [
+        "presentation",
+        "application_logic",
+        "data_access",
+        "integration_layer",
+        "infrastructure",
+        "cross_cutting"
+      ],
+      "item_fields": [
+        "responsibility",
+        "layer",
+        "pattern",
+        "depends_on_element_keys",
+        "drift_signal"
+      ],
+      "evidence_roles": ["CONTAINS", "DEPENDS_ON", "EXPOSES"],
+      "relates_to": [
+        { "kind": "IMPLEMENTS", "target_domain": "capability" }
+      ]
+    },
+    "technology_dependency": {
+      "item_type": "TechnologyDependency",
+      "dataset_key": "technology_dependency",
+      "key_prefix": "td",
+      "summary": "Runtimes, frameworks, libraries, data stores, and external services the code depends on",
+      "categories": [
+        "runtime_platform",
+        "framework",
+        "library",
+        "data_store",
+        "build_tool",
+        "external_service"
+      ],
+      "item_fields": [
+        "technology_name",
+        "version",
+        "usage_scope",
+        "criticality",
+        "replacement_risk"
+      ],
+      "evidence_roles": ["DECLARES", "IMPORTS", "CONFIGURES"],
+      "relates_to": []
+    },
+    "non_functional_control": {
+      "item_type": "NonFunctionalControl",
+      "dataset_key": "non_functional_control",
+      "key_prefix": "nfc",
+      "summary": "Technical quality mechanisms such as caching, encryption, retries, and monitoring",
+      "categories": [
+        "performance",
+        "scalability",
+        "security",
+        "reliability",
+        "observability"
+      ],
+      "item_fields": [
+        "control_statement",
+        "observed_mechanism",
+        "target_or_threshold",
+        "enforcement_point"
+      ],
+      "evidence_roles": ["ENFORCES", "MONITORS", "MITIGATES"],
+      "relates_to": []
+    },
+    "constraint": {
+      "item_type": "Constraint",
+      "dataset_key": "constraint",
+      "key_prefix": "cst",
+      "summary": "Design limits, compliance requirements, integration boundaries, and unresolved ambiguity",
+      "categories": [
+        "platform",
+        "compliance",
+        "integration_limitation",
+        "unknown_ambiguous",
+        "coverage_gap"
+      ],
+      "item_fields": [
+        "constraint_statement",
+        "origin",
+        "impact",
+        "resolution_needed"
+      ],
+      "evidence_roles": ["LIMITS", "REQUIRES", "BLOCKS"],
+      "relates_to": []
+    },
+    "glossary_term": {
+      "item_type": "GlossaryTerm",
+      "dataset_key": "glossary_term",
+      "key_prefix": "gl",
+      "summary": "Domain vocabulary that stakeholders need defined consistently",
+      "categories": [
+        "business_term",
+        "acronym",
+        "role_term",
+        "process_term",
+        "technical_term"
+      ],
+      "item_fields": [
+        "definition",
+        "usage_context",
+        "related_term_keys"
+      ],
+      "evidence_roles": ["DEFINES", "USES"],
+      "relates_to": []
+    }
+  },
+  "local_output": {
+    "root": ".legacyleap/extraction/output",
+    "index_filename": "index.json",
+    "dataset_filename": "items.json",
+    "batch_dir": "batches"
+  },
+  "execution": {
+    "max_parallel_batches": 10,
+    "skip_domains_unless_requested": ["glossary_term"]
+  },
+  "gates": {
+    "minimum_quote_characters": 12,
+    "maximum_evidence_per_item": 2,
+    "maximum_assembly_member_share": 0.5,
+    "maximum_assembly_edges": 3,
+    "require_confirmed_grep_match": true,
+    "require_part_id": true,
+    "discovery_min_relevance_score": 0.35
+  }
+}

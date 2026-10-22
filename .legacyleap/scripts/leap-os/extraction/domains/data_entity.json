@@ -1,0 +1,44 @@
+{
+  "domain_key": "data_entity",
+  "item_type": "DataEntity",
+  "dataset_key": "data_entity",
+  "key_prefix": "de",
+  "extraction_query": "Extract business data entities the application handles. A data entity is a business object or record type — not a database table name alone. For each entity state its purpose, important fields and business use, sources, sinks, lifecycle stages from creation to deletion, and owning store when known. key_fields must list business-significant attributes, not a short identity subset: include related-party or guardian-style fields, policy flags, location or channel flags, and configuration knobs that staff can see or that other logic reads. Do not truncate key_fields for length. Configuration entities must include every policy setting found on that record. If a setting is stored or displayed but never applied at runtime, still list it in key_fields and say in the statement that it is not applied at runtime.",
+  "categories": [
+    { "key": "master", "name": "Master Data" },
+    { "key": "transactional", "name": "Transactional Data" },
+    { "key": "reference_lookup", "name": "Reference and Lookup Data" },
+    { "key": "configuration", "name": "Configuration Data" },
+    { "key": "audit_log", "name": "Audit and Log Data" }
+  ],
+  "item_fields": [
+    "purpose",
+    "key_fields",
+    "sources",
+    "sinks",
+    "lifecycle_stages",
+    "owning_store"
+  ],
+  "evidence_roles": ["DEFINES", "READS", "WRITES", "TRANSFORMS"],
+  "discovery": {
+    "seed_phrases": [
+      "entity model dto record",
+      "database table schema",
+      "data transfer object",
+      "persistent entity class",
+      "master data lookup"
+    ],
+    "component_filters": ["model", "entity", "dto", "dao", "repository", "form"],
+    "mcp_discovery_tools": [
+      "mcm_trace_data_flow",
+      "mcm_list_components",
+      "mcm_get_symbol_details"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 80,
+    "batch_size": 8
+  },
+  "relates_to": [
+    { "kind": "GOVERNED_BY", "target_domain": "business_rule" }
+  ]
+}

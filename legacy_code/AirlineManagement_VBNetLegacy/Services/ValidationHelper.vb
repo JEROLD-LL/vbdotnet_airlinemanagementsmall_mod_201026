@@ -1,0 +1,62 @@
+Imports System.Text.RegularExpressions
+
+Public Class ValidationHelper
+    Public Shared Function ValidateUsername(username As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(username) Then
+            errors.Add("Username is required.")
+        ElseIf username.Length < 3 OrElse username.Length > 50 Then
+            errors.Add("Username must be between 3 and 50 characters.")
+        ElseIf Not Regex.IsMatch(username, "^[a-zA-Z0-9_]+$") Then
+            errors.Add("Username can only contain letters, numbers, and underscores.")
+        End If
+        Return errors
+    End Function
+
+    Public Shared Function ValidateEmail(email As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(email) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(email, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        End If
+        Return errors
+    End Function
+
+    Public Shared Function ValidatePassword(password As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(password) Then
+            errors.Add("Password is required.")
+        ElseIf password.Length < 6 Then
+            errors.Add("Password must be at least 6 characters.")
+        End If
+        Return errors
+    End Function
+
+    Public Shared Function ValidateFullName(fullName As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(fullName) Then
+            errors.Add("Full name is required.")
+        ElseIf fullName.Length < 2 OrElse fullName.Length > 255 Then
+            errors.Add("Full name must be between 2 and 255 characters.")
+        End If
+        Return errors
+    End Function
+
+    Public Shared Function ValidatePrice(price As Decimal) As List(Of String)
+        Dim errors As New List(Of String)
+        If price <= 0 Then
+            errors.Add("Price must be greater than 0.")
+        End If
+        Return errors
+    End Function
+
+    Public Shared Function ValidateAvailableSeats(seats As Integer) As List(Of String)
+        Dim errors As New List(Of String)
+        If seats < 0 Then
+            errors.Add("Available seats cannot be negative.")
+        End If
+        Return errors
+    End Function
+End Class
+

@@ -1,0 +1,42 @@
+{
+  "domain_key": "capability",
+  "item_type": "Capability",
+  "dataset_key": "capability",
+  "key_prefix": "cap",
+  "extraction_query": "Extract distinct business capabilities the application provides. A capability is what the organisation can accomplish through the system — not a code module, service class, or folder name. Emit one capability per distinct user-visible operation or business action when the code exposes separate entry points (for example create, update, delete, confirm, cancel, search, quote, print, or approve) — do not collapse an entire service or lifecycle into one record such as manage everything. Cross-cutting operational modes evidenced by entity flags or settings (multi-site operations, any-location return or pickup, shared inventory, alternate fulfilment channels) must be their own capability when the code supports them, not only mentioned inside another area. For each capability state its purpose, business impact, owning assembly when known, and any maturity or completeness signal from the code.",
+  "categories": [
+    { "key": "operations", "name": "Operations" },
+    { "key": "lifecycle", "name": "Lifecycle Management" },
+    { "key": "reporting", "name": "Reporting and Analytics" },
+    { "key": "administration", "name": "Administration" },
+    { "key": "external_connectivity", "name": "External Connectivity" },
+    { "key": "security", "name": "Security Capabilities" }
+  ],
+  "item_fields": [
+    "purpose",
+    "business_impact",
+    "owning_assembly_id",
+    "maturity_signal"
+  ],
+  "evidence_roles": ["IMPLEMENTS", "EXPOSES", "ORCHESTRATES"],
+  "discovery": {
+    "seed_phrases": [
+      "core business function",
+      "system capability feature",
+      "module responsibility",
+      "service primary purpose"
+    ],
+    "component_filters": ["service", "module", "controller", "form", "handler"],
+    "mcp_discovery_tools": [
+      "mcm_list_assemblies",
+      "mcm_map_business_domains"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 50,
+    "batch_size": 8
+  },
+  "relates_to": [
+    { "kind": "REALISED_BY", "target_domain": "process_flow" },
+    { "kind": "GOVERNED_BY", "target_domain": "business_rule" }
+  ]
+}

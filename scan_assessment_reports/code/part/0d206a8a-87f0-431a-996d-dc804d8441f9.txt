@@ -1,0 +1,4 @@
+Public Sub New()
+        InitializeComponent()
+        LoadCustomers()
+    End Sub

@@ -1,0 +1,20 @@
+Public Shared Function GetById(id As Integer) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function

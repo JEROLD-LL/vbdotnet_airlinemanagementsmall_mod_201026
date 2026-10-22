@@ -1,0 +1,9 @@
+Private Sub BtnView_Click(sender As Object, e As EventArgs)
+        Dim bookingId As Integer? = GetSelectedBookingId()
+        If bookingId.HasValue Then
+            Dim viewForm As New ViewBookingForm(bookingId.Value)
+            viewForm.ShowDialog()
+        Else
+            MessageBox.Show("Please select a booking.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub

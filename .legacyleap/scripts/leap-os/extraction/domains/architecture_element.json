@@ -1,0 +1,42 @@
+{
+  "domain_key": "architecture_element",
+  "item_type": "ArchitectureElement",
+  "dataset_key": "architecture_element",
+  "key_prefix": "ae",
+  "extraction_query": "Extract major structural modules and layers that organise the codebase. An architecture element is a module, layer, or assembly with a structural responsibility — not a business rule or business process. For each element state responsibility, layer, pattern, dependencies on other elements, and any architecture drift signal.",
+  "categories": [
+    { "key": "presentation", "name": "Presentation Layer" },
+    { "key": "application_logic", "name": "Application Logic Layer" },
+    { "key": "data_access", "name": "Data Access Layer" },
+    { "key": "integration_layer", "name": "Integration Layer" },
+    { "key": "infrastructure", "name": "Infrastructure" },
+    { "key": "cross_cutting", "name": "Cross-Cutting Concerns" }
+  ],
+  "item_fields": [
+    "responsibility",
+    "layer",
+    "pattern",
+    "depends_on_element_keys",
+    "drift_signal"
+  ],
+  "evidence_roles": ["CONTAINS", "DEPENDS_ON", "EXPOSES"],
+  "discovery": {
+    "seed_phrases": [
+      "architecture layer module",
+      "presentation business data access",
+      "service facade repository",
+      "cross cutting concern"
+    ],
+    "component_filters": ["assembly", "module", "service", "controller", "dao"],
+    "mcp_discovery_tools": [
+      "mcm_explain_architecture",
+      "mcm_list_assemblies"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 60,
+    "batch_size": 8
+  },
+  "relates_to": [
+    { "kind": "IMPLEMENTS", "target_domain": "capability" }
+  ]
+}

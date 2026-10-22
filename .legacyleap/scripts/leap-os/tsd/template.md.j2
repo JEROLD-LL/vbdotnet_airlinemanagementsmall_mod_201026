@@ -1,0 +1,359 @@
+## 1. Document Information
+
+{% if technical_specification_document.document_information.document_details %}
+{{ technical_specification_document.document_information.document_details.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 1.1 Document History
+
+{% if technical_specification_document.document_information.document_history %}
+{{ technical_specification_document.document_information.document_history.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 1.2 Approvals
+
+{% if technical_specification_document.document_information.approvals %}
+{{ technical_specification_document.document_information.approvals.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+---
+
+## 2. Introduction
+
+### 2.1 Project Overview
+
+{% if technical_specification_document.introduction.project_overview %}
+{{ technical_specification_document.introduction.project_overview.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 2.2 Definitions and Acronyms
+
+{% if technical_specification_document.introduction.definitions_and_acronyms %}
+{{ technical_specification_document.introduction.definitions_and_acronyms.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+---
+
+## 3. System Design
+
+### 3.1 System Architecture
+
+{% if technical_specification_document.system_design.system_architecture %}
+{{ technical_specification_document.system_design.system_architecture.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 3.2 System Diagrams
+
+{% if technical_specification_document.system_design.system_diagrams %}
+{{ technical_specification_document.system_design.system_diagrams.content }}
+{% endif %}
+
+#### Figure 1: System Architecture Diagram
+
+Description:
+{% if technical_specification_document.system_design.system_architecture.diagram_metadata %}
+{{ technical_specification_document.system_design.system_architecture.diagram_metadata.description.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+Purpose:
+{% if technical_specification_document.system_design.system_architecture.diagram_metadata %}
+{{ technical_specification_document.system_design.system_architecture.diagram_metadata.purpose.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+{% if technical_specification_document.system_design.system_architecture.diagram %}
+![System Architecture Diagram]({{ technical_specification_document.system_design.system_architecture.diagram }}){width=100%}
+{% endif %}
+
+#### Figure 2: Component Diagram
+
+Description:
+{% if technical_specification_document.implementation_details.key_components_and_modules.diagram_metadata %}
+{{ technical_specification_document.implementation_details.key_components_and_modules.diagram_metadata.description.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+Purpose:
+{% if technical_specification_document.implementation_details.key_components_and_modules.diagram_metadata %}
+{{ technical_specification_document.implementation_details.key_components_and_modules.diagram_metadata.purpose.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+{% if technical_specification_document.implementation_details.key_components_and_modules.diagram %}
+![Component Diagram]({{ technical_specification_document.implementation_details.key_components_and_modules.diagram }}){width=100%}
+{% endif %}
+
+#### Figure 3: Deployment Diagram
+
+Description:
+{% if technical_specification_document.deployment_and_infrastructure.deployment_architecture.diagram_metadata %}
+{{ technical_specification_document.deployment_and_infrastructure.deployment_architecture.diagram_metadata.description.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+Purpose:
+{% if technical_specification_document.deployment_and_infrastructure.deployment_architecture.diagram_metadata %}
+{{ technical_specification_document.deployment_and_infrastructure.deployment_architecture.diagram_metadata.purpose.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+{% if technical_specification_document.deployment_and_infrastructure.deployment_architecture.diagram %}
+![Deployment Diagram]({{ technical_specification_document.deployment_and_infrastructure.deployment_architecture.diagram }}){width=100%}
+{% endif %}
+
+#### Figure 4: System Context Diagram
+
+Description:
+{% if technical_specification_document.system_design.system_context_diagram.diagram_metadata %}
+{{ technical_specification_document.system_design.system_context_diagram.diagram_metadata.description.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+Purpose:
+{% if technical_specification_document.system_design.system_context_diagram.diagram_metadata %}
+{{ technical_specification_document.system_design.system_context_diagram.diagram_metadata.purpose.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+{% if technical_specification_document.system_design.system_context_diagram.diagram %}
+![System Context Diagram]({{ technical_specification_document.system_design.system_context_diagram.diagram }}){width=100%}
+{% endif %}
+
+### 3.3 Design Constraints
+
+{% if technical_specification_document.system_design.design_constraints %}
+{{ technical_specification_document.system_design.design_constraints.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+---
+
+## 4. Implementation Details
+
+### 4.1 Codebase Structure
+
+{% if technical_specification_document.implementation_details.codebase_structure %}
+{{ technical_specification_document.implementation_details.codebase_structure.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 4.2 Key Components and Modules
+
+{% if technical_specification_document.implementation_details.key_components_and_modules %}
+{{ technical_specification_document.implementation_details.key_components_and_modules.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 4.3 Database Design
+
+{% if technical_specification_document.implementation_details.database_design %}
+{{ technical_specification_document.implementation_details.database_design.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 4.4 API Specifications
+
+{% if technical_specification_document.implementation_details.api_specifications %}
+{{ technical_specification_document.implementation_details.api_specifications.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 4.5 Additional Diagrams for Implementation
+
+#### Figure 5: Entity-Relationship Diagram (ERD)
+
+Description:
+{% if technical_specification_document.implementation_details.database_design.diagram_metadata %}
+{{ technical_specification_document.implementation_details.database_design.diagram_metadata.description.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+Purpose:
+{% if technical_specification_document.implementation_details.database_design.diagram_metadata %}
+{{ technical_specification_document.implementation_details.database_design.diagram_metadata.purpose.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+{% if technical_specification_document.implementation_details.database_design.diagram %}
+![Database ERD]({{ technical_specification_document.implementation_details.database_design.diagram }}){width=100%}
+{% endif %}
+
+#### Figure 6: Sequence Diagram
+
+Description:
+{% if technical_specification_document.implementation_details.api_specifications.diagram_metadata %}
+{{ technical_specification_document.implementation_details.api_specifications.diagram_metadata.description.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+Purpose:
+{% if technical_specification_document.implementation_details.api_specifications.diagram_metadata %}
+{{ technical_specification_document.implementation_details.api_specifications.diagram_metadata.purpose.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+{% if technical_specification_document.implementation_details.api_specifications.diagram %}
+![API Sequence Diagram]({{ technical_specification_document.implementation_details.api_specifications.diagram }}){width=100%}
+{% endif %}
+
+#### Figure 7: Class Diagram
+
+Description:
+{% if technical_specification_document.implementation_details.additional_diagrams.diagram_metadata %}
+{{ technical_specification_document.implementation_details.additional_diagrams.diagram_metadata.description.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+Purpose:
+{% if technical_specification_document.implementation_details.additional_diagrams.diagram_metadata %}
+{{ technical_specification_document.implementation_details.additional_diagrams.diagram_metadata.purpose.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+{% if technical_specification_document.implementation_details.additional_diagrams.diagram %}
+![Class Diagram]({{ technical_specification_document.implementation_details.additional_diagrams.diagram }}){width=100%}
+{% endif %}
+
+---
+
+## 5. Non-Functional Implementation Details
+
+### 5.1 Performance Optimization
+
+{% if technical_specification_document.non_functional_implementation_details.performance_optimization %}
+{{ technical_specification_document.non_functional_implementation_details.performance_optimization.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 5.2 Scalability Design
+
+{% if technical_specification_document.non_functional_implementation_details.scalability_design %}
+{{ technical_specification_document.non_functional_implementation_details.scalability_design.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 5.3 Security Implementation
+
+{% if technical_specification_document.non_functional_implementation_details.security_implementation %}
+{{ technical_specification_document.non_functional_implementation_details.security_implementation.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 5.4 Compatibility and Dependencies
+
+{% if technical_specification_document.non_functional_implementation_details.compatibility_and_dependencies %}
+{{ technical_specification_document.non_functional_implementation_details.compatibility_and_dependencies.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 5.5 Reliability and Availability
+
+{% if technical_specification_document.non_functional_implementation_details.reliability_and_availability %}
+{{ technical_specification_document.non_functional_implementation_details.reliability_and_availability.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+---
+
+## 6. Deployment and Infrastructure
+
+### 6.1 Deployment Architecture
+
+{% if technical_specification_document.deployment_and_infrastructure.deployment_architecture %}
+{{ technical_specification_document.deployment_and_infrastructure.deployment_architecture.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 6.2 CI/CD Pipeline
+
+{% if technical_specification_document.deployment_and_infrastructure.ci_cd_pipeline %}
+{{ technical_specification_document.deployment_and_infrastructure.ci_cd_pipeline.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 6.3 Monitoring and Maintenance
+
+{% if technical_specification_document.deployment_and_infrastructure.monitoring_and_maintenance %}
+{{ technical_specification_document.deployment_and_infrastructure.monitoring_and_maintenance.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+---
+
+## 7. Appendices
+
+### 7.1 References
+
+{% if technical_specification_document.appendices.references %}
+{{ technical_specification_document.appendices.references.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 7.2 Glossary
+
+{% if technical_specification_document.appendices.glossary %}
+{{ technical_specification_document.appendices.glossary.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 7.3 Revision History
+
+{% if technical_specification_document.appendices.revision_history %}
+{{ technical_specification_document.appendices.revision_history.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+### 7.4 Needs Human Intervention
+
+{% if technical_specification_document.appendices.needs_human_intervention %}
+{{ technical_specification_document.appendices.needs_human_intervention.content }}
+{% else %}
+N/A if not applicable
+{% endif %}
+
+---
+
+*This document was automatically generated from system analysis and is intended for technical teams, developers, system architects, and DevOps engineers.*

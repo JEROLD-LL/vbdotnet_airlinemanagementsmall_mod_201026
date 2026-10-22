@@ -1,0 +1,53 @@
+Private Sub InitializeComponent()
+        Me.Text = "Available Flights"
+        Me.Size = New Size(1000, 500)
+        Me.StartPosition = FormStartPosition.CenterScreen
+
+        ' Data Grid View
+        dgvFlights = New DataGridView()
+        dgvFlights.Location = New Point(10, 10)
+        dgvFlights.Size = New Size(960, 400)
+        dgvFlights.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvFlights.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvFlights.ReadOnly = True
+        dgvFlights.AllowUserToAddRows = False
+        Me.Controls.Add(dgvFlights)
+
+        ' Buttons
+        btnRefresh = New Button()
+        btnRefresh.Text = "Refresh"
+        btnRefresh.Location = New Point(10, 420)
+        btnRefresh.Size = New Size(100, 30)
+        AddHandler btnRefresh.Click, AddressOf BtnRefresh_Click
+        Me.Controls.Add(btnRefresh)
+
+        btnView = New Button()
+        btnView.Text = "View Details"
+        btnView.Location = New Point(120, 420)
+        btnView.Size = New Size(100, 30)
+        AddHandler btnView.Click, AddressOf BtnView_Click
+        Me.Controls.Add(btnView)
+
+        btnBook = New Button()
+        btnBook.Text = "Book Flight"
+        btnBook.Location = New Point(230, 420)
+        btnBook.Size = New Size(100, 30)
+        AddHandler btnBook.Click, AddressOf BtnBook_Click
+        Me.Controls.Add(btnBook)
+
+        If SessionManager.IsAdmin() Then
+            btnEdit = New Button()
+            btnEdit.Text = "Edit"
+            btnEdit.Location = New Point(340, 420)
+            btnEdit.Size = New Size(100, 30)
+            AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+            Me.Controls.Add(btnEdit)
+
+            btnDelete = New Button()
+            btnDelete.Text = "Delete"
+            btnDelete.Location = New Point(450, 420)
+            btnDelete.Size = New Size(100, 30)
+            AddHandler btnDelete.Click, AddressOf BtnDelete_Click
+            Me.Controls.Add(btnDelete)
+        End If
+    End Sub

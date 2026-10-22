@@ -1,0 +1,9 @@
+Public Shared Function ValidateFullName(fullName As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(fullName) Then
+            errors.Add("Full name is required.")
+        ElseIf fullName.Length < 2 OrElse fullName.Length > 255 Then
+            errors.Add("Full name must be between 2 and 255 characters.")
+        End If
+        Return errors
+    End Function

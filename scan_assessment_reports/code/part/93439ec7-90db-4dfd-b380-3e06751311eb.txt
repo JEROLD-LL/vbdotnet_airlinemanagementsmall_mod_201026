@@ -1,0 +1,32 @@
+Public Shared Function DeleteBooking(bookingId As Integer, userId As Integer) As String
+        ' Verify booking exists and belongs to user
+        Dim booking As Booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            Return "Booking not found."
+        End If
+
+        If booking.UserId.HasValue AndAlso booking.UserId.Value <> userId Then
+            Return "Access denied. You can only delete your own bookings."
+        End If
+
+        ' Transaction Management Pattern - Atomic operation
+        Dim transaction As NpgsqlTransaction = Nothing
+        Try
+            transaction = DatabaseHelper.BeginTransaction()
+
+            ' Delete booking
+            BookingRepository.Delete(bookingId, transaction)
+
+            ' Increment seats
+            FlightRepository.IncrementSeats(booking.FlightId, transaction)
+
+            ' Commit transaction
+            transaction.Commit()
+            Return Nothing ' Success
+        Catch ex As Exception
+            If transaction IsNot Nothing Then
+                transaction.Rollback()
+            End If
+            Return "An error occurred while deleting the booking: " & ex.Message
+        End Try
+    End Function

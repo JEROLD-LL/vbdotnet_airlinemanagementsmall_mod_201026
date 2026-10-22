@@ -1,0 +1,48 @@
+
+==================================================
+Part: Flight (PRT-002)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Models/Flight.vb
+==================================================
+Public Class Flight
+    Public Property Id As Integer
+    Public Property FlightNumber As String
+    Public Property Origin As String
+    Public Property Destination As String
+    Public Property DepartureDate As DateTime
+    Public Property DepartureTime As TimeSpan
+    Public Property ArrivalTime As TimeSpan
+    Public Property Price As Decimal
+    Public Property AvailableSeats As Integer
+    Public Property CreatedAt As DateTime
+End Class
+
+==================================================
+Part: Booking (PRT-003)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Models/Booking.vb
+==================================================
+Public Class Booking
+    Public Property Id As Integer
+    Public Property FlightId As Integer
+    Public Property UserId As Integer?
+    Public Property PassengerName As String
+    Public Property PassengerEmail As String
+    Public Property SeatNumber As String
+    Public Property BookingDate As DateTime
+End Class
+
+==================================================
+Part: User (PRT-004)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Models/User.vb
+==================================================
+Public Class User
+    Public Property Id As Integer
+    Public Property Username As String
+    Public Property Password As String
+    Public Property Email As String
+    Public Property FullName As String
+    Public Property Role As String
+    Public Property CreatedAt As DateTime
+End Class

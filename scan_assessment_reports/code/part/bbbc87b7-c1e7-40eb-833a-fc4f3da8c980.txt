@@ -1,0 +1,113 @@
+Public Class LoginForm
+    Inherits Form
+
+    Private lblTitle As Label
+    Private lblUsername As Label
+    Private lblPassword As Label
+    Private txtUsername As TextBox
+    Private txtPassword As TextBox
+    Private btnLogin As Button
+    Private btnRegister As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Login - Airline Management System"
+        Me.Size = New Size(400, 300)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        ' Title
+        lblTitle = New Label()
+        lblTitle.Text = "Airline Management System"
+        lblTitle.Font = New Font("Arial", 14, FontStyle.Bold)
+        lblTitle.AutoSize = True
+        lblTitle.Location = New Point(80, 20)
+        Me.Controls.Add(lblTitle)
+
+        ' Username
+        lblUsername = New Label()
+        lblUsername.Text = "Username:"
+        lblUsername.AutoSize = True
+        lblUsername.Location = New Point(50, 70)
+        Me.Controls.Add(lblUsername)
+
+        txtUsername = New TextBox()
+        txtUsername.Location = New Point(50, 90)
+        txtUsername.Size = New Size(300, 25)
+        Me.Controls.Add(txtUsername)
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "Password:"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(50, 130)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(50, 150)
+        txtPassword.Size = New Size(300, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(50, 180)
+        lblError.Size = New Size(300, 20)
+        Me.Controls.Add(lblError)
+
+        ' Buttons
+        btnLogin = New Button()
+        btnLogin.Text = "Login"
+        btnLogin.Location = New Point(50, 210)
+        btnLogin.Size = New Size(120, 30)
+        AddHandler btnLogin.Click, AddressOf BtnLogin_Click
+        Me.Controls.Add(btnLogin)
+
+        btnRegister = New Button()
+        btnRegister.Text = "Register"
+        btnRegister.Location = New Point(230, 210)
+        btnRegister.Size = New Size(120, 30)
+        AddHandler btnRegister.Click, AddressOf BtnRegister_Click
+        Me.Controls.Add(btnRegister)
+
+        ' Accept button
+        Me.AcceptButton = btnLogin
+    End Sub
+
+    Private Sub BtnLogin_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        If String.IsNullOrWhiteSpace(username) OrElse String.IsNullOrWhiteSpace(password) Then
+            lblError.Text = "Username and password are required."
+            Return
+        End If
+
+        Dim user As User = UserRepository.GetByUsername(username)
+        If user Is Nothing OrElse Not UserRepository.VerifyPassword(password, user.Password) Then
+            lblError.Text = "Invalid username or password."
+            Return
+        End If
+
+        ' Login successful
+        SessionManager.Login(user)
+        Me.Hide()
+        Dim mainForm As New MainForm()
+        mainForm.Show()
+    End Sub
+
+    Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim registerForm As New RegisterForm()
+        registerForm.Show()
+    End Sub
+End Class

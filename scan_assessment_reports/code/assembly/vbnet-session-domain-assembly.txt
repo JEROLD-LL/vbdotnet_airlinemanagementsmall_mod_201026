@@ -1,0 +1,1767 @@
+
+==================================================
+Part: SessionManager (SVC-015)
+Type: service
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Class SessionManager
+    Public Shared Property CurrentUser As User
+    Public Shared Property LastActivity As DateTime
+
+    Public Shared Function IsAuthenticated() As Boolean
+        Return CurrentUser IsNot Nothing
+    End Function
+
+    Public Shared Function IsAdmin() As Boolean
+        Return IsAuthenticated() AndAlso CurrentUser.Role = "admin"
+    End Function
+
+    Public Shared Sub Login(user As User)
+        CurrentUser = user
+        LastActivity = DateTime.Now
+    End Sub
+
+    Public Shared Sub Logout()
+        CurrentUser = Nothing
+        LastActivity = DateTime.MinValue
+    End Sub
+
+    Public Shared Sub CheckTimeout()
+        If IsAuthenticated() Then
+            Dim timeSinceLastActivity As TimeSpan = DateTime.Now - LastActivity
+            If timeSinceLastActivity.TotalMinutes > 30 Then
+                Logout()
+            Else
+                LastActivity = DateTime.Now
+            End If
+        End If
+    End Sub
+End Class
+
+==================================================
+Part: IsAuthenticated (PRT-016)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Shared Function IsAuthenticated() As Boolean
+        Return CurrentUser IsNot Nothing
+    End Function
+
+==================================================
+Part: IsAdmin (PRT-017)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Shared Function IsAdmin() As Boolean
+        Return IsAuthenticated() AndAlso CurrentUser.Role = "admin"
+    End Function
+
+==================================================
+Part: Login (PRT-018)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Shared Sub Login(user As User)
+        CurrentUser = user
+        LastActivity = DateTime.Now
+    End Sub
+
+==================================================
+Part: Logout (PRT-019)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Shared Sub Logout()
+        CurrentUser = Nothing
+        LastActivity = DateTime.MinValue
+    End Sub
+
+==================================================
+Part: CheckTimeout (PRT-020)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Shared Sub CheckTimeout()
+        If IsAuthenticated() Then
+            Dim timeSinceLastActivity As TimeSpan = DateTime.Now - LastActivity
+            If timeSinceLastActivity.TotalMinutes > 30 Then
+                Logout()
+            Else
+                LastActivity = DateTime.Now
+            End If
+        End If
+    End Sub
+
+==================================================
+Part: EditBookingForm (UI-021)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditBookingForm.vb
+==================================================
+Public Class EditBookingForm
+    Inherits Form
+
+    Private booking As Booking
+    Private lblBookingInfo As Label
+    Private lblPassengerName As Label
+    Private lblPassengerEmail As Label
+    Private lblSeatNumber As Label
+    Private txtPassengerName As TextBox
+    Private txtPassengerEmail As TextBox
+    Private txtSeatNumber As TextBox
+    Private btnUpdate As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New(selectedBookingId As Integer)
+        InitializeComponent()
+        LoadBooking(selectedBookingId)
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Edit Booking"
+        Me.Size = New Size(500, 400)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        lblBookingInfo = New Label()
+        lblBookingInfo.Location = New Point(20, 20)
+        lblBookingInfo.Size = New Size(450, 60)
+        lblBookingInfo.AutoSize = False
+        Me.Controls.Add(lblBookingInfo)
+
+        lblPassengerName = New Label()
+        lblPassengerName.Text = "Passenger Name: *"
+        lblPassengerName.AutoSize = True
+        lblPassengerName.Location = New Point(20, 90)
+        Me.Controls.Add(lblPassengerName)
+
+        txtPassengerName = New TextBox()
+        txtPassengerName.Location = New Point(20, 110)
+        txtPassengerName.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerName)
+
+        lblPassengerEmail = New Label()
+        lblPassengerEmail.Text = "Passenger Email: *"
+        lblPassengerEmail.AutoSize = True
+        lblPassengerEmail.Location = New Point(20, 140)
+        Me.Controls.Add(lblPassengerEmail)
+
+        txtPassengerEmail = New TextBox()
+        txtPassengerEmail.Location = New Point(20, 160)
+        txtPassengerEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerEmail)
+
+        lblSeatNumber = New Label()
+        lblSeatNumber.Text = "Seat Number (Optional):"
+        lblSeatNumber.AutoSize = True
+        lblSeatNumber.Location = New Point(20, 190)
+        Me.Controls.Add(lblSeatNumber)
+
+        txtSeatNumber = New TextBox()
+        txtSeatNumber.Location = New Point(20, 210)
+        txtSeatNumber.Size = New Size(450, 25)
+        Me.Controls.Add(txtSeatNumber)
+
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, 240)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Booking"
+        btnUpdate.Location = New Point(20, 280)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, 280)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+    Private Sub LoadBooking(bookingId As Integer)
+        booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            MessageBox.Show("Booking not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        If SessionManager.IsAuthenticated() AndAlso booking.UserId.HasValue AndAlso booking.UserId.Value <> SessionManager.CurrentUser.Id Then
+            MessageBox.Show("Access denied. You can only edit your own bookings.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        Dim flight As Flight = FlightRepository.GetById(booking.FlightId)
+        lblBookingInfo.Text = "Booking ID: #" & booking.Id & vbCrLf &
+                            "Flight: " & flight.FlightNumber & " (" & flight.Origin & " → " & flight.Destination & ")"
+
+        txtPassengerName.Text = booking.PassengerName
+        txtPassengerEmail.Text = booking.PassengerEmail
+        txtSeatNumber.Text = booking.SeatNumber
+    End Sub
+
+    Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim passengerName As String = txtPassengerName.Text.Trim()
+        Dim passengerEmail As String = txtPassengerEmail.Text.Trim()
+        Dim seatNumber As String = txtSeatNumber.Text.Trim()
+
+        ' Validate passenger name
+        If String.IsNullOrWhiteSpace(passengerName) Then
+            errors.Add("Passenger name is required.")
+        ElseIf passengerName.Length < 2 OrElse passengerName.Length > 255 Then
+            errors.Add("Passenger name must be between 2 and 255 characters.")
+        ElseIf Not Regex.IsMatch(passengerName, "^[a-zA-Z\s'-]+$") Then
+            errors.Add("Passenger name can only contain letters, spaces, hyphens, and apostrophes.")
+        End If
+
+        ' Validate email
+        If String.IsNullOrWhiteSpace(passengerEmail) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(passengerEmail, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        ElseIf passengerEmail.Length > 255 Then
+            errors.Add("Email must be 255 characters or less.")
+        End If
+
+        ' Validate seat number
+        If Not String.IsNullOrWhiteSpace(seatNumber) Then
+            If seatNumber.Length > 10 Then
+                errors.Add("Seat number must be 10 characters or less.")
+            ElseIf Not Regex.IsMatch(seatNumber, "^[0-9]{1,3}[A-Z]{1,2}$", RegexOptions.IgnoreCase) Then
+                errors.Add("Seat number format is invalid. Use format like '12A' or '123AB'.")
+            End If
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        booking.PassengerName = passengerName
+        booking.PassengerEmail = passengerEmail
+        booking.SeatNumber = If(String.IsNullOrWhiteSpace(seatNumber), String.Empty, seatNumber.ToUpper())
+
+        Try
+            BookingRepository.Update(booking)
+            MessageBox.Show("Booking updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: LoadBooking (PRT-023)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditBookingForm.vb
+==================================================
+Private Sub LoadBooking(bookingId As Integer)
+        booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            MessageBox.Show("Booking not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        If SessionManager.IsAuthenticated() AndAlso booking.UserId.HasValue AndAlso booking.UserId.Value <> SessionManager.CurrentUser.Id Then
+            MessageBox.Show("Access denied. You can only edit your own bookings.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        Dim flight As Flight = FlightRepository.GetById(booking.FlightId)
+        lblBookingInfo.Text = "Booking ID: #" & booking.Id & vbCrLf &
+                            "Flight: " & flight.FlightNumber & " (" & flight.Origin & " → " & flight.Destination & ")"
+
+        txtPassengerName.Text = booking.PassengerName
+        txtPassengerEmail.Text = booking.PassengerEmail
+        txtSeatNumber.Text = booking.SeatNumber
+    End Sub
+
+==================================================
+Part: MyBookingsForm (UI-027)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MyBookingsForm.vb
+==================================================
+Public Class MyBookingsForm
+    Inherits Form
+
+    Private dgvBookings As DataGridView
+    Private btnRefresh As Button
+    Private btnView As Button
+    Private btnEdit As Button
+    Private btnDelete As Button
+
+    Public Sub New()
+        InitializeComponent()
+        LoadBookings()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "My Bookings"
+        Me.Size = New Size(1200, 500)
+        Me.StartPosition = FormStartPosition.CenterScreen
+
+        ' Data Grid View
+        dgvBookings = New DataGridView()
+        dgvBookings.Location = New Point(10, 10)
+        dgvBookings.Size = New Size(1160, 400)
+        dgvBookings.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvBookings.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvBookings.ReadOnly = True
+        dgvBookings.AllowUserToAddRows = False
+        Me.Controls.Add(dgvBookings)
+
+        ' Buttons
+        btnRefresh = New Button()
+        btnRefresh.Text = "Refresh"
+        btnRefresh.Location = New Point(10, 420)
+        btnRefresh.Size = New Size(100, 30)
+        AddHandler btnRefresh.Click, AddressOf BtnRefresh_Click
+        Me.Controls.Add(btnRefresh)
+
+        btnView = New Button()
+        btnView.Text = "View"
+        btnView.Location = New Point(120, 420)
+        btnView.Size = New Size(100, 30)
+        AddHandler btnView.Click, AddressOf BtnView_Click
+        Me.Controls.Add(btnView)
+
+        btnEdit = New Button()
+        btnEdit.Text = "Edit"
+        btnEdit.Location = New Point(230, 420)
+        btnEdit.Size = New Size(100, 30)
+        AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+        Me.Controls.Add(btnEdit)
+
+        btnDelete = New Button()
+        btnDelete.Text = "Delete"
+        btnDelete.Location = New Point(340, 420)
+        btnDelete.Size = New Size(100, 30)
+        AddHandler btnDelete.Click, AddressOf BtnDelete_Click
+        Me.Controls.Add(btnDelete)
+    End Sub
+
+    Private Sub LoadBookings()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        Dim bookings As List(Of Booking) = BookingRepository.GetByUserId(SessionManager.CurrentUser.Id)
+
+        dgvBookings.Columns.Clear()
+        dgvBookings.Columns.Add("Id", "ID")
+        dgvBookings.Columns("Id").Visible = False
+        dgvBookings.Columns.Add("FlightId", "Flight ID")
+        dgvBookings.Columns("FlightId").Visible = False
+        dgvBookings.Columns.Add("FlightNumber", "Flight Number")
+        dgvBookings.Columns.Add("Route", "Route")
+        dgvBookings.Columns.Add("DepartureDate", "Departure Date")
+        dgvBookings.Columns.Add("DepartureTime", "Departure Time")
+        dgvBookings.Columns.Add("ArrivalTime", "Arrival Time")
+        dgvBookings.Columns.Add("PassengerName", "Passenger Name")
+        dgvBookings.Columns.Add("PassengerEmail", "Passenger Email")
+        dgvBookings.Columns.Add("SeatNumber", "Seat Number")
+        dgvBookings.Columns.Add("Price", "Price")
+        dgvBookings.Columns("Price").DefaultCellStyle.Format = "C"
+        dgvBookings.Columns.Add("BookingDate", "Booking Date")
+
+        dgvBookings.Rows.Clear()
+        For Each booking In bookings
+            Dim flight As Flight = FlightRepository.GetById(booking.FlightId)
+            dgvBookings.Rows.Add(booking.Id, booking.FlightId, flight.FlightNumber,
+                               flight.Origin & " → " & flight.Destination,
+                               flight.DepartureDate.ToString("yyyy-MM-dd"),
+                               flight.DepartureTime.ToString("hh\:mm"),
+                               flight.ArrivalTime.ToString("hh\:mm"),
+                               booking.PassengerName, booking.PassengerEmail,
+                               If(String.IsNullOrEmpty(booking.SeatNumber), "N/A", booking.SeatNumber),
+                               flight.Price, booking.BookingDate.ToString("yyyy-MM-dd HH:mm"))
+        Next
+    End Sub
+
+    Private Function GetSelectedBookingId() As Integer?
+        If dgvBookings.SelectedRows.Count > 0 Then
+            Return Convert.ToInt32(dgvBookings.SelectedRows(0).Cells("Id").Value)
+        End If
+        Return Nothing
+    End Function
+
+    Private Sub BtnRefresh_Click(sender As Object, e As EventArgs)
+        LoadBookings()
+    End Sub
+
+    Private Sub BtnView_Click(sender As Object, e As EventArgs)
+        Dim bookingId As Integer? = GetSelectedBookingId()
+        If bookingId.HasValue Then
+            Dim viewForm As New ViewBookingForm(bookingId.Value)
+            viewForm.ShowDialog()
+        Else
+            MessageBox.Show("Please select a booking.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub
+
+    Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Dim bookingId As Integer? = GetSelectedBookingId()
+        If bookingId.HasValue Then
+            Dim editForm As New EditBookingForm(bookingId.Value)
+            editForm.ShowDialog()
+            LoadBookings()
+        Else
+            MessageBox.Show("Please select a booking.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub
+
+    Private Sub BtnDelete_Click(sender As Object, e As EventArgs)
+        Dim bookingId As Integer? = GetSelectedBookingId()
+        If bookingId.HasValue Then
+            If MessageBox.Show("Are you sure you want to delete this booking?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+                Dim errorMsg As String = BookingService.DeleteBooking(bookingId.Value, SessionManager.CurrentUser.Id)
+                If String.IsNullOrEmpty(errorMsg) Then
+                    MessageBox.Show("Booking deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    LoadBookings()
+                Else
+                    MessageBox.Show(errorMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End If
+            End If
+        Else
+            MessageBox.Show("Please select a booking.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub
+End Class
+
+==================================================
+Part: LoadBookings (PRT-030)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MyBookingsForm.vb
+==================================================
+Private Sub LoadBookings()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        Dim bookings As List(Of Booking) = BookingRepository.GetByUserId(SessionManager.CurrentUser.Id)
+
+        dgvBookings.Columns.Clear()
+        dgvBookings.Columns.Add("Id", "ID")
+        dgvBookings.Columns("Id").Visible = False
+        dgvBookings.Columns.Add("FlightId", "Flight ID")
+        dgvBookings.Columns("FlightId").Visible = False
+        dgvBookings.Columns.Add("FlightNumber", "Flight Number")
+        dgvBookings.Columns.Add("Route", "Route")
+        dgvBookings.Columns.Add("DepartureDate", "Departure Date")
+        dgvBookings.Columns.Add("DepartureTime", "Departure Time")
+        dgvBookings.Columns.Add("ArrivalTime", "Arrival Time")
+        dgvBookings.Columns.Add("PassengerName", "Passenger Name")
+        dgvBookings.Columns.Add("PassengerEmail", "Passenger Email")
+        dgvBookings.Columns.Add("SeatNumber", "Seat Number")
+        dgvBookings.Columns.Add("Price", "Price")
+        dgvBookings.Columns("Price").DefaultCellStyle.Format = "C"
+        dgvBookings.Columns.Add("BookingDate", "Booking Date")
+
+        dgvBookings.Rows.Clear()
+        For Each booking In bookings
+            Dim flight As Flight = FlightRepository.GetById(booking.FlightId)
+            dgvBookings.Rows.Add(booking.Id, booking.FlightId, flight.FlightNumber,
+                               flight.Origin & " → " & flight.Destination,
+                               flight.DepartureDate.ToString("yyyy-MM-dd"),
+                               flight.DepartureTime.ToString("hh\:mm"),
+                               flight.ArrivalTime.ToString("hh\:mm"),
+                               booking.PassengerName, booking.PassengerEmail,
+                               If(String.IsNullOrEmpty(booking.SeatNumber), "N/A", booking.SeatNumber),
+                               flight.Price, booking.BookingDate.ToString("yyyy-MM-dd HH:mm"))
+        Next
+    End Sub
+
+==================================================
+Part: BtnDelete_Click (PRT-034)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MyBookingsForm.vb
+==================================================
+Private Sub BtnDelete_Click(sender As Object, e As EventArgs)
+        Dim bookingId As Integer? = GetSelectedBookingId()
+        If bookingId.HasValue Then
+            If MessageBox.Show("Are you sure you want to delete this booking?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+                Dim errorMsg As String = BookingService.DeleteBooking(bookingId.Value, SessionManager.CurrentUser.Id)
+                If String.IsNullOrEmpty(errorMsg) Then
+                    MessageBox.Show("Booking deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    LoadBookings()
+                Else
+                    MessageBox.Show(errorMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End If
+            End If
+        Else
+            MessageBox.Show("Please select a booking.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub
+
+==================================================
+Part: EditProfileForm (UI-041)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Public Class EditProfileForm
+    Inherits Form
+
+    Private user As User
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblPassword As Label
+    Private txtEmail As TextBox
+    Private txtFullName As TextBox
+    Private txtPassword As TextBox
+    Private btnUpdate As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+        LoadProfile()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Edit Profile"
+        Me.Size = New Size(500, 350)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email: *"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        txtEmail = New TextBox()
+        txtEmail.Location = New Point(20, yPos + 20)
+        txtEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtEmail)
+        yPos += 50
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name: *"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        txtFullName = New TextBox()
+        txtFullName.Location = New Point(20, yPos + 20)
+        txtFullName.Size = New Size(450, 25)
+        Me.Controls.Add(txtFullName)
+        yPos += 50
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "New Password (Optional):"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(20, yPos)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(20, yPos + 20)
+        txtPassword.Size = New Size(450, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+        yPos += 50
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, yPos)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+        yPos += 50
+
+        ' Buttons
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Profile"
+        btnUpdate.Location = New Point(20, yPos)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, yPos)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+    Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtEmail.Text = user.Email
+        txtFullName.Text = user.FullName
+    End Sub
+
+    Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        If Not String.IsNullOrWhiteSpace(password) Then
+            errors.AddRange(ValidationHelper.ValidatePassword(password))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        user.Email = email
+        user.FullName = fullName
+
+        Try
+            UserRepository.Update(user)
+
+            If Not String.IsNullOrWhiteSpace(password) Then
+                UserRepository.UpdatePassword(user.Id, UserRepository.HashPassword(password))
+            End If
+
+            SessionManager.CurrentUser.FullName = user.FullName
+            SessionManager.CurrentUser.Email = user.Email
+
+            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: LoadProfile (PRT-043)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtEmail.Text = user.Email
+        txtFullName.Text = user.FullName
+    End Sub
+
+==================================================
+Part: BtnUpdate_Click (PRT-044)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        If Not String.IsNullOrWhiteSpace(password) Then
+            errors.AddRange(ValidationHelper.ValidatePassword(password))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        user.Email = email
+        user.FullName = fullName
+
+        Try
+            UserRepository.Update(user)
+
+            If Not String.IsNullOrWhiteSpace(password) Then
+                UserRepository.UpdatePassword(user.Id, UserRepository.HashPassword(password))
+            End If
+
+            SessionManager.CurrentUser.FullName = user.FullName
+            SessionManager.CurrentUser.Email = user.Email
+
+            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+==================================================
+Part: FlightsForm (UI-047)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/FlightsForm.vb
+==================================================
+Public Class FlightsForm
+    Inherits Form
+
+    Private dgvFlights As DataGridView
+    Private btnRefresh As Button
+    Private btnView As Button
+    Private btnBook As Button
+    Private btnEdit As Button
+    Private btnDelete As Button
+
+    Public Sub New()
+        InitializeComponent()
+        LoadFlights()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Available Flights"
+        Me.Size = New Size(1000, 500)
+        Me.StartPosition = FormStartPosition.CenterScreen
+
+        ' Data Grid View
+        dgvFlights = New DataGridView()
+        dgvFlights.Location = New Point(10, 10)
+        dgvFlights.Size = New Size(960, 400)
+        dgvFlights.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvFlights.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvFlights.ReadOnly = True
+        dgvFlights.AllowUserToAddRows = False
+        Me.Controls.Add(dgvFlights)
+
+        ' Buttons
+        btnRefresh = New Button()
+        btnRefresh.Text = "Refresh"
+        btnRefresh.Location = New Point(10, 420)
+        btnRefresh.Size = New Size(100, 30)
+        AddHandler btnRefresh.Click, AddressOf BtnRefresh_Click
+        Me.Controls.Add(btnRefresh)
+
+        btnView = New Button()
+        btnView.Text = "View Details"
+        btnView.Location = New Point(120, 420)
+        btnView.Size = New Size(100, 30)
+        AddHandler btnView.Click, AddressOf BtnView_Click
+        Me.Controls.Add(btnView)
+
+        btnBook = New Button()
+        btnBook.Text = "Book Flight"
+        btnBook.Location = New Point(230, 420)
+        btnBook.Size = New Size(100, 30)
+        AddHandler btnBook.Click, AddressOf BtnBook_Click
+        Me.Controls.Add(btnBook)
+
+        If SessionManager.IsAdmin() Then
+            btnEdit = New Button()
+            btnEdit.Text = "Edit"
+            btnEdit.Location = New Point(340, 420)
+            btnEdit.Size = New Size(100, 30)
+            AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+            Me.Controls.Add(btnEdit)
+
+            btnDelete = New Button()
+            btnDelete.Text = "Delete"
+            btnDelete.Location = New Point(450, 420)
+            btnDelete.Size = New Size(100, 30)
+            AddHandler btnDelete.Click, AddressOf BtnDelete_Click
+            Me.Controls.Add(btnDelete)
+        End If
+    End Sub
+
+    Private Sub LoadFlights()
+        Dim flights As List(Of Flight) = FlightRepository.GetAll()
+
+        dgvFlights.Columns.Clear()
+        dgvFlights.Columns.Add("Id", "ID")
+        dgvFlights.Columns("Id").Visible = False
+        dgvFlights.Columns.Add("FlightNumber", "Flight Number")
+        dgvFlights.Columns.Add("Origin", "Origin")
+        dgvFlights.Columns.Add("Destination", "Destination")
+        dgvFlights.Columns.Add("DepartureDate", "Departure Date")
+        dgvFlights.Columns.Add("DepartureTime", "Departure Time")
+        dgvFlights.Columns.Add("ArrivalTime", "Arrival Time")
+        dgvFlights.Columns.Add("Price", "Price")
+        dgvFlights.Columns("Price").DefaultCellStyle.Format = "C"
+        dgvFlights.Columns.Add("AvailableSeats", "Available Seats")
+
+        dgvFlights.Rows.Clear()
+        For Each flight In flights
+            dgvFlights.Rows.Add(flight.Id, flight.FlightNumber, flight.Origin, flight.Destination,
+                              flight.DepartureDate.ToString("yyyy-MM-dd"),
+                              flight.DepartureTime.ToString("hh\:mm"),
+                              flight.ArrivalTime.ToString("hh\:mm"),
+                              flight.Price, flight.AvailableSeats)
+        Next
+    End Sub
+
+    Private Function GetSelectedFlightId() As Integer?
+        If dgvFlights.SelectedRows.Count > 0 Then
+            Return Convert.ToInt32(dgvFlights.SelectedRows(0).Cells("Id").Value)
+        End If
+        Return Nothing
+    End Function
+
+    Private Sub BtnRefresh_Click(sender As Object, e As EventArgs)
+        LoadFlights()
+    End Sub
+
+    Private Sub BtnView_Click(sender As Object, e As EventArgs)
+        Dim flightId As Integer? = GetSelectedFlightId()
+        If flightId.HasValue Then
+            Dim viewForm As New ViewFlightForm(flightId.Value)
+            viewForm.ShowDialog()
+            LoadFlights()
+        Else
+            MessageBox.Show("Please select a flight.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub
+
+    Private Sub BtnBook_Click(sender As Object, e As EventArgs)
+        Dim flightId As Integer? = GetSelectedFlightId()
+        If flightId.HasValue Then
+            Dim bookForm As New BookFlightForm(flightId.Value)
+            bookForm.ShowDialog()
+            LoadFlights()
+        Else
+            MessageBox.Show("Please select a flight.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub
+
+    Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Dim flightId As Integer? = GetSelectedFlightId()
+        If flightId.HasValue Then
+            Dim editForm As New EditFlightForm(flightId.Value)
+            editForm.ShowDialog()
+            LoadFlights()
+        Else
+            MessageBox.Show("Please select a flight.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub
+
+    Private Sub BtnDelete_Click(sender As Object, e As EventArgs)
+        Dim flightId As Integer? = GetSelectedFlightId()
+        If flightId.HasValue Then
+            If MessageBox.Show("Are you sure you want to delete this flight?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+                Try
+                    FlightRepository.Delete(flightId.Value)
+                    MessageBox.Show("Flight deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    LoadFlights()
+                Catch ex As Exception
+                    MessageBox.Show("Error deleting flight: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End Try
+            End If
+        Else
+            MessageBox.Show("Please select a flight.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub
+End Class
+
+==================================================
+Part: InitializeComponent (UI-049)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/FlightsForm.vb
+==================================================
+Private Sub InitializeComponent()
+        Me.Text = "Available Flights"
+        Me.Size = New Size(1000, 500)
+        Me.StartPosition = FormStartPosition.CenterScreen
+
+        ' Data Grid View
+        dgvFlights = New DataGridView()
+        dgvFlights.Location = New Point(10, 10)
+        dgvFlights.Size = New Size(960, 400)
+        dgvFlights.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvFlights.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvFlights.ReadOnly = True
+        dgvFlights.AllowUserToAddRows = False
+        Me.Controls.Add(dgvFlights)
+
+        ' Buttons
+        btnRefresh = New Button()
+        btnRefresh.Text = "Refresh"
+        btnRefresh.Location = New Point(10, 420)
+        btnRefresh.Size = New Size(100, 30)
+        AddHandler btnRefresh.Click, AddressOf BtnRefresh_Click
+        Me.Controls.Add(btnRefresh)
+
+        btnView = New Button()
+        btnView.Text = "View Details"
+        btnView.Location = New Point(120, 420)
+        btnView.Size = New Size(100, 30)
+        AddHandler btnView.Click, AddressOf BtnView_Click
+        Me.Controls.Add(btnView)
+
+        btnBook = New Button()
+        btnBook.Text = "Book Flight"
+        btnBook.Location = New Point(230, 420)
+        btnBook.Size = New Size(100, 30)
+        AddHandler btnBook.Click, AddressOf BtnBook_Click
+        Me.Controls.Add(btnBook)
+
+        If SessionManager.IsAdmin() Then
+            btnEdit = New Button()
+            btnEdit.Text = "Edit"
+            btnEdit.Location = New Point(340, 420)
+            btnEdit.Size = New Size(100, 30)
+            AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+            Me.Controls.Add(btnEdit)
+
+            btnDelete = New Button()
+            btnDelete.Text = "Delete"
+            btnDelete.Location = New Point(450, 420)
+            btnDelete.Size = New Size(100, 30)
+            AddHandler btnDelete.Click, AddressOf BtnDelete_Click
+            Me.Controls.Add(btnDelete)
+        End If
+    End Sub
+
+==================================================
+Part: LoginForm (UI-073)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/LoginForm.vb
+==================================================
+Public Class LoginForm
+    Inherits Form
+
+    Private lblTitle As Label
+    Private lblUsername As Label
+    Private lblPassword As Label
+    Private txtUsername As TextBox
+    Private txtPassword As TextBox
+    Private btnLogin As Button
+    Private btnRegister As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Login - Airline Management System"
+        Me.Size = New Size(400, 300)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        ' Title
+        lblTitle = New Label()
+        lblTitle.Text = "Airline Management System"
+        lblTitle.Font = New Font("Arial", 14, FontStyle.Bold)
+        lblTitle.AutoSize = True
+        lblTitle.Location = New Point(80, 20)
+        Me.Controls.Add(lblTitle)
+
+        ' Username
+        lblUsername = New Label()
+        lblUsername.Text = "Username:"
+        lblUsername.AutoSize = True
+        lblUsername.Location = New Point(50, 70)
+        Me.Controls.Add(lblUsername)
+
+        txtUsername = New TextBox()
+        txtUsername.Location = New Point(50, 90)
+        txtUsername.Size = New Size(300, 25)
+        Me.Controls.Add(txtUsername)
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "Password:"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(50, 130)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(50, 150)
+        txtPassword.Size = New Size(300, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(50, 180)
+        lblError.Size = New Size(300, 20)
+        Me.Controls.Add(lblError)
+
+        ' Buttons
+        btnLogin = New Button()
+        btnLogin.Text = "Login"
+        btnLogin.Location = New Point(50, 210)
+        btnLogin.Size = New Size(120, 30)
+        AddHandler btnLogin.Click, AddressOf BtnLogin_Click
+        Me.Controls.Add(btnLogin)
+
+        btnRegister = New Button()
+        btnRegister.Text = "Register"
+        btnRegister.Location = New Point(230, 210)
+        btnRegister.Size = New Size(120, 30)
+        AddHandler btnRegister.Click, AddressOf BtnRegister_Click
+        Me.Controls.Add(btnRegister)
+
+        ' Accept button
+        Me.AcceptButton = btnLogin
+    End Sub
+
+    Private Sub BtnLogin_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        If String.IsNullOrWhiteSpace(username) OrElse String.IsNullOrWhiteSpace(password) Then
+            lblError.Text = "Username and password are required."
+            Return
+        End If
+
+        Dim user As User = UserRepository.GetByUsername(username)
+        If user Is Nothing OrElse Not UserRepository.VerifyPassword(password, user.Password) Then
+            lblError.Text = "Invalid username or password."
+            Return
+        End If
+
+        ' Login successful
+        SessionManager.Login(user)
+        Me.Hide()
+        Dim mainForm As New MainForm()
+        mainForm.Show()
+    End Sub
+
+    Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim registerForm As New RegisterForm()
+        registerForm.Show()
+    End Sub
+End Class
+
+==================================================
+Part: BtnLogin_Click (PRT-075)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/LoginForm.vb
+==================================================
+Private Sub BtnLogin_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        If String.IsNullOrWhiteSpace(username) OrElse String.IsNullOrWhiteSpace(password) Then
+            lblError.Text = "Username and password are required."
+            Return
+        End If
+
+        Dim user As User = UserRepository.GetByUsername(username)
+        If user Is Nothing OrElse Not UserRepository.VerifyPassword(password, user.Password) Then
+            lblError.Text = "Invalid username or password."
+            Return
+        End If
+
+        ' Login successful
+        SessionManager.Login(user)
+        Me.Hide()
+        Dim mainForm As New MainForm()
+        mainForm.Show()
+    End Sub
+
+==================================================
+Part: ViewBookingForm (UI-078)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/ViewBookingForm.vb
+==================================================
+Public Class ViewBookingForm
+    Inherits Form
+
+    Private booking As Booking
+    Private flight As Flight
+    Private lblDetails As Label
+    Private btnEdit As Button
+    Private btnClose As Button
+
+    Public Sub New(selectedBookingId As Integer)
+        InitializeComponent()
+        LoadBooking(selectedBookingId)
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Booking Details"
+        Me.Size = New Size(500, 450)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        lblDetails = New Label()
+        lblDetails.Location = New Point(20, 20)
+        lblDetails.Size = New Size(450, 350)
+        lblDetails.AutoSize = False
+        Me.Controls.Add(lblDetails)
+
+        btnEdit = New Button()
+        btnEdit.Text = "Edit"
+        btnEdit.Location = New Point(20, 380)
+        btnEdit.Size = New Size(150, 30)
+        AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+        Me.Controls.Add(btnEdit)
+
+        btnClose = New Button()
+        btnClose.Text = "Close"
+        btnClose.Location = New Point(320, 380)
+        btnClose.Size = New Size(150, 30)
+        AddHandler btnClose.Click, AddressOf BtnClose_Click
+        Me.Controls.Add(btnClose)
+    End Sub
+
+    Private Sub LoadBooking(bookingId As Integer)
+        booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            MessageBox.Show("Booking not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        If SessionManager.IsAuthenticated() AndAlso booking.UserId.HasValue AndAlso booking.UserId.Value <> SessionManager.CurrentUser.Id Then
+            MessageBox.Show("Access denied. You can only view your own bookings.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        flight = FlightRepository.GetById(booking.FlightId)
+
+        lblDetails.Text = "Booking ID: #" & booking.Id & vbCrLf &
+                         "Flight Number: " & flight.FlightNumber & vbCrLf &
+                         "Route: " & flight.Origin & " → " & flight.Destination & vbCrLf &
+                         "Departure Date: " & flight.DepartureDate.ToString("yyyy-MM-dd") & vbCrLf &
+                         "Departure Time: " & flight.DepartureTime.ToString("hh\:mm") & vbCrLf &
+                         "Arrival Time: " & flight.ArrivalTime.ToString("hh\:mm") & vbCrLf &
+                         "Passenger Name: " & booking.PassengerName & vbCrLf &
+                         "Passenger Email: " & booking.PassengerEmail & vbCrLf &
+                         "Seat Number: " & If(String.IsNullOrEmpty(booking.SeatNumber), "N/A", booking.SeatNumber) & vbCrLf &
+                         "Price: " & flight.Price.ToString("C") & vbCrLf &
+                         "Booking Date: " & booking.BookingDate.ToString("yyyy-MM-dd HH:mm")
+    End Sub
+
+    Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim editForm As New EditBookingForm(booking.Id)
+        editForm.ShowDialog()
+        Me.Close()
+    End Sub
+
+    Private Sub BtnClose_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: LoadBooking (PRT-080)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/ViewBookingForm.vb
+==================================================
+Private Sub LoadBooking(bookingId As Integer)
+        booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            MessageBox.Show("Booking not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        If SessionManager.IsAuthenticated() AndAlso booking.UserId.HasValue AndAlso booking.UserId.Value <> SessionManager.CurrentUser.Id Then
+            MessageBox.Show("Access denied. You can only view your own bookings.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        flight = FlightRepository.GetById(booking.FlightId)
+
+        lblDetails.Text = "Booking ID: #" & booking.Id & vbCrLf &
+                         "Flight Number: " & flight.FlightNumber & vbCrLf &
+                         "Route: " & flight.Origin & " → " & flight.Destination & vbCrLf &
+                         "Departure Date: " & flight.DepartureDate.ToString("yyyy-MM-dd") & vbCrLf &
+                         "Departure Time: " & flight.DepartureTime.ToString("hh\:mm") & vbCrLf &
+                         "Arrival Time: " & flight.ArrivalTime.ToString("hh\:mm") & vbCrLf &
+                         "Passenger Name: " & booking.PassengerName & vbCrLf &
+                         "Passenger Email: " & booking.PassengerEmail & vbCrLf &
+                         "Seat Number: " & If(String.IsNullOrEmpty(booking.SeatNumber), "N/A", booking.SeatNumber) & vbCrLf &
+                         "Price: " & flight.Price.ToString("C") & vbCrLf &
+                         "Booking Date: " & booking.BookingDate.ToString("yyyy-MM-dd HH:mm")
+    End Sub
+
+==================================================
+Part: ProfileForm (UI-084)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/ProfileForm.vb
+==================================================
+Public Class ProfileForm
+    Inherits Form
+
+    Private user As User
+    Private lblUsername As Label
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblCreatedAt As Label
+    Private btnEdit As Button
+    Private btnClose As Button
+
+    Public Sub New()
+        InitializeComponent()
+        LoadProfile()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "My Profile"
+        Me.Size = New Size(500, 300)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Username
+        lblUsername = New Label()
+        lblUsername.Text = "Username:"
+        lblUsername.AutoSize = True
+        lblUsername.Location = New Point(20, yPos)
+        Me.Controls.Add(lblUsername)
+
+        Dim lblUsernameValue As New Label()
+        lblUsernameValue.AutoSize = True
+        lblUsernameValue.Location = New Point(150, yPos)
+        lblUsernameValue.Font = New Font("Arial", 10, FontStyle.Bold)
+        Me.Controls.Add(lblUsernameValue)
+        yPos += 30
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email:"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        Dim lblEmailValue As New Label()
+        lblEmailValue.AutoSize = True
+        lblEmailValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblEmailValue)
+        yPos += 30
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name:"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        Dim lblFullNameValue As New Label()
+        lblFullNameValue.AutoSize = True
+        lblFullNameValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblFullNameValue)
+        yPos += 30
+
+        ' Member Since
+        lblCreatedAt = New Label()
+        lblCreatedAt.Text = "Member Since:"
+        lblCreatedAt.AutoSize = True
+        lblCreatedAt.Location = New Point(20, yPos)
+        Me.Controls.Add(lblCreatedAt)
+
+        Dim lblCreatedAtValue As New Label()
+        lblCreatedAtValue.AutoSize = True
+        lblCreatedAtValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblCreatedAtValue)
+        yPos += 50
+
+        ' Buttons
+        btnEdit = New Button()
+        btnEdit.Text = "Edit Profile"
+        btnEdit.Location = New Point(20, yPos)
+        btnEdit.Size = New Size(150, 30)
+        AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+        Me.Controls.Add(btnEdit)
+
+        btnClose = New Button()
+        btnClose.Text = "Close"
+        btnClose.Location = New Point(320, yPos)
+        btnClose.Size = New Size(150, 30)
+        AddHandler btnClose.Click, AddressOf BtnClose_Click
+        Me.Controls.Add(btnClose)
+
+        ' Store references for updating
+        Me.Tag = New Object() {lblUsernameValue, lblEmailValue, lblFullNameValue, lblCreatedAtValue}
+    End Sub
+
+    Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        Dim labels As Object() = CType(Me.Tag, Object())
+        CType(labels(0), Label).Text = user.Username & " (cannot be changed)"
+        CType(labels(1), Label).Text = user.Email
+        CType(labels(2), Label).Text = user.FullName
+        CType(labels(3), Label).Text = user.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+    End Sub
+
+    Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Dim editForm As New EditProfileForm()
+        editForm.ShowDialog()
+        LoadProfile()
+    End Sub
+
+    Private Sub BtnClose_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: LoadProfile (PRT-086)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/ProfileForm.vb
+==================================================
+Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        Dim labels As Object() = CType(Me.Tag, Object())
+        CType(labels(0), Label).Text = user.Username & " (cannot be changed)"
+        CType(labels(1), Label).Text = user.Email
+        CType(labels(2), Label).Text = user.FullName
+        CType(labels(3), Label).Text = user.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+    End Sub
+
+==================================================
+Part: MainForm (UI-101)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Public Class MainForm
+    Inherits Form
+
+    Private menuStrip As MenuStrip
+    Private flightsToolStripMenuItem As ToolStripMenuItem
+    Private bookFlightToolStripMenuItem As ToolStripMenuItem
+    Private myBookingsToolStripMenuItem As ToolStripMenuItem
+    Private profileToolStripMenuItem As ToolStripMenuItem
+    Private logoutToolStripMenuItem As ToolStripMenuItem
+    Private adminMenu As ToolStripMenuItem
+    Private customersToolStripMenuItem As ToolStripMenuItem
+    Private masterBookingsToolStripMenuItem As ToolStripMenuItem
+    Private createFlightToolStripMenuItem As ToolStripMenuItem
+    Private lblWelcome As Label
+
+    Public Sub New()
+        InitializeComponent()
+        CheckSession()
+        UpdateMenu()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Airline Management System"
+        Me.Size = New Size(800, 600)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.WindowState = FormWindowState.Maximized
+
+        ' Menu Strip
+        menuStrip = New MenuStrip()
+
+        flightsToolStripMenuItem = New ToolStripMenuItem("Flights")
+        AddHandler flightsToolStripMenuItem.Click, AddressOf FlightsToolStripMenuItem_Click
+
+        bookFlightToolStripMenuItem = New ToolStripMenuItem("Book Flight")
+        AddHandler bookFlightToolStripMenuItem.Click, AddressOf BookFlightToolStripMenuItem_Click
+
+        myBookingsToolStripMenuItem = New ToolStripMenuItem("My Bookings")
+        AddHandler myBookingsToolStripMenuItem.Click, AddressOf MyBookingsToolStripMenuItem_Click
+
+        profileToolStripMenuItem = New ToolStripMenuItem("Profile")
+        AddHandler profileToolStripMenuItem.Click, AddressOf ProfileToolStripMenuItem_Click
+
+        logoutToolStripMenuItem = New ToolStripMenuItem("Logout")
+        AddHandler logoutToolStripMenuItem.Click, AddressOf LogoutToolStripMenuItem_Click
+
+        ' Admin menu
+        adminMenu = New ToolStripMenuItem("Admin")
+        createFlightToolStripMenuItem = New ToolStripMenuItem("Create Flight")
+        AddHandler createFlightToolStripMenuItem.Click, AddressOf CreateFlightToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(createFlightToolStripMenuItem)
+
+        customersToolStripMenuItem = New ToolStripMenuItem("Customers")
+        AddHandler customersToolStripMenuItem.Click, AddressOf CustomersToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(customersToolStripMenuItem)
+
+        masterBookingsToolStripMenuItem = New ToolStripMenuItem("Master Bookings")
+        AddHandler masterBookingsToolStripMenuItem.Click, AddressOf MasterBookingsToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(masterBookingsToolStripMenuItem)
+
+        menuStrip.Items.Add(flightsToolStripMenuItem)
+        menuStrip.Items.Add(bookFlightToolStripMenuItem)
+        menuStrip.Items.Add(myBookingsToolStripMenuItem)
+        menuStrip.Items.Add(profileToolStripMenuItem)
+        menuStrip.Items.Add(adminMenu)
+        menuStrip.Items.Add(logoutToolStripMenuItem)
+
+        Me.MainMenuStrip = menuStrip
+        Me.Controls.Add(menuStrip)
+
+        ' Welcome label
+        lblWelcome = New Label()
+        lblWelcome.Font = New Font("Arial", 12, FontStyle.Bold)
+        lblWelcome.AutoSize = True
+        lblWelcome.Location = New Point(20, 40)
+        Me.Controls.Add(lblWelcome)
+    End Sub
+
+    Private Sub CheckSession()
+        SessionManager.CheckTimeout()
+        If Not SessionManager.IsAuthenticated() Then
+            Me.Hide()
+            Dim loginForm As New LoginForm()
+            loginForm.Show()
+            Me.Close()
+        End If
+    End Sub
+
+    Private Sub UpdateMenu()
+        If SessionManager.IsAuthenticated() Then
+            lblWelcome.Text = "Welcome, " & SessionManager.CurrentUser.FullName & "!"
+            adminMenu.Visible = SessionManager.IsAdmin()
+        End If
+    End Sub
+
+    Private Sub FlightsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim flightsForm As New FlightsForm()
+        flightsForm.ShowDialog()
+    End Sub
+
+    Private Sub BookFlightToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        ' Show flights form first to select a flight
+        Dim flightsForm As New FlightsForm()
+        flightsForm.ShowDialog()
+    End Sub
+
+    Private Sub MyBookingsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim bookingsForm As New MyBookingsForm()
+        bookingsForm.ShowDialog()
+    End Sub
+
+    Private Sub ProfileToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim profileForm As New ProfileForm()
+        profileForm.ShowDialog()
+    End Sub
+
+    Private Sub CreateFlightToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim createForm As New CreateFlightForm()
+        createForm.ShowDialog()
+    End Sub
+
+    Private Sub CustomersToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim customersForm As New CustomersForm()
+        customersForm.ShowDialog()
+    End Sub
+
+    Private Sub MasterBookingsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim masterForm As New MasterBookingsForm()
+        masterForm.ShowDialog()
+    End Sub
+
+    Private Sub LogoutToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        SessionManager.Logout()
+        Me.Hide()
+        Dim loginForm As New LoginForm()
+        loginForm.Show()
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: CheckSession (PRT-103)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub CheckSession()
+        SessionManager.CheckTimeout()
+        If Not SessionManager.IsAuthenticated() Then
+            Me.Hide()
+            Dim loginForm As New LoginForm()
+            loginForm.Show()
+            Me.Close()
+        End If
+    End Sub
+
+==================================================
+Part: UpdateMenu (PRT-104)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub UpdateMenu()
+        If SessionManager.IsAuthenticated() Then
+            lblWelcome.Text = "Welcome, " & SessionManager.CurrentUser.FullName & "!"
+            adminMenu.Visible = SessionManager.IsAdmin()
+        End If
+    End Sub
+
+==================================================
+Part: LogoutToolStripMenuItem_Click (UI-112)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub LogoutToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        SessionManager.Logout()
+        Me.Hide()
+        Dim loginForm As New LoginForm()
+        loginForm.Show()
+        Me.Close()
+    End Sub
+
+==================================================
+Part: New (PRT-113)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Public Sub New()
+        InitializeComponent()
+        CheckSession()
+        UpdateMenu()
+    End Sub
+
+==================================================
+Part: BookFlightForm (UI-114)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/BookFlightForm.vb
+==================================================
+Public Class BookFlightForm
+    Inherits Form
+
+    Private flightId As Integer
+    Private flight As Flight
+    Private lblFlightInfo As Label
+    Private lblPassengerName As Label
+    Private lblPassengerEmail As Label
+    Private lblSeatNumber As Label
+    Private txtPassengerName As TextBox
+    Private txtPassengerEmail As TextBox
+    Private txtSeatNumber As TextBox
+    Private btnBook As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New(selectedFlightId As Integer)
+        flightId = selectedFlightId
+        InitializeComponent()
+        LoadFlight()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Book Flight"
+        Me.Size = New Size(500, 400)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        ' Flight Info
+        lblFlightInfo = New Label()
+        lblFlightInfo.Location = New Point(20, 20)
+        lblFlightInfo.Size = New Size(450, 100)
+        lblFlightInfo.AutoSize = False
+        Me.Controls.Add(lblFlightInfo)
+
+        ' Passenger Name
+        lblPassengerName = New Label()
+        lblPassengerName.Text = "Passenger Name: *"
+        lblPassengerName.AutoSize = True
+        lblPassengerName.Location = New Point(20, 130)
+        Me.Controls.Add(lblPassengerName)
+
+        txtPassengerName = New TextBox()
+        txtPassengerName.Location = New Point(20, 150)
+        txtPassengerName.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerName)
+
+        ' Passenger Email
+        lblPassengerEmail = New Label()
+        lblPassengerEmail.Text = "Passenger Email: *"
+        lblPassengerEmail.AutoSize = True
+        lblPassengerEmail.Location = New Point(20, 180)
+        Me.Controls.Add(lblPassengerEmail)
+
+        txtPassengerEmail = New TextBox()
+        txtPassengerEmail.Location = New Point(20, 200)
+        txtPassengerEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerEmail)
+
+        ' Seat Number
+        lblSeatNumber = New Label()
+        lblSeatNumber.Text = "Seat Number (Optional):"
+        lblSeatNumber.AutoSize = True
+        lblSeatNumber.Location = New Point(20, 230)
+        Me.Controls.Add(lblSeatNumber)
+
+        txtSeatNumber = New TextBox()
+        txtSeatNumber.Location = New Point(20, 250)
+        txtSeatNumber.Size = New Size(450, 25)
+        Me.Controls.Add(txtSeatNumber)
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, 280)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+
+        ' Buttons
+        btnBook = New Button()
+        btnBook.Text = "Book Flight"
+        btnBook.Location = New Point(20, 320)
+        btnBook.Size = New Size(120, 30)
+        AddHandler btnBook.Click, AddressOf BtnBook_Click
+        Me.Controls.Add(btnBook)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(350, 320)
+        btnCancel.Size = New Size(120, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnBook
+    End Sub
+
+    Private Sub LoadFlight()
+        flight = FlightRepository.GetById(flightId)
+        If flight Is Nothing Then
+            MessageBox.Show("Flight not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        If flight.AvailableSeats < 1 Then
+            MessageBox.Show("No available seats on this flight.", "Not Available", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        lblFlightInfo.Text = "Flight: " & flight.FlightNumber & vbCrLf &
+                            "Route: " & flight.Origin & " → " & flight.Destination & vbCrLf &
+                            "Departure: " & flight.DepartureDate.ToString("yyyy-MM-dd") & " at " & flight.DepartureTime.ToString("hh\:mm") & vbCrLf &
+                            "Price: " & flight.Price.ToString("C")
+    End Sub
+
+    Private Sub BtnBook_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim passengerName As String = txtPassengerName.Text.Trim()
+        Dim passengerEmail As String = txtPassengerEmail.Text.Trim()
+        Dim seatNumber As String = txtSeatNumber.Text.Trim()
+
+        Dim userId As Integer? = If(SessionManager.IsAuthenticated(), SessionManager.CurrentUser.Id, Nothing)
+        Dim errorMsg As String = BookingService.CreateBooking(flightId, userId, passengerName, passengerEmail, seatNumber)
+
+        If Not String.IsNullOrEmpty(errorMsg) Then
+            lblError.Text = errorMsg
+        Else
+            MessageBox.Show("Booking successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        End If
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: BtnBook_Click (PRT-117)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/BookFlightForm.vb
+==================================================
+Private Sub BtnBook_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim passengerName As String = txtPassengerName.Text.Trim()
+        Dim passengerEmail As String = txtPassengerEmail.Text.Trim()
+        Dim seatNumber As String = txtSeatNumber.Text.Trim()
+
+        Dim userId As Integer? = If(SessionManager.IsAuthenticated(), SessionManager.CurrentUser.Id, Nothing)
+        Dim errorMsg As String = BookingService.CreateBooking(flightId, userId, passengerName, passengerEmail, seatNumber)
+
+        If Not String.IsNullOrEmpty(errorMsg) Then
+            lblError.Text = errorMsg
+        Else
+            MessageBox.Show("Booking successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        End If
+    End Sub

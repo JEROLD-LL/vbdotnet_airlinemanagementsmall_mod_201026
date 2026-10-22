@@ -1,0 +1,53 @@
+Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        ' Validate username
+        errors.AddRange(ValidationHelper.ValidateUsername(username))
+        If errors.Count = 0 AndAlso UserRepository.UsernameExists(username) Then
+            errors.Add("Username already exists.")
+        End If
+
+        ' Validate email
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        If errors.Count = 0 AndAlso UserRepository.EmailExists(email) Then
+            errors.Add("Email already exists.")
+        End If
+
+        ' Validate full name
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        ' Validate password
+        errors.AddRange(ValidationHelper.ValidatePassword(password))
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        ' Create user
+        Dim user As New User With {
+            .Username = username,
+            .Password = UserRepository.HashPassword(password),
+            .Email = email,
+            .FullName = fullName,
+            .Role = "user",
+            .CreatedAt = DateTime.Now
+        }
+
+        Try
+            UserRepository.Create(user)
+            MessageBox.Show("Registration successful! Please login.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Hide()
+            Dim loginForm As New LoginForm()
+            loginForm.Show()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub

@@ -1,0 +1,4 @@
+Private Sub CustomersToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim customersForm As New CustomersForm()
+        customersForm.ShowDialog()
+    End Sub

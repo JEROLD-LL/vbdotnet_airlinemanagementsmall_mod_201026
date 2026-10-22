@@ -1,0 +1,10 @@
+Public Class Booking
+    Public Property Id As Integer
+    Public Property FlightId As Integer
+    Public Property UserId As Integer?
+    Public Property PassengerName As String
+    Public Property PassengerEmail As String
+    Public Property SeatNumber As String
+    Public Property BookingDate As DateTime
+End Class
+

@@ -1,0 +1,5 @@
+Public Shared Function BeginTransaction() As NpgsqlTransaction
+        Dim conn As NpgsqlConnection = GetConnection()
+        conn.Open()
+        Return conn.BeginTransaction()
+    End Function

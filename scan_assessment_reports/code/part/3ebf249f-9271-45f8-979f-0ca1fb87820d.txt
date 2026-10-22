@@ -1,0 +1,4 @@
+Private Sub MasterBookingsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim masterForm As New MasterBookingsForm()
+        masterForm.ShowDialog()
+    End Sub

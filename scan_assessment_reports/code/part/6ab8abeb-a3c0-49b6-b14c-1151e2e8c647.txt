@@ -1,0 +1,7 @@
+Public Shared Sub UpdatePassword(userId As Integer, hashedPassword As String)
+        Dim query As String = "UPDATE ""User"" SET password = @password WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@password", hashedPassword),
+            New NpgsqlParameter("@id", userId)
+        )
+    End Sub

@@ -1,0 +1,6 @@
+Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim editForm As New EditBookingForm(booking.Id)
+        editForm.ShowDialog()
+        Me.Close()
+    End Sub

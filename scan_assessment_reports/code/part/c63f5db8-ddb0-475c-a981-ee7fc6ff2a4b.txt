@@ -1,0 +1,4 @@
+Private Sub MyBookingsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim bookingsForm As New MyBookingsForm()
+        bookingsForm.ShowDialog()
+    End Sub

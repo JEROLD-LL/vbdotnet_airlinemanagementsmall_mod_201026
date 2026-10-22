@@ -1,0 +1,6 @@
+Private Sub UpdateMenu()
+        If SessionManager.IsAuthenticated() Then
+            lblWelcome.Text = "Welcome, " & SessionManager.CurrentUser.FullName & "!"
+            adminMenu.Visible = SessionManager.IsAdmin()
+        End If
+    End Sub

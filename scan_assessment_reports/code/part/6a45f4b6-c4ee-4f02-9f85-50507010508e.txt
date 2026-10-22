@@ -1,0 +1,10 @@
+Private Sub BtnBook_Click(sender As Object, e As EventArgs)
+        Dim flightId As Integer? = GetSelectedFlightId()
+        If flightId.HasValue Then
+            Dim bookForm As New BookFlightForm(flightId.Value)
+            bookForm.ShowDialog()
+            LoadFlights()
+        Else
+            MessageBox.Show("Please select a flight.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub

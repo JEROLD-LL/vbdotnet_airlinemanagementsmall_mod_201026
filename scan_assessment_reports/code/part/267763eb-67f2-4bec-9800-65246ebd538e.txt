@@ -1,0 +1,21 @@
+Public Shared Function GetAll() As List(Of Flight)
+        Dim flights As New List(Of Flight)
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight ORDER BY departure_date ASC, departure_time ASC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                flights.Add(New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                })
+            End While
+        End Using
+        Return flights
+    End Function

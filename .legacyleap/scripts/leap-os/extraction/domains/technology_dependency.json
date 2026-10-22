@@ -1,0 +1,42 @@
+{
+  "domain_key": "technology_dependency",
+  "item_type": "TechnologyDependency",
+  "dataset_key": "technology_dependency",
+  "key_prefix": "td",
+  "extraction_query": "Extract technology dependencies the codebase relies on. A technology dependency is a runtime, framework, library, data store, build tool, or external service — evidenced by imports, package references, or configuration. For each dependency state technology name, version when known, usage scope, criticality, and replacement risk.",
+  "categories": [
+    { "key": "runtime_platform", "name": "Runtime Platforms" },
+    { "key": "framework", "name": "Frameworks" },
+    { "key": "library", "name": "Libraries" },
+    { "key": "data_store", "name": "Data Stores" },
+    { "key": "build_tool", "name": "Build Tools" },
+    { "key": "external_service", "name": "External Services" }
+  ],
+  "item_fields": [
+    "technology_name",
+    "version",
+    "usage_scope",
+    "criticality",
+    "replacement_risk"
+  ],
+  "evidence_roles": ["DECLARES", "IMPORTS", "CONFIGURES"],
+  "discovery": {
+    "seed_phrases": [
+      "framework library dependency",
+      "database provider connection",
+      "runtime platform version",
+      "build tool package manager",
+      "imports references third party"
+    ],
+    "component_filters": ["config", "module", "service", "client"],
+    "mcp_discovery_tools": [
+      "mcm_get_technical_profile",
+      "mcm_search_by_language",
+      "mcm_read_source_file"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 50,
+    "batch_size": 8
+  },
+  "relates_to": []
+}

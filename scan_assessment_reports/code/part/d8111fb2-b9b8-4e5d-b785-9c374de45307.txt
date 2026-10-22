@@ -1,0 +1,20 @@
+Public Shared Function Create(booking As Booking, transaction As NpgsqlTransaction) As Integer
+        Dim query As String = "INSERT INTO Booking (flight_id, user_id, passenger_name, passenger_email, seat_number, booking_date) VALUES (@flight_id, @user_id, @passenger_name, @passenger_email, @seat_number, @booking_date) RETURNING id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@flight_id", booking.FlightId))
+            If booking.UserId.HasValue Then
+                cmd.Parameters.Add(New NpgsqlParameter("@user_id", booking.UserId.Value))
+            Else
+                cmd.Parameters.Add(New NpgsqlParameter("@user_id", DBNull.Value))
+            End If
+            cmd.Parameters.Add(New NpgsqlParameter("@passenger_name", booking.PassengerName))
+            cmd.Parameters.Add(New NpgsqlParameter("@passenger_email", booking.PassengerEmail))
+            If Not String.IsNullOrEmpty(booking.SeatNumber) Then
+                cmd.Parameters.Add(New NpgsqlParameter("@seat_number", booking.SeatNumber))
+            Else
+                cmd.Parameters.Add(New NpgsqlParameter("@seat_number", DBNull.Value))
+            End If
+            cmd.Parameters.Add(New NpgsqlParameter("@booking_date", booking.BookingDate))
+            Return Convert.ToInt32(cmd.ExecuteScalar())
+        End Using
+    End Function

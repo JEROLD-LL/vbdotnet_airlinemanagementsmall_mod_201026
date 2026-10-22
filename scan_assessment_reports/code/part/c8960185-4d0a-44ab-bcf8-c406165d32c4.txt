@@ -1,0 +1,11 @@
+Public Shared Function ExecuteScalar(query As String, ParamArray parameters As NpgsqlParameter()) As Object
+        Using conn As NpgsqlConnection = GetConnection()
+            conn.Open()
+            Using cmd As New NpgsqlCommand(query, conn)
+                If parameters IsNot Nothing Then
+                    cmd.Parameters.AddRange(parameters)
+                End If
+                Return cmd.ExecuteScalar()
+            End Using
+        End Using
+    End Function

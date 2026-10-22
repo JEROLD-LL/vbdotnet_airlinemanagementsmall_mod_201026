@@ -1,0 +1,39 @@
+{
+  "domain_key": "constraint",
+  "item_type": "Constraint",
+  "dataset_key": "constraint",
+  "key_prefix": "cst",
+  "extraction_query": "Extract design and operational constraints evidenced in executable code or the graph. A constraint is a limit, compliance requirement, integration boundary, ambiguous area, or coverage gap — not a business rule the application enforces at runtime. Compare executable guards with usage/help text and comments: when an argument count, CSV field count, threshold, or accepted value disagrees, record the enforced guard as the current behavior and the mismatch as an ambiguity or defect. Preserve at-least, at-most, exactly, greater-than, and less-than semantics; never convert a `< 20` rejection into an exactly-five requirement. For each constraint state the constraint statement, origin, impact, and whether resolution is needed.",
+  "categories": [
+    { "key": "platform", "name": "Platform Constraints" },
+    { "key": "compliance", "name": "Compliance Constraints" },
+    { "key": "integration_limitation", "name": "Integration Limitations" },
+    { "key": "unknown_ambiguous", "name": "Unknown or Ambiguous" },
+    { "key": "coverage_gap", "name": "Coverage Gaps" }
+  ],
+  "item_fields": [
+    "constraint_statement",
+    "origin",
+    "impact",
+    "resolution_needed"
+  ],
+  "evidence_roles": ["LIMITS", "REQUIRES", "BLOCKS"],
+  "discovery": {
+    "seed_phrases": [
+      "legacy constraint limitation",
+      "must use existing schema",
+      "unsupported platform browser",
+      "todo fixme unclear logic",
+      "hardcoded environment limit"
+    ],
+    "component_filters": ["config", "service", "module", "dao"],
+    "mcp_discovery_tools": [
+      "mcm_find_modernization_hotspots",
+      "mcm_grep_source_code"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 50,
+    "batch_size": 8
+  },
+  "relates_to": []
+}

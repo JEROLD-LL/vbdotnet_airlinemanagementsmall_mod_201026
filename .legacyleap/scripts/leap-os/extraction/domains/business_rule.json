@@ -1,0 +1,64 @@
+{
+  "domain_key": "business_rule",
+  "item_type": "BusinessRule",
+  "dataset_key": "business_rule",
+  "key_prefix": "br",
+  "extraction_query": "Extract distinct business rules evidenced in executable code. A business rule is domain logic the application enforces: field validation, eligibility checks, pricing or fee calculations, approval decisions, authorization gates, status transitions, and invariants that must always hold. For category authorization, emit one rule per distinct protected route, page, controller action, HTTP path, or resource check evidenced in code — never a single generic role-based access control summary when the source enforces separate path- or action-level permissions. Derive exact counts, thresholds, accepted values, comparison direction, and fallback behavior from the executable condition and branch bodies, never from a usage message, comment, CSV header, constant name, or operation label. Preserve polarity exactly: do not reverse contains/not-contains, empty/non-empty, finite/never-expiring, or true/false branches when translating them into business language. A binary branch such as if value equals 1 else delete remains a two-way rule; do not infer a three-value enumeration. Extract value-derivation rules as first-class rules: when the system composes a login name, password, identifier, reference number, or code from other data, state the exact composition, any truncation or case handling, and how a collision with an existing value is resolved. A step that merely says a value is generated is not the rule; the composition is. When the same operation exists for staff and for self-service, extract them as separate rules or as explicit distinct outcomes. Also extract implicit invariants: what does not happen when a condition is true (for example existing transactions remaining valid when a related account becomes ineligible for new work). A policy value that is stored or displayed but never dispatched is still a record: state the outcome as not applied at runtime, not as a live calculation. Do not extract platform limits, technical NFR mechanisms, or structural architecture facts — those belong to other domains. For each rule state when it applies, the condition, every branch outcome including fallback, business impact, and any calculation with its purpose.",
+  "categories": [
+    { "key": "validation", "name": "Validation Rules" },
+    { "key": "calculation", "name": "Calculation Rules" },
+    { "key": "decision", "name": "Decision Rules" },
+    { "key": "invariant", "name": "Invariant Rules" },
+    { "key": "authorization", "name": "Authorization Rules" },
+    { "key": "state_transition", "name": "State Transition Rules" }
+  ],
+  "item_fields": [
+    "rule_entity",
+    "rule_field",
+    "rule_condition",
+    "rule_outcome",
+    "rule_impact",
+    "rule_calculation",
+    "rule_identifiers"
+  ],
+  "evidence_roles": [
+    "DEFINES_THRESHOLD",
+    "ENFORCES",
+    "REPORTS",
+    "PERSISTS"
+  ],
+  "discovery": {
+    "seed_phrases": [
+      "business validation rule",
+      "required field validation",
+      "minimum maximum threshold limit",
+      "eligibility approval rejection",
+      "discount tax fee rate calculation",
+      "authorization permission restriction",
+      "status state transition",
+      "business invariant constraint"
+    ],
+    "component_filters": [
+      "service",
+      "validator",
+      "controller",
+      "handler",
+      "domain",
+      "model"
+    ],
+    "mcp_discovery_tools": [
+      "mcm_get_domain_knowledge",
+      "mcm_grep_source_code",
+      "mcm_get_symbol_details"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 80,
+    "batch_size": 8
+  },
+  "relates_to": [
+    { "kind": "APPLIES_TO", "target_domain": "data_entity" },
+    { "kind": "ENFORCED_IN", "target_domain": "process_flow" },
+    { "kind": "RESTRICTS", "target_domain": "actor" },
+    { "kind": "CAPTURED_BY", "target_domain": "interface" }
+  ]
+}

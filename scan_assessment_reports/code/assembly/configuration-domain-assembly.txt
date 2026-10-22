@@ -1,0 +1,9 @@
+
+==================================================
+Part: IsAdmin (PRT-017)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Shared Function IsAdmin() As Boolean
+        Return IsAuthenticated() AndAlso CurrentUser.Role = "admin"
+    End Function

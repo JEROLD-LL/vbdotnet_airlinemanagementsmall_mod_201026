@@ -1,0 +1,5 @@
+Public Sub New()
+        InitializeComponent()
+        CheckSession()
+        UpdateMenu()
+    End Sub

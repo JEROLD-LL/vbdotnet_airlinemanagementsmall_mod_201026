@@ -1,0 +1,43 @@
+{
+  "domain_key": "actor",
+  "item_type": "Actor",
+  "dataset_key": "actor",
+  "key_prefix": "act",
+  "extraction_query": "Extract distinct actors that interact with the application. An actor is a human role, named access identity, or automated system identity. Emit one record per distinct named role that has its own permission set or activities. Role and permission enums, constants, and assignment lists are evidence of actors — do not reject a candidate solely because it is an enum or constant type; extract every role or identity those types name as its own record. Use the names that appear in source; do not invent job titles or collapse distinct roles (for example front desk, staff, clerk, and generic user) into a single record when the code treats them separately. Build item_key as act- plus a lower-case slug from the canonical role identifier in source (enum member, constant, claim type, or policy role string) so downstream process flows can set actor_key to that exact item_key. Categorize oversight and branch-or-team management roles as manager_supervisor, day-to-day operational roles as operator, system-wide admin as administrator, counterparties without login as external_party, and bootstrapping or service identities as system_account. Still reject true non-actors: validators, data stores, UI widgets, and infrastructure helpers with no authentication or authorization identity. For each actor state role description, goals, key activities, permission level, and access constraints evidenced in the code. Separate human roles from system accounts.",
+  "categories": [
+    { "key": "operator", "name": "Operators" },
+    { "key": "manager_supervisor", "name": "Managers and Supervisors" },
+    { "key": "administrator", "name": "Administrators" },
+    { "key": "external_party", "name": "External Parties" },
+    { "key": "system_account", "name": "System Accounts" }
+  ],
+  "item_fields": [
+    "role_description",
+    "goals",
+    "activities",
+    "permission_level",
+    "access_constraints"
+  ],
+  "evidence_roles": ["AUTHENTICATES", "AUTHORIZES", "RESTRICTS"],
+  "discovery": {
+    "seed_phrases": [
+      "user role permission",
+      "authorization access control",
+      "login authentication",
+      "admin privilege",
+      "employee operator manager"
+    ],
+    "component_filters": ["security", "auth", "controller", "form", "service"],
+    "mcp_discovery_tools": [
+      "mcm_search_code_hybrid",
+      "mcm_get_symbol_details",
+      "mcm_assess_security_posture"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 50,
+    "batch_size": 8
+  },
+  "relates_to": [
+    { "kind": "PERFORMS", "target_domain": "process_flow" }
+  ]
+}

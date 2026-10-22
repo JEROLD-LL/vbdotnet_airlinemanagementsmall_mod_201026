@@ -1,0 +1,23 @@
+Private Sub InitializeComponent()
+        Me.Text = "Customers"
+        Me.Size = New Size(800, 500)
+        Me.StartPosition = FormStartPosition.CenterScreen
+
+        ' Data Grid View
+        dgvCustomers = New DataGridView()
+        dgvCustomers.Location = New Point(10, 10)
+        dgvCustomers.Size = New Size(760, 400)
+        dgvCustomers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvCustomers.ReadOnly = True
+        dgvCustomers.AllowUserToAddRows = False
+        Me.Controls.Add(dgvCustomers)
+
+        ' Refresh button
+        btnRefresh = New Button()
+        btnRefresh.Text = "Refresh"
+        btnRefresh.Location = New Point(10, 420)
+        btnRefresh.Size = New Size(100, 30)
+        AddHandler btnRefresh.Click, AddressOf BtnRefresh_Click
+        Me.Controls.Add(btnRefresh)
+    End Sub

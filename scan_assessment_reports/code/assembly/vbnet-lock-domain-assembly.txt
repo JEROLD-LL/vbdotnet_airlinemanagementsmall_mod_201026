@@ -1,0 +1,358 @@
+
+==================================================
+Part: BookingService (SVC-012)
+Type: service
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/BookingService.vb
+==================================================
+Public Class BookingService
+    ' High Complexity: Transaction Management Pattern for atomic operations
+    Public Shared Function CreateBooking(flightId As Integer, userId As Integer?, passengerName As String, passengerEmail As String, seatNumber As String) As String
+        Dim errors As New List(Of String)
+
+        ' Validation
+        If String.IsNullOrWhiteSpace(passengerName) Then
+            errors.Add("Passenger name is required.")
+        ElseIf passengerName.Length < 2 OrElse passengerName.Length > 255 Then
+            errors.Add("Passenger name must be between 2 and 255 characters.")
+        ElseIf Not Regex.IsMatch(passengerName, "^[a-zA-Z\s'-]+$") Then
+            errors.Add("Passenger name can only contain letters, spaces, hyphens, and apostrophes.")
+        End If
+
+        If String.IsNullOrWhiteSpace(passengerEmail) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(passengerEmail, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        ElseIf passengerEmail.Length > 255 Then
+            errors.Add("Email must be 255 characters or less.")
+        End If
+
+        If Not String.IsNullOrWhiteSpace(seatNumber) Then
+            If seatNumber.Length > 10 Then
+                errors.Add("Seat number must be 10 characters or less.")
+            ElseIf Not Regex.IsMatch(seatNumber, "^[0-9]{1,3}[A-Z]{1,2}$", RegexOptions.IgnoreCase) Then
+                errors.Add("Seat number format is invalid. Use format like '12A' or '123AB'.")
+            End If
+        End If
+
+        If errors.Count > 0 Then
+            Return String.Join(" ", errors)
+        End If
+
+        ' Transaction Management Pattern - Atomic operation
+        Dim transaction As NpgsqlTransaction = Nothing
+        Try
+            transaction = DatabaseHelper.BeginTransaction()
+
+            ' Lock flight row for update
+            Dim flight As Flight = FlightRepository.LockForUpdate(flightId, transaction)
+            If flight Is Nothing Then
+                transaction.Rollback()
+                Return "Flight not found."
+            End If
+
+            ' Re-check available seats
+            If flight.AvailableSeats < 1 Then
+                transaction.Rollback()
+                Return "No available seats on this flight."
+            End If
+
+            ' Create booking
+            Dim booking As New Booking With {
+                .FlightId = flightId,
+                .UserId = userId,
+                .PassengerName = passengerName,
+                .PassengerEmail = passengerEmail,
+                .SeatNumber = If(String.IsNullOrWhiteSpace(seatNumber), String.Empty, seatNumber.ToUpper()),
+                .BookingDate = DateTime.Now
+            }
+            BookingRepository.Create(booking, transaction)
+
+            ' Decrement seats
+            FlightRepository.DecrementSeats(flightId, transaction)
+
+            ' Commit transaction
+            transaction.Commit()
+            Return Nothing ' Success
+        Catch ex As Exception
+            If transaction IsNot Nothing Then
+                transaction.Rollback()
+            End If
+            Return "An error occurred while creating the booking: " & ex.Message
+        End Try
+    End Function
+
+    ' High Complexity: Transaction Management Pattern for atomic operations
+    Public Shared Function DeleteBooking(bookingId As Integer, userId As Integer) As String
+        ' Verify booking exists and belongs to user
+        Dim booking As Booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            Return "Booking not found."
+        End If
+
+        If booking.UserId.HasValue AndAlso booking.UserId.Value <> userId Then
+            Return "Access denied. You can only delete your own bookings."
+        End If
+
+        ' Transaction Management Pattern - Atomic operation
+        Dim transaction As NpgsqlTransaction = Nothing
+        Try
+            transaction = DatabaseHelper.BeginTransaction()
+
+            ' Delete booking
+            BookingRepository.Delete(bookingId, transaction)
+
+            ' Increment seats
+            FlightRepository.IncrementSeats(booking.FlightId, transaction)
+
+            ' Commit transaction
+            transaction.Commit()
+            Return Nothing ' Success
+        Catch ex As Exception
+            If transaction IsNot Nothing Then
+                transaction.Rollback()
+            End If
+            Return "An error occurred while deleting the booking: " & ex.Message
+        End Try
+    End Function
+End Class
+
+==================================================
+Part: CreateBooking (PRT-013)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/BookingService.vb
+==================================================
+Public Shared Function CreateBooking(flightId As Integer, userId As Integer?, passengerName As String, passengerEmail As String, seatNumber As String) As String
+        Dim errors As New List(Of String)
+
+        ' Validation
+        If String.IsNullOrWhiteSpace(passengerName) Then
+            errors.Add("Passenger name is required.")
+        ElseIf passengerName.Length < 2 OrElse passengerName.Length > 255 Then
+            errors.Add("Passenger name must be between 2 and 255 characters.")
+        ElseIf Not Regex.IsMatch(passengerName, "^[a-zA-Z\s'-]+$") Then
+            errors.Add("Passenger name can only contain letters, spaces, hyphens, and apostrophes.")
+        End If
+
+        If String.IsNullOrWhiteSpace(passengerEmail) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(passengerEmail, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        ElseIf passengerEmail.Length > 255 Then
+            errors.Add("Email must be 255 characters or less.")
+        End If
+
+        If Not String.IsNullOrWhiteSpace(seatNumber) Then
+            If seatNumber.Length > 10 Then
+                errors.Add("Seat number must be 10 characters or less.")
+            ElseIf Not Regex.IsMatch(seatNumber, "^[0-9]{1,3}[A-Z]{1,2}$", RegexOptions.IgnoreCase) Then
+                errors.Add("Seat number format is invalid. Use format like '12A' or '123AB'.")
+            End If
+        End If
+
+        If errors.Count > 0 Then
+            Return String.Join(" ", errors)
+        End If
+
+        ' Transaction Management Pattern - Atomic operation
+        Dim transaction As NpgsqlTransaction = Nothing
+        Try
+            transaction = DatabaseHelper.BeginTransaction()
+
+            ' Lock flight row for update
+            Dim flight As Flight = FlightRepository.LockForUpdate(flightId, transaction)
+            If flight Is Nothing Then
+                transaction.Rollback()
+                Return "Flight not found."
+            End If
+
+            ' Re-check available seats
+            If flight.AvailableSeats < 1 Then
+                transaction.Rollback()
+                Return "No available seats on this flight."
+            End If
+
+            ' Create booking
+            Dim booking As New Booking With {
+                .FlightId = flightId,
+                .UserId = userId,
+                .PassengerName = passengerName,
+                .PassengerEmail = passengerEmail,
+                .SeatNumber = If(String.IsNullOrWhiteSpace(seatNumber), String.Empty, seatNumber.ToUpper()),
+                .BookingDate = DateTime.Now
+            }
+            BookingRepository.Create(booking, transaction)
+
+            ' Decrement seats
+            FlightRepository.DecrementSeats(flightId, transaction)
+
+            ' Commit transaction
+            transaction.Commit()
+            Return Nothing ' Success
+        Catch ex As Exception
+            If transaction IsNot Nothing Then
+                transaction.Rollback()
+            End If
+            Return "An error occurred while creating the booking: " & ex.Message
+        End Try
+    End Function
+
+==================================================
+Part: FlightRepository (REPO-126)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Class FlightRepository
+    Public Shared Function GetAll() As List(Of Flight)
+        Dim flights As New List(Of Flight)
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight ORDER BY departure_date ASC, departure_time ASC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                flights.Add(New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                })
+            End While
+        End Using
+        Return flights
+    End Function
+
+    Public Shared Function GetById(id As Integer) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function FlightNumberExists(flightNumber As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM Flight WHERE flight_number = @flight_number"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@flight_number", flightNumber)))
+        Return count > 0
+    End Function
+
+    Public Shared Function Create(flight As Flight) As Integer
+        Dim query As String = "INSERT INTO Flight (flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at) VALUES (@flight_number, @origin, @destination, @departure_date, @departure_time, @arrival_time, @price, @available_seats, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@created_at", flight.CreatedAt)
+        ))
+        Return id
+    End Function
+
+    Public Shared Sub Update(flight As Flight)
+        Dim query As String = "UPDATE Flight SET flight_number = @flight_number, origin = @origin, destination = @destination, departure_date = @departure_date, departure_time = @departure_time, arrival_time = @arrival_time, price = @price, available_seats = @available_seats WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@id", flight.Id)
+        )
+    End Sub
+
+    Public Shared Sub Delete(id As Integer)
+        Dim query As String = "DELETE FROM Flight WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query, New NpgsqlParameter("@id", id))
+    End Sub
+
+    Public Shared Function LockForUpdate(id As Integer, transaction As NpgsqlTransaction) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id FOR UPDATE"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            Using reader As NpgsqlDataReader = cmd.ExecuteReader()
+                If reader.Read() Then
+                    Return New Flight With {
+                        .Id = reader.GetInt32(0),
+                        .FlightNumber = reader.GetString(1),
+                        .Origin = reader.GetString(2),
+                        .Destination = reader.GetString(3),
+                        .DepartureDate = reader.GetDateTime(4),
+                        .DepartureTime = reader.GetTimeSpan(5),
+                        .ArrivalTime = reader.GetTimeSpan(6),
+                        .Price = reader.GetDecimal(7),
+                        .AvailableSeats = reader.GetInt32(8),
+                        .CreatedAt = reader.GetDateTime(9)
+                    }
+                End If
+            End Using
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Sub DecrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats - 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
+    Public Shared Sub IncrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats + 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+End Class
+
+==================================================
+Part: LockForUpdate (PRT-131)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Function LockForUpdate(id As Integer, transaction As NpgsqlTransaction) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id FOR UPDATE"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            Using reader As NpgsqlDataReader = cmd.ExecuteReader()
+                If reader.Read() Then
+                    Return New Flight With {
+                        .Id = reader.GetInt32(0),
+                        .FlightNumber = reader.GetString(1),
+                        .Origin = reader.GetString(2),
+                        .Destination = reader.GetString(3),
+                        .DepartureDate = reader.GetDateTime(4),
+                        .DepartureTime = reader.GetTimeSpan(5),
+                        .ArrivalTime = reader.GetTimeSpan(6),
+                        .Price = reader.GetDecimal(7),
+                        .AvailableSeats = reader.GetInt32(8),
+                        .CreatedAt = reader.GetDateTime(9)
+                    }
+                End If
+            End Using
+        End Using
+        Return Nothing
+    End Function

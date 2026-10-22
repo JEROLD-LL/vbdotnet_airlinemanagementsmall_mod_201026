@@ -1,0 +1,129 @@
+Imports Npgsql
+
+Public Class FlightRepository
+    Public Shared Function GetAll() As List(Of Flight)
+        Dim flights As New List(Of Flight)
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight ORDER BY departure_date ASC, departure_time ASC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                flights.Add(New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                })
+            End While
+        End Using
+        Return flights
+    End Function
+
+    Public Shared Function GetById(id As Integer) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function FlightNumberExists(flightNumber As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM Flight WHERE flight_number = @flight_number"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@flight_number", flightNumber)))
+        Return count > 0
+    End Function
+
+    Public Shared Function Create(flight As Flight) As Integer
+        Dim query As String = "INSERT INTO Flight (flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at) VALUES (@flight_number, @origin, @destination, @departure_date, @departure_time, @arrival_time, @price, @available_seats, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@created_at", flight.CreatedAt)
+        ))
+        Return id
+    End Function
+
+    Public Shared Sub Update(flight As Flight)
+        Dim query As String = "UPDATE Flight SET flight_number = @flight_number, origin = @origin, destination = @destination, departure_date = @departure_date, departure_time = @departure_time, arrival_time = @arrival_time, price = @price, available_seats = @available_seats WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@id", flight.Id)
+        )
+    End Sub
+
+    Public Shared Sub Delete(id As Integer)
+        Dim query As String = "DELETE FROM Flight WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query, New NpgsqlParameter("@id", id))
+    End Sub
+
+    Public Shared Function LockForUpdate(id As Integer, transaction As NpgsqlTransaction) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id FOR UPDATE"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            Using reader As NpgsqlDataReader = cmd.ExecuteReader()
+                If reader.Read() Then
+                    Return New Flight With {
+                        .Id = reader.GetInt32(0),
+                        .FlightNumber = reader.GetString(1),
+                        .Origin = reader.GetString(2),
+                        .Destination = reader.GetString(3),
+                        .DepartureDate = reader.GetDateTime(4),
+                        .DepartureTime = reader.GetTimeSpan(5),
+                        .ArrivalTime = reader.GetTimeSpan(6),
+                        .Price = reader.GetDecimal(7),
+                        .AvailableSeats = reader.GetInt32(8),
+                        .CreatedAt = reader.GetDateTime(9)
+                    }
+                End If
+            End Using
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Sub DecrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats - 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
+    Public Shared Sub IncrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats + 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+End Class
+

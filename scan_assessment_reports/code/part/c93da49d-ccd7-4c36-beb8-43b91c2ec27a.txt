@@ -1,0 +1,33 @@
+Public Class SessionManager
+    Public Shared Property CurrentUser As User
+    Public Shared Property LastActivity As DateTime
+
+    Public Shared Function IsAuthenticated() As Boolean
+        Return CurrentUser IsNot Nothing
+    End Function
+
+    Public Shared Function IsAdmin() As Boolean
+        Return IsAuthenticated() AndAlso CurrentUser.Role = "admin"
+    End Function
+
+    Public Shared Sub Login(user As User)
+        CurrentUser = user
+        LastActivity = DateTime.Now
+    End Sub
+
+    Public Shared Sub Logout()
+        CurrentUser = Nothing
+        LastActivity = DateTime.MinValue
+    End Sub
+
+    Public Shared Sub CheckTimeout()
+        If IsAuthenticated() Then
+            Dim timeSinceLastActivity As TimeSpan = DateTime.Now - LastActivity
+            If timeSinceLastActivity.TotalMinutes > 30 Then
+                Logout()
+            Else
+                LastActivity = DateTime.Now
+            End If
+        End If
+    End Sub
+End Class

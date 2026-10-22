@@ -1,0 +1,58 @@
+{
+  "system_name": "AirlineManagement_664c72",
+  "system_description": "A small VB.NET Windows Forms airline management desktop application (users, flights, and bookings) backed by PostgreSQL",
+  "system_type": "web application",
+  "system_complexity": "simple",
+  "primary_operations": "DESCRIBE_HERE: List the main operations your system performs (e.g., 'user management, data processing, reporting, inventory tracking, customer support, etc.')",
+  "architecture_info": "DESCRIBE_HERE: Describe your system's architecture, frameworks, and technical stack (e.g., 'Microservices architecture using Spring Boot, React frontend, PostgreSQL database, Docker containers')",
+  "user_roles": [],
+  "core_modules": [
+    "ADD_HERE: List your system's main modules (e.g., 'User Management', 'Data Processing', 'Reporting', 'Inventory Management', 'Customer Support')"
+  ],
+  "business_entities": [
+    "ADD_HERE: List your system's main business entities (e.g., 'User', 'Product', 'Order', 'Customer', 'Transaction', 'Report')"
+  ],
+  "focus_area": "DESCRIBE_HERE: What is your system's primary focus? (e.g., 'e-commerce management', 'healthcare data processing', 'financial reporting', 'educational content delivery')",
+  "excluded_workflows": "DESCRIBE_HERE: What workflows or processes does your system NOT handle? (e.g., 'Does not handle payment processing', 'Does not manage external integrations', 'Does not support real-time messaging')",
+  "access_control_type": "DESCRIBE_HERE: How does your system control access? (e.g., 'Role-based access control with department-level permissions', 'Attribute-based access control with fine-grained permissions', 'Simple user-level permissions')",
+  "business_scenarios": [
+    "ADD_HERE: List your system's main business scenarios (e.g., 'User registration and authentication', 'Data entry and validation', 'Report generation and export', 'System administration and maintenance')"
+  ],
+  "integration_systems": [
+    "ADD_HERE: List external systems your application integrates with (e.g., 'Payment Gateway', 'Email Service', 'Database', 'Third-party APIs', 'Cloud Storage')"
+  ],
+  "business_value_areas": [
+    "ADD_HERE: List the main business value areas your system provides (e.g., 'Operational Efficiency', 'Data Accuracy', 'User Productivity', 'Cost Reduction', 'Compliance Management')"
+  ],
+  "constraints": {
+    "focus_areas": [
+      "ADD_HERE: List areas your system focuses on (e.g., 'Data accuracy', 'User experience', 'Performance', 'Security', 'Scalability')"
+    ],
+    "avoid_areas": [
+      "ADD_HERE: List areas your system avoids (e.g., 'Complex workflows', 'Advanced business processes', 'Real-time processing', 'External dependencies')"
+    ],
+    "emphasis": [
+      "ADD_HERE: List what your system emphasizes (e.g., 'Simple operations', 'Data management', 'User permissions', 'Reliability', 'Maintainability')"
+    ]
+  },
+  "feedback": {
+    "version": 1,
+    "user_feedback": "Make the FSD strictly evidence-based, properly scoped, and aligned to the source code, no unsupported claims, no promotional language, no placeholders.",
+    "corrections": [
+      "No duplicate headers/content blocks; keep single consolidated sections.",
+      "No out-of-scope content.",
+      "Replace placeholder text ('TODO', 'TBD', 'Content generation failed') with actual content.",
+      "No quantified claims (percentages, metrics) unless source is cited.",
+      "Use stable naming for entities and rules; don't mix business and technical details.",
+      "Tie each claim to a citation (code); remove unverified assertions."
+    ],
+    "improvements_requested": [
+      "Add TOC and enforce consistent heading hierarchy (## sections, ### subsections).",
+      "Follow template order: Summary \u2192 Overview \u2192 Capabilities \u2192 Workflows \u2192 Rules \u2192 Data \u2192 Interfaces \u2192 Glossary.",
+      "No promotional language; use professional, factual tone only."
+    ]
+  },
+  "terminology_focus": "DESCRIBE_HERE: What domain terminology should be used? (e.g., 'Healthcare terminology', 'Financial terminology', 'E-commerce terminology', 'General business terminology')",
+  "workflow_type": "DESCRIBE_HERE: What type of workflows does your system handle? (e.g., 'Administrative workflows', 'Business process workflows', 'Data processing workflows', 'User interaction workflows')",
+  "data_focus": "DESCRIBE_HERE: What type of data does your system primarily handle? (e.g., 'User data', 'Transaction data', 'Content data', 'Analytics data', 'Configuration data')"
+}

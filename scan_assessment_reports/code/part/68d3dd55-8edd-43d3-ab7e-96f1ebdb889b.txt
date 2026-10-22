@@ -1,0 +1,4 @@
+Public Shared Sub Login(user As User)
+        CurrentUser = user
+        LastActivity = DateTime.Now
+    End Sub

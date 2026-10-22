@@ -1,0 +1,10 @@
+Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Dim flightId As Integer? = GetSelectedFlightId()
+        If flightId.HasValue Then
+            Dim editForm As New EditFlightForm(flightId.Value)
+            editForm.ShowDialog()
+            LoadFlights()
+        Else
+            MessageBox.Show("Please select a flight.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End If
+    End Sub

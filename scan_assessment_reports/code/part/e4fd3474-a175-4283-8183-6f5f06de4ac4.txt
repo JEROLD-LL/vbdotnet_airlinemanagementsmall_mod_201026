@@ -1,0 +1,17 @@
+Private Sub BtnBook_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim passengerName As String = txtPassengerName.Text.Trim()
+        Dim passengerEmail As String = txtPassengerEmail.Text.Trim()
+        Dim seatNumber As String = txtSeatNumber.Text.Trim()
+
+        Dim userId As Integer? = If(SessionManager.IsAuthenticated(), SessionManager.CurrentUser.Id, Nothing)
+        Dim errorMsg As String = BookingService.CreateBooking(flightId, userId, passengerName, passengerEmail, seatNumber)
+
+        If Not String.IsNullOrEmpty(errorMsg) Then
+            lblError.Text = errorMsg
+        Else
+            MessageBox.Show("Booking successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        End If
+    End Sub

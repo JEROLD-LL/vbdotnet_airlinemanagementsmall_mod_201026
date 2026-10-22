@@ -1,0 +1,20 @@
+Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        Dim labels As Object() = CType(Me.Tag, Object())
+        CType(labels(0), Label).Text = user.Username & " (cannot be changed)"
+        CType(labels(1), Label).Text = user.Email
+        CType(labels(2), Label).Text = user.FullName
+        CType(labels(3), Label).Text = user.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+    End Sub

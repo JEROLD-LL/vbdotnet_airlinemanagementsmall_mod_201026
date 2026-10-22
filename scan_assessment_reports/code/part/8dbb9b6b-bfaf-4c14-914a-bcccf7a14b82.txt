@@ -1,0 +1,27 @@
+Private Sub InitializeComponent()
+        Me.Text = "Booking Details"
+        Me.Size = New Size(500, 450)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        lblDetails = New Label()
+        lblDetails.Location = New Point(20, 20)
+        lblDetails.Size = New Size(450, 350)
+        lblDetails.AutoSize = False
+        Me.Controls.Add(lblDetails)
+
+        btnEdit = New Button()
+        btnEdit.Text = "Edit"
+        btnEdit.Location = New Point(20, 380)
+        btnEdit.Size = New Size(150, 30)
+        AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+        Me.Controls.Add(btnEdit)
+
+        btnClose = New Button()
+        btnClose.Text = "Close"
+        btnClose.Location = New Point(320, 380)
+        btnClose.Size = New Size(150, 30)
+        AddHandler btnClose.Click, AddressOf BtnClose_Click
+        Me.Controls.Add(btnClose)
+    End Sub

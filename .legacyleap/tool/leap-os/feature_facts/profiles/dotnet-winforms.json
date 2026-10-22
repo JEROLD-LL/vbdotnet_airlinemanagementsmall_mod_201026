@@ -1,0 +1,66 @@
+{
+  "name": "dotnet-winforms",
+  "description": ".NET WinForms/VB.NET applications with Designer twins and event-handler methods.",
+  "priority": 100,
+  "detect": {
+    "required_any": ["\\.Designer\\.(vb|cs)$"],
+    "language": ["^(VB\\.NET|C#|Visual Basic)$"],
+    "file_path": ["\\.Designer\\.(vb|cs)$", "\\.(vb|cs)$"],
+    "qualified_name": ["\\.Object\\.\\w*EventArgs$"]
+  },
+  "screen": {
+    "kinds": ["Class", "Form", "Configuration"],
+    "designer_path_regex": "\\.designer\\.",
+    "strip_suffixes": [".designer"],
+    "framework_prefixes": ["System.", "Global.System.", "Microsoft.", "MetroFramework.", "Guna.", "Windows."],
+    "generated_path_regex": "(^|/)(My Project|Properties)/|(^|/)AssemblyInfo\\.",
+    "ui_strategy": "designer_if_any",
+    "ui_layer_regex": "(presentation|ui|frontend)",
+    "entry_kinds": ["Form"]
+  },
+  "database": {
+    "driver_regex": "connection|command|adapter|reader|transaction|parameter|mysqlclient|sqlclient|oledb|odbc|^open$|^close$|^execute|^fill$|^dispose$",
+    "require_schema": true
+  },
+  "events": {
+    "qualified_name_regex": "\\.Object\\.\\w*EventArgs$",
+    "name_regex": "^(?P<control>.+)_(?P<event>[^_]+)$"
+  },
+  "controls": {
+    "members": ["Items", "Text", "DataSource", "SelectedItem", "SelectedIndex", "SelectedValue", "Value", "Image", "Checked"],
+    "ignore_names": ["me", "e", "sender", "this", "datetime", "system", "string"]
+  },
+  "navigation": {
+    "nouns": ["form", "control", "screen", "window", "dialog", "page", "panel", "module", "view"],
+    "verbs_regex": "open|show|display|embed|load|launch|navigat|switch",
+    "direct_methods": ["Show", "ShowDialog"]
+  },
+  "features": {
+    "authentication_key_regex": "log[_-]?in|sign[_-]?in|log[_-]?on|splash|auth",
+    "platform_reason": "no Designer part (no user surface)"
+  },
+  "openapi": {
+    "server": {
+      "default_url": "http://localhost:8000",
+      "description": "Replace {baseUrl} with the deployed service root URL.",
+      "url_template": "{baseUrl}/api",
+      "base_url_variable_description": "Service base URL (scheme + host + optional port)."
+    },
+    "security": {
+      "scheme_name": "BearerAuth",
+      "type": "http",
+      "scheme": "bearer",
+      "format": "JWT",
+      "description": "Token obtained from the authentication endpoint. Required on all non-authentication endpoints."
+    },
+    "recommendations": {
+      "password_hash": "a secure one-way hash (e.g. bcrypt cost \u2265 12 or Argon2id)",
+      "auth_response_example": "JWT token, role, error body"
+    }
+  },
+  "endpoint_strategies": {
+    "enabled_dep_types": ["DATABASE"],
+    "skip_dep_types": ["API", "LIBRARY", "EVENT"],
+    "notes": "WinForms Show()/ShowDialog() calls have dependency_type API but are not HTTP endpoints; HttpApiEndpointStrategy returns None for them so they are silently skipped."
+  }
+}

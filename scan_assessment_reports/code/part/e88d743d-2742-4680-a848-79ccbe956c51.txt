@@ -1,0 +1,170 @@
+Public Class RegisterForm
+    Inherits Form
+
+    Private lblTitle As Label
+    Private lblUsername As Label
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblPassword As Label
+    Private txtUsername As TextBox
+    Private txtEmail As TextBox
+    Private txtFullName As TextBox
+    Private txtPassword As TextBox
+    Private btnRegister As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Register - Airline Management System"
+        Me.Size = New Size(450, 350)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        ' Title
+        lblTitle = New Label()
+        lblTitle.Text = "User Registration"
+        lblTitle.Font = New Font("Arial", 12, FontStyle.Bold)
+        lblTitle.AutoSize = True
+        lblTitle.Location = New Point(150, 20)
+        Me.Controls.Add(lblTitle)
+
+        ' Username
+        lblUsername = New Label()
+        lblUsername.Text = "Username: *"
+        lblUsername.AutoSize = True
+        lblUsername.Location = New Point(50, 60)
+        Me.Controls.Add(lblUsername)
+
+        txtUsername = New TextBox()
+        txtUsername.Location = New Point(50, 80)
+        txtUsername.Size = New Size(350, 25)
+        Me.Controls.Add(txtUsername)
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email: *"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(50, 110)
+        Me.Controls.Add(lblEmail)
+
+        txtEmail = New TextBox()
+        txtEmail.Location = New Point(50, 130)
+        txtEmail.Size = New Size(350, 25)
+        Me.Controls.Add(txtEmail)
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name: *"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(50, 160)
+        Me.Controls.Add(lblFullName)
+
+        txtFullName = New TextBox()
+        txtFullName.Location = New Point(50, 180)
+        txtFullName.Size = New Size(350, 25)
+        Me.Controls.Add(txtFullName)
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "Password: *"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(50, 210)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(50, 230)
+        txtPassword.Size = New Size(350, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(50, 260)
+        lblError.Size = New Size(350, 40)
+        Me.Controls.Add(lblError)
+
+        ' Buttons
+        btnRegister = New Button()
+        btnRegister.Text = "Register"
+        btnRegister.Location = New Point(50, 270)
+        btnRegister.Size = New Size(120, 30)
+        AddHandler btnRegister.Click, AddressOf BtnRegister_Click
+        Me.Controls.Add(btnRegister)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(280, 270)
+        btnCancel.Size = New Size(120, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnRegister
+    End Sub
+
+    Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        ' Validate username
+        errors.AddRange(ValidationHelper.ValidateUsername(username))
+        If errors.Count = 0 AndAlso UserRepository.UsernameExists(username) Then
+            errors.Add("Username already exists.")
+        End If
+
+        ' Validate email
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        If errors.Count = 0 AndAlso UserRepository.EmailExists(email) Then
+            errors.Add("Email already exists.")
+        End If
+
+        ' Validate full name
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        ' Validate password
+        errors.AddRange(ValidationHelper.ValidatePassword(password))
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        ' Create user
+        Dim user As New User With {
+            .Username = username,
+            .Password = UserRepository.HashPassword(password),
+            .Email = email,
+            .FullName = fullName,
+            .Role = "user",
+            .CreatedAt = DateTime.Now
+        }
+
+        Try
+            UserRepository.Create(user)
+            MessageBox.Show("Registration successful! Please login.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Hide()
+            Dim loginForm As New LoginForm()
+            loginForm.Show()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim loginForm As New LoginForm()
+        loginForm.Show()
+    End Sub
+End Class

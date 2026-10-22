@@ -1,0 +1,5 @@
+Private Sub BookFlightToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        ' Show flights form first to select a flight
+        Dim flightsForm As New FlightsForm()
+        flightsForm.ShowDialog()
+    End Sub

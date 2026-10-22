@@ -1,0 +1,11 @@
+Public Shared Function ValidateUsername(username As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(username) Then
+            errors.Add("Username is required.")
+        ElseIf username.Length < 3 OrElse username.Length > 50 Then
+            errors.Add("Username must be between 3 and 50 characters.")
+        ElseIf Not Regex.IsMatch(username, "^[a-zA-Z0-9_]+$") Then
+            errors.Add("Username can only contain letters, numbers, and underscores.")
+        End If
+        Return errors
+    End Function

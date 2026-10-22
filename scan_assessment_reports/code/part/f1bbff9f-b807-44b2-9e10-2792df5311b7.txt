@@ -1,0 +1,5 @@
+Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim registerForm As New RegisterForm()
+        registerForm.Show()
+    End Sub

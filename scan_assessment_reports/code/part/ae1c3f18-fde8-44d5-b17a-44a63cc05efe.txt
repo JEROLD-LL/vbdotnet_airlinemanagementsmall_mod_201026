@@ -1,0 +1,22 @@
+Private Sub LoadBooking(bookingId As Integer)
+        booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            MessageBox.Show("Booking not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        If SessionManager.IsAuthenticated() AndAlso booking.UserId.HasValue AndAlso booking.UserId.Value <> SessionManager.CurrentUser.Id Then
+            MessageBox.Show("Access denied. You can only edit your own bookings.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        Dim flight As Flight = FlightRepository.GetById(booking.FlightId)
+        lblBookingInfo.Text = "Booking ID: #" & booking.Id & vbCrLf &
+                            "Flight: " & flight.FlightNumber & " (" & flight.Origin & " → " & flight.Destination & ")"
+
+        txtPassengerName.Text = booking.PassengerName
+        txtPassengerEmail.Text = booking.PassengerEmail
+        txtSeatNumber.Text = booking.SeatNumber
+    End Sub

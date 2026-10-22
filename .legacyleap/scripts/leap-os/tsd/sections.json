@@ -1,0 +1,177 @@
+{
+  "order": [
+    "document_details",
+    "document_history",
+    "approvals",
+    "project_overview",
+    "definitions_and_acronyms",
+    "system_architecture",
+    "system_diagrams",
+    "system_context_diagram",
+    "design_constraints",
+    "codebase_structure",
+    "key_components_and_modules",
+    "database_design",
+    "api_specifications",
+    "additional_diagrams",
+    "performance_optimization",
+    "scalability_design",
+    "security_implementation",
+    "compatibility_and_dependencies",
+    "reliability_and_availability",
+    "deployment_architecture",
+    "ci_cd_pipeline",
+    "monitoring_and_maintenance",
+    "references",
+    "glossary",
+    "revision_history",
+    "needs_human_intervention"
+  ],
+  "sections": {
+    "document_details": {
+      "heading": "Document Details",
+      "template_path": "technical_specification_document.document_information.document_details",
+      "query": "ROLE: You are generating ONLY document metadata for Section 1 of a Technical Specification Document (TSD). Generate EXACTLY the following and NOTHING else: (1) Document title — MUST be exactly of the form 'Technical Specification Document — {system or project name}' (example: 'Technical Specification Document — airline_ms_vb6_tiny'). Do NOT use 'Functional Specification Document', 'FSD', or any functional-spec title wording. (2) Version number, (3) Author(s), (4) Date, (5) Status - MUST be 'In Development' if system is actively maintained, or 'Draft' if preliminary analysis only, (6) Project name, (7) Project purpose (1-2 sentences maximum). (8) At-a-glance summary: EXACTLY 2-3 sentences covering core operations and architecture. STRICT LIMIT: Maximum 100 words for at-a-glance. FORBIDDEN CONTENT: Do NOT label this document as a Functional Specification Document or FSD anywhere in Section 1 metadata. Do NOT include 'Core Operations', 'Architecture Overview', 'System Emphasis', or ANY subsections beyond the 8 numbered items above. Do NOT include any of the following: system focus areas, technical operations details, architecture pattern descriptions, technology stack lists, integration architecture, data persistence strategies, deployment models, operational constraints, deficiency analysis, modernization recommendations, or any other technical content beyond basic metadata. These topics belong in later sections. Section 1 is metadata ONLY. Maximum output: 50 lines total."
+    },
+    "document_history": {
+      "heading": "Document History",
+      "template_path": "technical_specification_document.document_information.document_history",
+      "query": "ROLE: You are a documentation administrator generating ONLY document metadata for a Technical Specification Document (TSD). Generate a simple document history table with columns: Version, Date, Author, Changes Made. If no history exists, state 'N/A - Initial version'. When naming this document in Changes Made, use 'Technical Specification Document' only — FORBIDDEN: 'Functional Specification Document', 'FSD', or functional-spec wording. Do NOT include any technical content, system architecture, security analysis, or implementation details. Maximum 5 lines of output."
+    },
+    "approvals": {
+      "heading": "Approvals",
+      "template_path": "technical_specification_document.document_information.approvals",
+      "query": "ROLE: You are generating ONLY approval/sign-off information. Generate a simple approvals table with columns: Role, Name, Signature, Date. If no approvals exist, state 'N/A - Draft version'. Do NOT include any system overviews, technology descriptions, or technical analysis. Maximum 5 lines of output."
+    },
+    "project_overview": {
+      "heading": "Project Overview",
+      "template_path": "technical_specification_document.introduction.project_overview",
+      "query": "ROLE: You are writing ONLY a brief technical overview section. Generate 4 concise subsections: (1) Technical Purpose - 2-3 sentences describing the document's purpose and target system. (2) Scope - ONE paragraph (max 8 lines) summarizing included implementation details and excluded details without bullet lists or enumeration. (3) Intended Audience - ONE paragraph (max 6 lines) listing technical roles without detailed descriptions. (4) Critical Constraints - ONE paragraph (max 6 lines) briefly noting platform, security, or architectural limitations. FORBIDDEN: Do NOT create 'Core Operations', 'System Focus Areas', 'Technical Scope Inclusions', 'Critical Technical Findings', 'Document Organization', or any other subsections. Do NOT use bullet lists or numbered enumerations. Keep narrative paragraphs only. STRICT LIMIT: Maximum 120 lines total."
+    },
+    "definitions_and_acronyms": {
+      "heading": "Definitions and Acronyms",
+      "template_path": "technical_specification_document.introduction.definitions_and_acronyms",
+      "query": "ROLE: You are creating a focused glossary. Generate a table of technical terms and acronyms organized into 5-7 thematic categories (e.g., 'System Architecture', 'Database', 'Security'). PRIORITIZE project-specific terms over standard acronyms. Include ONLY terms that appear 3+ times in the codebase or are critical to understanding the system. STRICT LIMITS: (1) Maximum 90 total definitions across all categories. (2) Each definition: 1-2 sentences maximum. (3) Avoid redundant explanations of related terms—use 'See X' cross-references. OUTPUT FORMAT: Markdown with category headers and bullet lists. Target: 100-130 lines total."
+    },
+    "system_architecture": {
+      "heading": "System Architecture",
+      "template_path": "technical_specification_document.system_design.system_architecture",
+      "query": "ROLE: Write a focused architecture description. Generate 4 subsections: (1) Architectural Pattern - Identify the pattern (microservices/monolithic/serverless) in 2-3 sentences. (2) Major Components - List 5-8 key components with 1-sentence role descriptions. (3) Component Interaction - Describe communication patterns in 2-3 sentences (protocols, sync/async). (4) Integration Points - Briefly list external system integrations. FORBIDDEN: Do NOT create 'Messaging Patterns', 'Performance Characteristics', 'Security Architecture', 'Configuration Management', 'Deployment Model', or 'Scalability Model' subsections—these belong in later sections. Use concise narrative paragraphs, NOT exhaustive bullet lists. STRICT LIMIT: Maximum 200 lines total.",
+      "diagram_query": "Create a SIMPLE architecture diagram with MAX 5-7 components. CRITICAL ENFORCEMENT: Before generating, count nodes. If diagram would exceed 7 nodes, simplify by combining related components or abstracting layers. Show only major layers (UI, API, Service, DB) - NO microservice details, NO internal modules. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the technical structure, flow, or interaction being described. Visual simplicity must not result in loss of important technical or conceptual information. Produce only valid Mermaid.js code. Output nothing else.",
+      "diagram_metadata_query": "For the system architecture diagram: (1) Description - List each layer/tier shown in the diagram with its role. Trace directional data flow between layers using arrows shown. Identify external systems connecting to each layer with connection types (API calls, database queries, REST APIs, etc.). Synthesize into 3-4 sentences focusing on diagram elements and layer interactions. STRICT LIMIT: Maximum 75 words. (2) Purpose - Explain how understanding this architecture helps stakeholders identify dependencies and integration points for refactoring or deployment decisions. State which audiences use this. STRICT LIMIT: 2-3 sentences, maximum 50 words."
+    },
+    "system_diagrams": {
+      "heading": "System Diagrams",
+      "template_path": "technical_specification_document.system_design.system_diagrams",
+      "query": "Generate ONLY a single sentence introduction: 'This subsection presents system diagrams with detailed captions.' Do NOT include any architectural narrative, technical details, or system descriptions. STRICT LIMIT: Maximum 20 words.",
+      "diagram_query": "Create a SIMPLE data flow diagram with MAX 5-7 nodes. Show only: External Sources → Processing → Data Stores → Outputs. NO detailed transformations, NO field-level mappings. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the technical structure, flow, or interaction being described. Visual simplicity must not result in loss of important technical or conceptual information. Produce only valid Mermaid.js code. Output nothing else."
+    },
+    "system_context_diagram": {
+      "heading": "System Context Diagram",
+      "template_path": "technical_specification_document.system_design.system_context_diagram",
+      "query": "Describe the system context, including external systems, users, or services that interact with this system. Highlight integration points and data exchanges at a high level.",
+      "diagram_query": "Create a SIMPLE system context diagram with MAX 5-7 nodes. Show the system at the center and external entities around it. NO internal modules. Design for 4:3 aspect ratio. Use Mermaid.js flowchart TD or LR syntax. Ensure the diagram captures the full essence of the technical boundaries and integrations. Produce only valid Mermaid.js code. Output nothing else.",
+      "diagram_metadata_query": "For the system context diagram: (1) Description - Identify the central system and all external entities shown with their types (users, systems, databases, services). State integration methods (API calls, database queries, messaging, etc.) and data flow directions (inbound/outbound/bidirectional). Synthesize into 3-4 sentences focusing on system boundaries and external entities. STRICT LIMIT: Maximum 75 words. (2) Purpose - Explain how identifying external dependencies helps with change impact analysis and incident response planning. State which stakeholders use this. STRICT LIMIT: 2-3 sentences, maximum 50 words."
+    },
+    "design_constraints": {
+      "heading": "Design Constraints",
+      "template_path": "technical_specification_document.system_design.design_constraints",
+      "query": "List all technical constraints that impact the system design and implementation, such as: must use existing legacy database schema, must comply with specific security standards, must support specific browsers/platforms, performance requirements, or integration limitations with legacy systems."
+    },
+    "codebase_structure": {
+      "heading": "Codebase Structure",
+      "template_path": "technical_specification_document.implementation_details.codebase_structure",
+      "query": "Describe the organization of the codebase, including directory structure (e.g., /src/main/java for core logic, /src/main/resources for configuration files). Highlight key files or folders and their purposes. Specify the build tools used (e.g., Maven, Gradle, npm)."
+    },
+    "key_components_and_modules": {
+      "heading": "Key Components and Modules",
+      "template_path": "technical_specification_document.implementation_details.key_components_and_modules",
+      "query": "ROLE: Document major components concisely for architecture-level understanding. For each major component/module, provide: (1) Component Name, (2) Primary Purpose (1-2 sentences), (3) Key Functions - List max 3 critical functions with 1-sentence descriptions only, (4) Dependencies - Brief list of components or systems it depends on (max 5 items). DO NOT provide exhaustive function inventories, detailed implementation narratives, code-level documentation, or internal class structures. Focus strictly on architecture-level roles and interactions. FORBIDDEN: No component ID numbering scheme, no redundant descriptions of utilities already covered in earlier sections, no performance details or optimization strategies. STRICT LIMITS: (1) Maximum 250 lines total for entire section, (2) Max 8-10 major components listed (not exhaustive), (3) Keep component descriptions to 5-7 lines each including dependencies.",
+      "diagram_query": "Create a SIMPLE component diagram with MAX 6-8 major components. STRICT ENFORCEMENT: Count components before generating. If count exceeds 8, prioritize only the most critical architectural components. Show only top-level modules - NO classes, NO methods, NO internal details. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the technical structure, flow, or interaction being described. Visual simplicity must not result in loss of important technical or conceptual information. Produce only valid Mermaid.js code. Output nothing else.",
+      "diagram_metadata_query": "For the component diagram: (1) Description - List components shown in the diagram with their orchestration pattern (central hub, message broker, sequential chain, peer-to-peer). Map visible dependencies between components using diagram arrows. Show relationship types visible (1:1, 1:many, hub-and-spoke). Synthesize into 3-4 sentences focusing on component organization and dependencies. STRICT LIMIT: Maximum 75 words. (2) Purpose - Explain why understanding component dependencies is critical for identifying single points of failure, circular dependencies, and communication pathways during troubleshooting. State which stakeholders (developers, integration engineers, architects) use this to debug integration issues, plan maintenance, or identify refactoring needs. Keep to 2-3 sentences with focus on operational and maintenance value."
+    },
+    "database_design": {
+      "heading": "Database Design",
+      "template_path": "technical_specification_document.implementation_details.database_design",
+      "query": "Describe the database schema type (e.g., relational, NoSQL, hybrid). List key tables/collections with their important attributes. Detail indexes, partitioning strategies, and performance optimization techniques. Reference any related diagrams.",
+      "diagram_query": "Create a SIMPLE ERD with MAX 5-7 main tables. CRITICAL ENFORCEMENT: Show ONLY 5-7 most critical tables. If more tables exist, combine related tables or focus on core entities only. Show only table names and relationships - NO columns, NO data types, NO keys. Design for 4:3 aspect ratio. Use Mermaid.js erDiagram syntax. Ensure the diagram captures the full essence of the technical structure, flow, or interaction being described. Visual simplicity must not result in loss of important technical or conceptual information. Produce only valid Mermaid.js code. Output nothing else.",
+      "diagram_metadata_query": "For the ERD: (1) Description - List each table/entity shown with its business concept. Map relationships with cardinality ([Entity A] ←→ [Entity B]). Explain business meaning of key relationships. Note if tables span multiple databases/schemas. Synthesize into 3-4 sentences. STRICT LIMIT: Maximum 75 words. (2) Purpose - Explain how understanding correct entity relationships ensures referential integrity, informs query optimization strategy, and supports schema migration planning. State which stakeholders (database architects, data engineers, DBAs) use this to verify data model correctness, optimize database performance, and plan schema changes. Keep to 2-3 sentences."
+    },
+    "api_specifications": {
+      "heading": "API Specifications",
+      "template_path": "technical_specification_document.implementation_details.api_specifications",
+      "query": "Identify ONE representative interaction or data flow sequence in the system. Choose a workflow that best demonstrates system operation. Examples across paradigms: REST API (user authentication, data retrieval, resource creation), MICROSERVICES (order processing across services, event propagation), BATCH PROCESSING (ETL pipeline, data transformation job), MESSAGE QUEUE (async message handling, event processing), DATABASE (transaction flow, stored procedure execution), RPC/gRPC (remote procedure call sequence), GraphQL (query resolution with multiple resolvers), WEBSOCKET (real-time bidirectional communication). Describe ONLY this single workflow in 3-4 sentences: (1) What triggers the sequence, (2) Which participants/systems are involved, (3) What messages/calls/queries are exchanged, (4) What the outcome/result is. Do NOT provide a comprehensive API catalog or system overview - focus on documenting ONE representative sequence that will be visualized in the sequence diagram.",
+      "diagram_query": "Create a SIMPLE sequence diagram with MAX 4 participants and MAX 6-8 messages. Show only: Client → API → Service → DB. NO error handling, NO alt/opt blocks. Design for 4:3 aspect ratio. Use Mermaid.js sequenceDiagram syntax. Ensure the diagram captures the full essence of the technical structure, flow, or interaction being described. Visual simplicity must not result in loss of important technical or conceptual information. Produce only valid Mermaid.js code. Output nothing else.",
+      "diagram_metadata_query": "For the sequence diagram: (1) Description - List participants shown in left-to-right order with their types (client, service, API, database, etc.). Enumerate message exchanges step-by-step in sequence order with message labels. Note control flow if present (alt/loops/error handling) or state 'No branching shown.' Describe expected outcome based on final message. Synthesize into 3-4 sentences focusing on participants, message sequence, and outcome. STRICT LIMIT: Maximum 80 words. (2) Purpose - Explain how this sequence validates message ordering for integration testing and debugging. State which stakeholders use this to verify API contracts and trace integration failures. STRICT LIMIT: 2-3 sentences, maximum 50 words."
+    },
+    "additional_diagrams": {
+      "heading": "Additional Diagrams",
+      "template_path": "technical_specification_document.implementation_details.additional_diagrams",
+      "query": "Identify 5-7 core domain classes, data transfer objects, service classes, or utilities in the system. For each class, provide: (1) Class name, (2) Primary responsibility in 1 sentence, (3) Relationships to other classes (inheritance, composition, association). DO NOT describe attributes, methods, or implementation details—focus only on class responsibilities and structural relationships. Keep to 2-3 sentences per class. Maximum 60 lines total.",
+      "diagram_query": "Create a SIMPLE class diagram with MAX 5-7 classes. Show only class names and relationships (inheritance, association) - NO attributes, NO methods, NO access modifiers. Design for 4:3 aspect ratio. Use Mermaid.js classDiagram syntax. Ensure the diagram captures the full essence of the technical structure, flow, or interaction being described. Visual simplicity must not result in loss of important technical or conceptual information. Produce only valid Mermaid.js code. Output nothing else.",
+      "diagram_metadata_query": "For the class diagram: (1) Description - List each class shown with its primary responsibility. Map visible relationships: [Class A] → [relationship type] → [Class B]. Note inheritance hierarchies or composition patterns. Synthesize into 3-4 sentences. STRICT LIMIT: Maximum 75 words. (2) Purpose - Explain how understanding class relationships helps developers navigate code and plan refactoring. State which stakeholders use this for maintainability planning. STRICT LIMIT: 2-3 sentences, maximum 50 words."
+    },
+    "performance_optimization": {
+      "heading": "Performance Optimization",
+      "template_path": "technical_specification_document.non_functional_implementation_details.performance_optimization",
+      "query": "Describe performance optimization techniques implemented (e.g., caching strategies using Redis or Memcached, database query optimization, lazy loading, CDN usage). Specify performance targets and metrics (e.g., API response time < 200ms, page load time < 3s)."
+    },
+    "scalability_design": {
+      "heading": "Scalability Design",
+      "template_path": "technical_specification_document.non_functional_implementation_details.scalability_design",
+      "query": "Detail scalability mechanisms (e.g., load balancing with Nginx/HAProxy, horizontal scaling, auto-scaling groups, database sharding/replication). Specify capacity targets (e.g., supports 10,000 concurrent users, handles 1,000 requests per second)."
+    },
+    "security_implementation": {
+      "heading": "Security Implementation",
+      "template_path": "technical_specification_document.non_functional_implementation_details.security_implementation",
+      "query": "Describe security measures implemented (e.g., AES-256 encryption for data at rest, TLS 1.3 for data in transit, OAuth 2.0 for authorization, input validation). List specific vulnerabilities addressed (e.g., SQL injection prevention, XSS protection, CSRF tokens)."
+    },
+    "compatibility_and_dependencies": {
+      "heading": "Compatibility and Dependencies",
+      "template_path": "technical_specification_document.non_functional_implementation_details.compatibility_and_dependencies",
+      "query": "List supported environments including browsers (e.g., Chrome 90+, Firefox 88+), platforms (e.g., Windows 10+, Linux), and runtime versions (e.g., Node.js 18+, Java 17). Detail external dependencies, libraries, and frameworks with their versions (e.g., Spring Boot 3.0, React 18, PostgreSQL 15)."
+    },
+    "reliability_and_availability": {
+      "heading": "Reliability and Availability",
+      "template_path": "technical_specification_document.non_functional_implementation_details.reliability_and_availability",
+      "query": "Specify uptime targets (e.g., 99.9% availability). Describe failover and redundancy mechanisms (e.g., multi-AZ deployment, database replication, standby servers, health checks and auto-recovery)."
+    },
+    "deployment_architecture": {
+      "heading": "Deployment Architecture",
+      "template_path": "technical_specification_document.deployment_and_infrastructure.deployment_architecture",
+      "query": "Describe deployment environments (production, staging, development). Detail infrastructure components (e.g., AWS EC2 instances, Kubernetes clusters, Docker containers, cloud services used). Reference related deployment diagrams.",
+      "diagram_query": "Create a SIMPLE deployment diagram with MAX 5-6 nodes. Show only major deployment targets (Web Server, App Server, Database) - NO container details, NO port numbers. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the technical structure, flow, or interaction being described. Visual simplicity must not result in loss of important technical or conceptual information. Produce only valid Mermaid.js code. Output nothing else.",
+      "diagram_metadata_query": "For the deployment diagram: (1) Description - List each deployment node with its role and type (servers, databases, load balancers, etc.). Trace data/config flow paths between nodes with connection types (HTTP, database queries, message queues). Note if flows are bidirectional or unidirectional. Explain environment separation if shown. Synthesize into 3-4 sentences. STRICT LIMIT: Maximum 75 words. (2) Purpose - Explain how this diagram guides infrastructure provisioning, deployment sequencing, and DevOps planning by showing actual node deployment targets and connectivity. State which stakeholders (DevOps engineers, system administrators, infrastructure architects) use this to determine capacity needs, failover strategies, and environment configuration. Keep to 2-3 sentences with focus on infrastructure planning and operational setup value."
+    },
+    "ci_cd_pipeline": {
+      "heading": "CI/CD Pipeline",
+      "template_path": "technical_specification_document.deployment_and_infrastructure.ci_cd_pipeline",
+      "query": "List CI/CD tools used (e.g., Jenkins, GitHub Actions, GitLab CI). Describe the build, test, and deployment workflows, including stages like code checkout, dependency installation, testing, building, and deployment to various environments."
+    },
+    "monitoring_and_maintenance": {
+      "heading": "Monitoring and Maintenance",
+      "template_path": "technical_specification_document.deployment_and_infrastructure.monitoring_and_maintenance",
+      "query": "Specify monitoring tools used (e.g., Prometheus, Grafana, New Relic, Datadog). Describe what metrics are monitored (e.g., CPU usage, error rates, response times). Detail maintenance procedures including update schedules, patching processes, and backup strategies."
+    },
+    "references": {
+      "heading": "References",
+      "template_path": "technical_specification_document.appendices.references",
+      "query": "List all referenced documents, technical standards, API documentation links, and external resources used in creating this specification."
+    },
+    "glossary": {
+      "heading": "Glossary",
+      "template_path": "technical_specification_document.appendices.glossary",
+      "query": "Define project-specific technical terms that are not covered in the standard acronyms section but are important for understanding the implementation."
+    },
+    "revision_history": {
+      "heading": "Revision History",
+      "template_path": "technical_specification_document.appendices.revision_history",
+      "query": "Provide a table of document revisions with columns: Version, Date, Author, and Changes Made. This should mirror the document history but focused on this specific document versioning."
+    },
+    "needs_human_intervention": {
+      "heading": "Needs Human Intervention",
+      "template_path": "technical_specification_document.appendices.needs_human_intervention",
+      "query": "List items that require human review, clarification, or decision. Format each item with an ID (e.g., NHI-001) and description (e.g., 'Unclear configuration in application.yml for database connection', 'Undocumented logic in PaymentService.java for retry mechanism')."
+    }
+  }
+}

@@ -1,0 +1,14 @@
+version: 1.14.0
+runtime: legacyleap
+last_compiled: 2026-10-22 11:55:55
+
+# ================================================
+# Compiled with the following settings:
+#
+# To change these settings, run ~/leap-os/scripts/project-update.sh to re-compile your project with the new settings.
+# ================================================
+profile: vbdotnet_to_dot_net_9
+legacyleap_commands: true
+use_legacyleap_subagents: true
+leap_os_commands: true
+standards_as_claude_code_skills: true

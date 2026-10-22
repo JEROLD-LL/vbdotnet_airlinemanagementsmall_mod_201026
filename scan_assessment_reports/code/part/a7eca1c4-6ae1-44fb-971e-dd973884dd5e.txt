@@ -1,0 +1,11 @@
+Public Shared Function ExecuteNonQuery(query As String, ParamArray parameters As NpgsqlParameter()) As Integer
+        Using conn As NpgsqlConnection = GetConnection()
+            conn.Open()
+            Using cmd As New NpgsqlCommand(query, conn)
+                If parameters IsNot Nothing Then
+                    cmd.Parameters.AddRange(parameters)
+                End If
+                Return cmd.ExecuteNonQuery()
+            End Using
+        End Using
+    End Function

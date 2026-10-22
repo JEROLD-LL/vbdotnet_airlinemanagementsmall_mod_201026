@@ -1,0 +1,5 @@
+Public Shared Function UsernameExists(username As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE username = @username"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@username", username)))
+        Return count > 0
+    End Function

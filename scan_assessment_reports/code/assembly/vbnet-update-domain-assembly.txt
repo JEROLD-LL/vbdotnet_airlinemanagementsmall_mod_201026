@@ -1,0 +1,1926 @@
+
+==================================================
+Part: BookingService (SVC-012)
+Type: service
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/BookingService.vb
+==================================================
+Public Class BookingService
+    ' High Complexity: Transaction Management Pattern for atomic operations
+    Public Shared Function CreateBooking(flightId As Integer, userId As Integer?, passengerName As String, passengerEmail As String, seatNumber As String) As String
+        Dim errors As New List(Of String)
+
+        ' Validation
+        If String.IsNullOrWhiteSpace(passengerName) Then
+            errors.Add("Passenger name is required.")
+        ElseIf passengerName.Length < 2 OrElse passengerName.Length > 255 Then
+            errors.Add("Passenger name must be between 2 and 255 characters.")
+        ElseIf Not Regex.IsMatch(passengerName, "^[a-zA-Z\s'-]+$") Then
+            errors.Add("Passenger name can only contain letters, spaces, hyphens, and apostrophes.")
+        End If
+
+        If String.IsNullOrWhiteSpace(passengerEmail) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(passengerEmail, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        ElseIf passengerEmail.Length > 255 Then
+            errors.Add("Email must be 255 characters or less.")
+        End If
+
+        If Not String.IsNullOrWhiteSpace(seatNumber) Then
+            If seatNumber.Length > 10 Then
+                errors.Add("Seat number must be 10 characters or less.")
+            ElseIf Not Regex.IsMatch(seatNumber, "^[0-9]{1,3}[A-Z]{1,2}$", RegexOptions.IgnoreCase) Then
+                errors.Add("Seat number format is invalid. Use format like '12A' or '123AB'.")
+            End If
+        End If
+
+        If errors.Count > 0 Then
+            Return String.Join(" ", errors)
+        End If
+
+        ' Transaction Management Pattern - Atomic operation
+        Dim transaction As NpgsqlTransaction = Nothing
+        Try
+            transaction = DatabaseHelper.BeginTransaction()
+
+            ' Lock flight row for update
+            Dim flight As Flight = FlightRepository.LockForUpdate(flightId, transaction)
+            If flight Is Nothing Then
+                transaction.Rollback()
+                Return "Flight not found."
+            End If
+
+            ' Re-check available seats
+            If flight.AvailableSeats < 1 Then
+                transaction.Rollback()
+                Return "No available seats on this flight."
+            End If
+
+            ' Create booking
+            Dim booking As New Booking With {
+                .FlightId = flightId,
+                .UserId = userId,
+                .PassengerName = passengerName,
+                .PassengerEmail = passengerEmail,
+                .SeatNumber = If(String.IsNullOrWhiteSpace(seatNumber), String.Empty, seatNumber.ToUpper()),
+                .BookingDate = DateTime.Now
+            }
+            BookingRepository.Create(booking, transaction)
+
+            ' Decrement seats
+            FlightRepository.DecrementSeats(flightId, transaction)
+
+            ' Commit transaction
+            transaction.Commit()
+            Return Nothing ' Success
+        Catch ex As Exception
+            If transaction IsNot Nothing Then
+                transaction.Rollback()
+            End If
+            Return "An error occurred while creating the booking: " & ex.Message
+        End Try
+    End Function
+
+    ' High Complexity: Transaction Management Pattern for atomic operations
+    Public Shared Function DeleteBooking(bookingId As Integer, userId As Integer) As String
+        ' Verify booking exists and belongs to user
+        Dim booking As Booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            Return "Booking not found."
+        End If
+
+        If booking.UserId.HasValue AndAlso booking.UserId.Value <> userId Then
+            Return "Access denied. You can only delete your own bookings."
+        End If
+
+        ' Transaction Management Pattern - Atomic operation
+        Dim transaction As NpgsqlTransaction = Nothing
+        Try
+            transaction = DatabaseHelper.BeginTransaction()
+
+            ' Delete booking
+            BookingRepository.Delete(bookingId, transaction)
+
+            ' Increment seats
+            FlightRepository.IncrementSeats(booking.FlightId, transaction)
+
+            ' Commit transaction
+            transaction.Commit()
+            Return Nothing ' Success
+        Catch ex As Exception
+            If transaction IsNot Nothing Then
+                transaction.Rollback()
+            End If
+            Return "An error occurred while deleting the booking: " & ex.Message
+        End Try
+    End Function
+End Class
+
+==================================================
+Part: CreateBooking (PRT-013)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/BookingService.vb
+==================================================
+Public Shared Function CreateBooking(flightId As Integer, userId As Integer?, passengerName As String, passengerEmail As String, seatNumber As String) As String
+        Dim errors As New List(Of String)
+
+        ' Validation
+        If String.IsNullOrWhiteSpace(passengerName) Then
+            errors.Add("Passenger name is required.")
+        ElseIf passengerName.Length < 2 OrElse passengerName.Length > 255 Then
+            errors.Add("Passenger name must be between 2 and 255 characters.")
+        ElseIf Not Regex.IsMatch(passengerName, "^[a-zA-Z\s'-]+$") Then
+            errors.Add("Passenger name can only contain letters, spaces, hyphens, and apostrophes.")
+        End If
+
+        If String.IsNullOrWhiteSpace(passengerEmail) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(passengerEmail, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        ElseIf passengerEmail.Length > 255 Then
+            errors.Add("Email must be 255 characters or less.")
+        End If
+
+        If Not String.IsNullOrWhiteSpace(seatNumber) Then
+            If seatNumber.Length > 10 Then
+                errors.Add("Seat number must be 10 characters or less.")
+            ElseIf Not Regex.IsMatch(seatNumber, "^[0-9]{1,3}[A-Z]{1,2}$", RegexOptions.IgnoreCase) Then
+                errors.Add("Seat number format is invalid. Use format like '12A' or '123AB'.")
+            End If
+        End If
+
+        If errors.Count > 0 Then
+            Return String.Join(" ", errors)
+        End If
+
+        ' Transaction Management Pattern - Atomic operation
+        Dim transaction As NpgsqlTransaction = Nothing
+        Try
+            transaction = DatabaseHelper.BeginTransaction()
+
+            ' Lock flight row for update
+            Dim flight As Flight = FlightRepository.LockForUpdate(flightId, transaction)
+            If flight Is Nothing Then
+                transaction.Rollback()
+                Return "Flight not found."
+            End If
+
+            ' Re-check available seats
+            If flight.AvailableSeats < 1 Then
+                transaction.Rollback()
+                Return "No available seats on this flight."
+            End If
+
+            ' Create booking
+            Dim booking As New Booking With {
+                .FlightId = flightId,
+                .UserId = userId,
+                .PassengerName = passengerName,
+                .PassengerEmail = passengerEmail,
+                .SeatNumber = If(String.IsNullOrWhiteSpace(seatNumber), String.Empty, seatNumber.ToUpper()),
+                .BookingDate = DateTime.Now
+            }
+            BookingRepository.Create(booking, transaction)
+
+            ' Decrement seats
+            FlightRepository.DecrementSeats(flightId, transaction)
+
+            ' Commit transaction
+            transaction.Commit()
+            Return Nothing ' Success
+        Catch ex As Exception
+            If transaction IsNot Nothing Then
+                transaction.Rollback()
+            End If
+            Return "An error occurred while creating the booking: " & ex.Message
+        End Try
+    End Function
+
+==================================================
+Part: EditBookingForm (UI-021)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditBookingForm.vb
+==================================================
+Public Class EditBookingForm
+    Inherits Form
+
+    Private booking As Booking
+    Private lblBookingInfo As Label
+    Private lblPassengerName As Label
+    Private lblPassengerEmail As Label
+    Private lblSeatNumber As Label
+    Private txtPassengerName As TextBox
+    Private txtPassengerEmail As TextBox
+    Private txtSeatNumber As TextBox
+    Private btnUpdate As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New(selectedBookingId As Integer)
+        InitializeComponent()
+        LoadBooking(selectedBookingId)
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Edit Booking"
+        Me.Size = New Size(500, 400)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        lblBookingInfo = New Label()
+        lblBookingInfo.Location = New Point(20, 20)
+        lblBookingInfo.Size = New Size(450, 60)
+        lblBookingInfo.AutoSize = False
+        Me.Controls.Add(lblBookingInfo)
+
+        lblPassengerName = New Label()
+        lblPassengerName.Text = "Passenger Name: *"
+        lblPassengerName.AutoSize = True
+        lblPassengerName.Location = New Point(20, 90)
+        Me.Controls.Add(lblPassengerName)
+
+        txtPassengerName = New TextBox()
+        txtPassengerName.Location = New Point(20, 110)
+        txtPassengerName.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerName)
+
+        lblPassengerEmail = New Label()
+        lblPassengerEmail.Text = "Passenger Email: *"
+        lblPassengerEmail.AutoSize = True
+        lblPassengerEmail.Location = New Point(20, 140)
+        Me.Controls.Add(lblPassengerEmail)
+
+        txtPassengerEmail = New TextBox()
+        txtPassengerEmail.Location = New Point(20, 160)
+        txtPassengerEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerEmail)
+
+        lblSeatNumber = New Label()
+        lblSeatNumber.Text = "Seat Number (Optional):"
+        lblSeatNumber.AutoSize = True
+        lblSeatNumber.Location = New Point(20, 190)
+        Me.Controls.Add(lblSeatNumber)
+
+        txtSeatNumber = New TextBox()
+        txtSeatNumber.Location = New Point(20, 210)
+        txtSeatNumber.Size = New Size(450, 25)
+        Me.Controls.Add(txtSeatNumber)
+
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, 240)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Booking"
+        btnUpdate.Location = New Point(20, 280)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, 280)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+    Private Sub LoadBooking(bookingId As Integer)
+        booking = BookingRepository.GetById(bookingId)
+        If booking Is Nothing Then
+            MessageBox.Show("Booking not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        If SessionManager.IsAuthenticated() AndAlso booking.UserId.HasValue AndAlso booking.UserId.Value <> SessionManager.CurrentUser.Id Then
+            MessageBox.Show("Access denied. You can only edit your own bookings.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        Dim flight As Flight = FlightRepository.GetById(booking.FlightId)
+        lblBookingInfo.Text = "Booking ID: #" & booking.Id & vbCrLf &
+                            "Flight: " & flight.FlightNumber & " (" & flight.Origin & " → " & flight.Destination & ")"
+
+        txtPassengerName.Text = booking.PassengerName
+        txtPassengerEmail.Text = booking.PassengerEmail
+        txtSeatNumber.Text = booking.SeatNumber
+    End Sub
+
+    Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim passengerName As String = txtPassengerName.Text.Trim()
+        Dim passengerEmail As String = txtPassengerEmail.Text.Trim()
+        Dim seatNumber As String = txtSeatNumber.Text.Trim()
+
+        ' Validate passenger name
+        If String.IsNullOrWhiteSpace(passengerName) Then
+            errors.Add("Passenger name is required.")
+        ElseIf passengerName.Length < 2 OrElse passengerName.Length > 255 Then
+            errors.Add("Passenger name must be between 2 and 255 characters.")
+        ElseIf Not Regex.IsMatch(passengerName, "^[a-zA-Z\s'-]+$") Then
+            errors.Add("Passenger name can only contain letters, spaces, hyphens, and apostrophes.")
+        End If
+
+        ' Validate email
+        If String.IsNullOrWhiteSpace(passengerEmail) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(passengerEmail, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        ElseIf passengerEmail.Length > 255 Then
+            errors.Add("Email must be 255 characters or less.")
+        End If
+
+        ' Validate seat number
+        If Not String.IsNullOrWhiteSpace(seatNumber) Then
+            If seatNumber.Length > 10 Then
+                errors.Add("Seat number must be 10 characters or less.")
+            ElseIf Not Regex.IsMatch(seatNumber, "^[0-9]{1,3}[A-Z]{1,2}$", RegexOptions.IgnoreCase) Then
+                errors.Add("Seat number format is invalid. Use format like '12A' or '123AB'.")
+            End If
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        booking.PassengerName = passengerName
+        booking.PassengerEmail = passengerEmail
+        booking.SeatNumber = If(String.IsNullOrWhiteSpace(seatNumber), String.Empty, seatNumber.ToUpper())
+
+        Try
+            BookingRepository.Update(booking)
+            MessageBox.Show("Booking updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: InitializeComponent (UI-022)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditBookingForm.vb
+==================================================
+Private Sub InitializeComponent()
+        Me.Text = "Edit Booking"
+        Me.Size = New Size(500, 400)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        lblBookingInfo = New Label()
+        lblBookingInfo.Location = New Point(20, 20)
+        lblBookingInfo.Size = New Size(450, 60)
+        lblBookingInfo.AutoSize = False
+        Me.Controls.Add(lblBookingInfo)
+
+        lblPassengerName = New Label()
+        lblPassengerName.Text = "Passenger Name: *"
+        lblPassengerName.AutoSize = True
+        lblPassengerName.Location = New Point(20, 90)
+        Me.Controls.Add(lblPassengerName)
+
+        txtPassengerName = New TextBox()
+        txtPassengerName.Location = New Point(20, 110)
+        txtPassengerName.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerName)
+
+        lblPassengerEmail = New Label()
+        lblPassengerEmail.Text = "Passenger Email: *"
+        lblPassengerEmail.AutoSize = True
+        lblPassengerEmail.Location = New Point(20, 140)
+        Me.Controls.Add(lblPassengerEmail)
+
+        txtPassengerEmail = New TextBox()
+        txtPassengerEmail.Location = New Point(20, 160)
+        txtPassengerEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerEmail)
+
+        lblSeatNumber = New Label()
+        lblSeatNumber.Text = "Seat Number (Optional):"
+        lblSeatNumber.AutoSize = True
+        lblSeatNumber.Location = New Point(20, 190)
+        Me.Controls.Add(lblSeatNumber)
+
+        txtSeatNumber = New TextBox()
+        txtSeatNumber.Location = New Point(20, 210)
+        txtSeatNumber.Size = New Size(450, 25)
+        Me.Controls.Add(txtSeatNumber)
+
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, 240)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Booking"
+        btnUpdate.Location = New Point(20, 280)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, 280)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+==================================================
+Part: BtnUpdate_Click (PRT-024)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditBookingForm.vb
+==================================================
+Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim passengerName As String = txtPassengerName.Text.Trim()
+        Dim passengerEmail As String = txtPassengerEmail.Text.Trim()
+        Dim seatNumber As String = txtSeatNumber.Text.Trim()
+
+        ' Validate passenger name
+        If String.IsNullOrWhiteSpace(passengerName) Then
+            errors.Add("Passenger name is required.")
+        ElseIf passengerName.Length < 2 OrElse passengerName.Length > 255 Then
+            errors.Add("Passenger name must be between 2 and 255 characters.")
+        ElseIf Not Regex.IsMatch(passengerName, "^[a-zA-Z\s'-]+$") Then
+            errors.Add("Passenger name can only contain letters, spaces, hyphens, and apostrophes.")
+        End If
+
+        ' Validate email
+        If String.IsNullOrWhiteSpace(passengerEmail) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(passengerEmail, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        ElseIf passengerEmail.Length > 255 Then
+            errors.Add("Email must be 255 characters or less.")
+        End If
+
+        ' Validate seat number
+        If Not String.IsNullOrWhiteSpace(seatNumber) Then
+            If seatNumber.Length > 10 Then
+                errors.Add("Seat number must be 10 characters or less.")
+            ElseIf Not Regex.IsMatch(seatNumber, "^[0-9]{1,3}[A-Z]{1,2}$", RegexOptions.IgnoreCase) Then
+                errors.Add("Seat number format is invalid. Use format like '12A' or '123AB'.")
+            End If
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        booking.PassengerName = passengerName
+        booking.PassengerEmail = passengerEmail
+        booking.SeatNumber = If(String.IsNullOrWhiteSpace(seatNumber), String.Empty, seatNumber.ToUpper())
+
+        Try
+            BookingRepository.Update(booking)
+            MessageBox.Show("Booking updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+==================================================
+Part: EditProfileForm (UI-041)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Public Class EditProfileForm
+    Inherits Form
+
+    Private user As User
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblPassword As Label
+    Private txtEmail As TextBox
+    Private txtFullName As TextBox
+    Private txtPassword As TextBox
+    Private btnUpdate As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+        LoadProfile()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Edit Profile"
+        Me.Size = New Size(500, 350)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email: *"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        txtEmail = New TextBox()
+        txtEmail.Location = New Point(20, yPos + 20)
+        txtEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtEmail)
+        yPos += 50
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name: *"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        txtFullName = New TextBox()
+        txtFullName.Location = New Point(20, yPos + 20)
+        txtFullName.Size = New Size(450, 25)
+        Me.Controls.Add(txtFullName)
+        yPos += 50
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "New Password (Optional):"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(20, yPos)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(20, yPos + 20)
+        txtPassword.Size = New Size(450, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+        yPos += 50
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, yPos)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+        yPos += 50
+
+        ' Buttons
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Profile"
+        btnUpdate.Location = New Point(20, yPos)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, yPos)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+    Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtEmail.Text = user.Email
+        txtFullName.Text = user.FullName
+    End Sub
+
+    Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        If Not String.IsNullOrWhiteSpace(password) Then
+            errors.AddRange(ValidationHelper.ValidatePassword(password))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        user.Email = email
+        user.FullName = fullName
+
+        Try
+            UserRepository.Update(user)
+
+            If Not String.IsNullOrWhiteSpace(password) Then
+                UserRepository.UpdatePassword(user.Id, UserRepository.HashPassword(password))
+            End If
+
+            SessionManager.CurrentUser.FullName = user.FullName
+            SessionManager.CurrentUser.Email = user.Email
+
+            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: InitializeComponent (UI-042)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub InitializeComponent()
+        Me.Text = "Edit Profile"
+        Me.Size = New Size(500, 350)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email: *"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        txtEmail = New TextBox()
+        txtEmail.Location = New Point(20, yPos + 20)
+        txtEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtEmail)
+        yPos += 50
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name: *"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        txtFullName = New TextBox()
+        txtFullName.Location = New Point(20, yPos + 20)
+        txtFullName.Size = New Size(450, 25)
+        Me.Controls.Add(txtFullName)
+        yPos += 50
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "New Password (Optional):"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(20, yPos)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(20, yPos + 20)
+        txtPassword.Size = New Size(450, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+        yPos += 50
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, yPos)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+        yPos += 50
+
+        ' Buttons
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Profile"
+        btnUpdate.Location = New Point(20, yPos)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, yPos)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+==================================================
+Part: BtnUpdate_Click (PRT-044)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        If Not String.IsNullOrWhiteSpace(password) Then
+            errors.AddRange(ValidationHelper.ValidatePassword(password))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        user.Email = email
+        user.FullName = fullName
+
+        Try
+            UserRepository.Update(user)
+
+            If Not String.IsNullOrWhiteSpace(password) Then
+                UserRepository.UpdatePassword(user.Id, UserRepository.HashPassword(password))
+            End If
+
+            SessionManager.CurrentUser.FullName = user.FullName
+            SessionManager.CurrentUser.Email = user.Email
+
+            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+==================================================
+Part: EditFlightForm (UI-090)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditFlightForm.vb
+==================================================
+Public Class EditFlightForm
+    Inherits Form
+
+    Private flight As Flight
+    Private lblFlightNumber As Label
+    Private lblOrigin As Label
+    Private lblDestination As Label
+    Private lblDepartureDate As Label
+    Private lblDepartureTime As Label
+    Private lblArrivalTime As Label
+    Private lblPrice As Label
+    Private lblAvailableSeats As Label
+    Private txtFlightNumber As TextBox
+    Private txtOrigin As TextBox
+    Private txtDestination As TextBox
+    Private dtpDepartureDate As DateTimePicker
+    Private dtpDepartureTime As DateTimePicker
+    Private dtpArrivalTime As DateTimePicker
+    Private txtPrice As TextBox
+    Private txtAvailableSeats As TextBox
+    Private btnUpdate As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New(selectedFlightId As Integer)
+        InitializeComponent()
+        LoadFlight(selectedFlightId)
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Edit Flight"
+        Me.Size = New Size(500, 500)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Flight Number
+        lblFlightNumber = New Label()
+        lblFlightNumber.Text = "Flight Number: *"
+        lblFlightNumber.AutoSize = True
+        lblFlightNumber.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFlightNumber)
+
+        txtFlightNumber = New TextBox()
+        txtFlightNumber.Location = New Point(20, yPos + 20)
+        txtFlightNumber.Size = New Size(450, 25)
+        Me.Controls.Add(txtFlightNumber)
+        yPos += 50
+
+        ' Origin
+        lblOrigin = New Label()
+        lblOrigin.Text = "Origin: *"
+        lblOrigin.AutoSize = True
+        lblOrigin.Location = New Point(20, yPos)
+        Me.Controls.Add(lblOrigin)
+
+        txtOrigin = New TextBox()
+        txtOrigin.Location = New Point(20, yPos + 20)
+        txtOrigin.Size = New Size(450, 25)
+        Me.Controls.Add(txtOrigin)
+        yPos += 50
+
+        ' Destination
+        lblDestination = New Label()
+        lblDestination.Text = "Destination: *"
+        lblDestination.AutoSize = True
+        lblDestination.Location = New Point(20, yPos)
+        Me.Controls.Add(lblDestination)
+
+        txtDestination = New TextBox()
+        txtDestination.Location = New Point(20, yPos + 20)
+        txtDestination.Size = New Size(450, 25)
+        Me.Controls.Add(txtDestination)
+        yPos += 50
+
+        ' Departure Date
+        lblDepartureDate = New Label()
+        lblDepartureDate.Text = "Departure Date: *"
+        lblDepartureDate.AutoSize = True
+        lblDepartureDate.Location = New Point(20, yPos)
+        Me.Controls.Add(lblDepartureDate)
+
+        dtpDepartureDate = New DateTimePicker()
+        dtpDepartureDate.Location = New Point(20, yPos + 20)
+        dtpDepartureDate.Size = New Size(450, 25)
+        dtpDepartureDate.Format = DateTimePickerFormat.Short
+        Me.Controls.Add(dtpDepartureDate)
+        yPos += 50
+
+        ' Departure Time
+        lblDepartureTime = New Label()
+        lblDepartureTime.Text = "Departure Time: *"
+        lblDepartureTime.AutoSize = True
+        lblDepartureTime.Location = New Point(20, yPos)
+        Me.Controls.Add(lblDepartureTime)
+
+        dtpDepartureTime = New DateTimePicker()
+        dtpDepartureTime.Location = New Point(20, yPos + 20)
+        dtpDepartureTime.Size = New Size(450, 25)
+        dtpDepartureTime.Format = DateTimePickerFormat.Time
+        dtpDepartureTime.ShowUpDown = True
+        Me.Controls.Add(dtpDepartureTime)
+        yPos += 50
+
+        ' Arrival Time
+        lblArrivalTime = New Label()
+        lblArrivalTime.Text = "Arrival Time: *"
+        lblArrivalTime.AutoSize = True
+        lblArrivalTime.Location = New Point(20, yPos)
+        Me.Controls.Add(lblArrivalTime)
+
+        dtpArrivalTime = New DateTimePicker()
+        dtpArrivalTime.Location = New Point(20, yPos + 20)
+        dtpArrivalTime.Size = New Size(450, 25)
+        dtpArrivalTime.Format = DateTimePickerFormat.Time
+        dtpArrivalTime.ShowUpDown = True
+        Me.Controls.Add(dtpArrivalTime)
+        yPos += 50
+
+        ' Price
+        lblPrice = New Label()
+        lblPrice.Text = "Price: *"
+        lblPrice.AutoSize = True
+        lblPrice.Location = New Point(20, yPos)
+        Me.Controls.Add(lblPrice)
+
+        txtPrice = New TextBox()
+        txtPrice.Location = New Point(20, yPos + 20)
+        txtPrice.Size = New Size(450, 25)
+        Me.Controls.Add(txtPrice)
+        yPos += 50
+
+        ' Available Seats
+        lblAvailableSeats = New Label()
+        lblAvailableSeats.Text = "Available Seats: *"
+        lblAvailableSeats.AutoSize = True
+        lblAvailableSeats.Location = New Point(20, yPos)
+        Me.Controls.Add(lblAvailableSeats)
+
+        txtAvailableSeats = New TextBox()
+        txtAvailableSeats.Location = New Point(20, yPos + 20)
+        txtAvailableSeats.Size = New Size(450, 25)
+        Me.Controls.Add(txtAvailableSeats)
+        yPos += 50
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, yPos)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+        yPos += 50
+
+        ' Buttons
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Flight"
+        btnUpdate.Location = New Point(20, yPos)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, yPos)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+    Private Sub LoadFlight(flightId As Integer)
+        flight = FlightRepository.GetById(flightId)
+        If flight Is Nothing Then
+            MessageBox.Show("Flight not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtFlightNumber.Text = flight.FlightNumber
+        txtOrigin.Text = flight.Origin
+        txtDestination.Text = flight.Destination
+        dtpDepartureDate.Value = flight.DepartureDate
+        dtpDepartureTime.Value = DateTime.Today.Add(flight.DepartureTime)
+        dtpArrivalTime.Value = DateTime.Today.Add(flight.ArrivalTime)
+        txtPrice.Text = flight.Price.ToString()
+        txtAvailableSeats.Text = flight.AvailableSeats.ToString()
+    End Sub
+
+    Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim flightNumber As String = txtFlightNumber.Text.Trim()
+        Dim origin As String = txtOrigin.Text.Trim()
+        Dim destination As String = txtDestination.Text.Trim()
+        Dim departureDate As DateTime = dtpDepartureDate.Value.Date
+        Dim departureTime As TimeSpan = dtpDepartureTime.Value.TimeOfDay
+        Dim arrivalTime As TimeSpan = dtpArrivalTime.Value.TimeOfDay
+        Dim price As Decimal
+        Dim availableSeats As Integer
+
+        If String.IsNullOrWhiteSpace(flightNumber) Then
+            errors.Add("Flight number is required.")
+        ElseIf flightNumber <> flight.FlightNumber AndAlso FlightRepository.FlightNumberExists(flightNumber) Then
+            errors.Add("Flight number already exists. Please use a unique flight number.")
+        End If
+
+        If String.IsNullOrWhiteSpace(origin) Then
+            errors.Add("Origin is required.")
+        End If
+
+        If String.IsNullOrWhiteSpace(destination) Then
+            errors.Add("Destination is required.")
+        End If
+
+        If Not Decimal.TryParse(txtPrice.Text, price) Then
+            errors.Add("Valid price is required.")
+        Else
+            errors.AddRange(ValidationHelper.ValidatePrice(price))
+        End If
+
+        If Not Integer.TryParse(txtAvailableSeats.Text, availableSeats) Then
+            errors.Add("Valid available seats is required.")
+        Else
+            errors.AddRange(ValidationHelper.ValidateAvailableSeats(availableSeats))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        flight.FlightNumber = flightNumber
+        flight.Origin = origin
+        flight.Destination = destination
+        flight.DepartureDate = departureDate
+        flight.DepartureTime = departureTime
+        flight.ArrivalTime = arrivalTime
+        flight.Price = price
+        flight.AvailableSeats = availableSeats
+
+        Try
+            FlightRepository.Update(flight)
+            MessageBox.Show("Flight updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: InitializeComponent (UI-091)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditFlightForm.vb
+==================================================
+Private Sub InitializeComponent()
+        Me.Text = "Edit Flight"
+        Me.Size = New Size(500, 500)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Flight Number
+        lblFlightNumber = New Label()
+        lblFlightNumber.Text = "Flight Number: *"
+        lblFlightNumber.AutoSize = True
+        lblFlightNumber.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFlightNumber)
+
+        txtFlightNumber = New TextBox()
+        txtFlightNumber.Location = New Point(20, yPos + 20)
+        txtFlightNumber.Size = New Size(450, 25)
+        Me.Controls.Add(txtFlightNumber)
+        yPos += 50
+
+        ' Origin
+        lblOrigin = New Label()
+        lblOrigin.Text = "Origin: *"
+        lblOrigin.AutoSize = True
+        lblOrigin.Location = New Point(20, yPos)
+        Me.Controls.Add(lblOrigin)
+
+        txtOrigin = New TextBox()
+        txtOrigin.Location = New Point(20, yPos + 20)
+        txtOrigin.Size = New Size(450, 25)
+        Me.Controls.Add(txtOrigin)
+        yPos += 50
+
+        ' Destination
+        lblDestination = New Label()
+        lblDestination.Text = "Destination: *"
+        lblDestination.AutoSize = True
+        lblDestination.Location = New Point(20, yPos)
+        Me.Controls.Add(lblDestination)
+
+        txtDestination = New TextBox()
+        txtDestination.Location = New Point(20, yPos + 20)
+        txtDestination.Size = New Size(450, 25)
+        Me.Controls.Add(txtDestination)
+        yPos += 50
+
+        ' Departure Date
+        lblDepartureDate = New Label()
+        lblDepartureDate.Text = "Departure Date: *"
+        lblDepartureDate.AutoSize = True
+        lblDepartureDate.Location = New Point(20, yPos)
+        Me.Controls.Add(lblDepartureDate)
+
+        dtpDepartureDate = New DateTimePicker()
+        dtpDepartureDate.Location = New Point(20, yPos + 20)
+        dtpDepartureDate.Size = New Size(450, 25)
+        dtpDepartureDate.Format = DateTimePickerFormat.Short
+        Me.Controls.Add(dtpDepartureDate)
+        yPos += 50
+
+        ' Departure Time
+        lblDepartureTime = New Label()
+        lblDepartureTime.Text = "Departure Time: *"
+        lblDepartureTime.AutoSize = True
+        lblDepartureTime.Location = New Point(20, yPos)
+        Me.Controls.Add(lblDepartureTime)
+
+        dtpDepartureTime = New DateTimePicker()
+        dtpDepartureTime.Location = New Point(20, yPos + 20)
+        dtpDepartureTime.Size = New Size(450, 25)
+        dtpDepartureTime.Format = DateTimePickerFormat.Time
+        dtpDepartureTime.ShowUpDown = True
+        Me.Controls.Add(dtpDepartureTime)
+        yPos += 50
+
+        ' Arrival Time
+        lblArrivalTime = New Label()
+        lblArrivalTime.Text = "Arrival Time: *"
+        lblArrivalTime.AutoSize = True
+        lblArrivalTime.Location = New Point(20, yPos)
+        Me.Controls.Add(lblArrivalTime)
+
+        dtpArrivalTime = New DateTimePicker()
+        dtpArrivalTime.Location = New Point(20, yPos + 20)
+        dtpArrivalTime.Size = New Size(450, 25)
+        dtpArrivalTime.Format = DateTimePickerFormat.Time
+        dtpArrivalTime.ShowUpDown = True
+        Me.Controls.Add(dtpArrivalTime)
+        yPos += 50
+
+        ' Price
+        lblPrice = New Label()
+        lblPrice.Text = "Price: *"
+        lblPrice.AutoSize = True
+        lblPrice.Location = New Point(20, yPos)
+        Me.Controls.Add(lblPrice)
+
+        txtPrice = New TextBox()
+        txtPrice.Location = New Point(20, yPos + 20)
+        txtPrice.Size = New Size(450, 25)
+        Me.Controls.Add(txtPrice)
+        yPos += 50
+
+        ' Available Seats
+        lblAvailableSeats = New Label()
+        lblAvailableSeats.Text = "Available Seats: *"
+        lblAvailableSeats.AutoSize = True
+        lblAvailableSeats.Location = New Point(20, yPos)
+        Me.Controls.Add(lblAvailableSeats)
+
+        txtAvailableSeats = New TextBox()
+        txtAvailableSeats.Location = New Point(20, yPos + 20)
+        txtAvailableSeats.Size = New Size(450, 25)
+        Me.Controls.Add(txtAvailableSeats)
+        yPos += 50
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, yPos)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+        yPos += 50
+
+        ' Buttons
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Flight"
+        btnUpdate.Location = New Point(20, yPos)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, yPos)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+==================================================
+Part: BtnUpdate_Click (PRT-093)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditFlightForm.vb
+==================================================
+Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim flightNumber As String = txtFlightNumber.Text.Trim()
+        Dim origin As String = txtOrigin.Text.Trim()
+        Dim destination As String = txtDestination.Text.Trim()
+        Dim departureDate As DateTime = dtpDepartureDate.Value.Date
+        Dim departureTime As TimeSpan = dtpDepartureTime.Value.TimeOfDay
+        Dim arrivalTime As TimeSpan = dtpArrivalTime.Value.TimeOfDay
+        Dim price As Decimal
+        Dim availableSeats As Integer
+
+        If String.IsNullOrWhiteSpace(flightNumber) Then
+            errors.Add("Flight number is required.")
+        ElseIf flightNumber <> flight.FlightNumber AndAlso FlightRepository.FlightNumberExists(flightNumber) Then
+            errors.Add("Flight number already exists. Please use a unique flight number.")
+        End If
+
+        If String.IsNullOrWhiteSpace(origin) Then
+            errors.Add("Origin is required.")
+        End If
+
+        If String.IsNullOrWhiteSpace(destination) Then
+            errors.Add("Destination is required.")
+        End If
+
+        If Not Decimal.TryParse(txtPrice.Text, price) Then
+            errors.Add("Valid price is required.")
+        Else
+            errors.AddRange(ValidationHelper.ValidatePrice(price))
+        End If
+
+        If Not Integer.TryParse(txtAvailableSeats.Text, availableSeats) Then
+            errors.Add("Valid available seats is required.")
+        Else
+            errors.AddRange(ValidationHelper.ValidateAvailableSeats(availableSeats))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        flight.FlightNumber = flightNumber
+        flight.Origin = origin
+        flight.Destination = destination
+        flight.DepartureDate = departureDate
+        flight.DepartureTime = departureTime
+        flight.ArrivalTime = arrivalTime
+        flight.Price = price
+        flight.AvailableSeats = availableSeats
+
+        Try
+            FlightRepository.Update(flight)
+            MessageBox.Show("Flight updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+==================================================
+Part: MainForm (UI-101)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Public Class MainForm
+    Inherits Form
+
+    Private menuStrip As MenuStrip
+    Private flightsToolStripMenuItem As ToolStripMenuItem
+    Private bookFlightToolStripMenuItem As ToolStripMenuItem
+    Private myBookingsToolStripMenuItem As ToolStripMenuItem
+    Private profileToolStripMenuItem As ToolStripMenuItem
+    Private logoutToolStripMenuItem As ToolStripMenuItem
+    Private adminMenu As ToolStripMenuItem
+    Private customersToolStripMenuItem As ToolStripMenuItem
+    Private masterBookingsToolStripMenuItem As ToolStripMenuItem
+    Private createFlightToolStripMenuItem As ToolStripMenuItem
+    Private lblWelcome As Label
+
+    Public Sub New()
+        InitializeComponent()
+        CheckSession()
+        UpdateMenu()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Airline Management System"
+        Me.Size = New Size(800, 600)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.WindowState = FormWindowState.Maximized
+
+        ' Menu Strip
+        menuStrip = New MenuStrip()
+
+        flightsToolStripMenuItem = New ToolStripMenuItem("Flights")
+        AddHandler flightsToolStripMenuItem.Click, AddressOf FlightsToolStripMenuItem_Click
+
+        bookFlightToolStripMenuItem = New ToolStripMenuItem("Book Flight")
+        AddHandler bookFlightToolStripMenuItem.Click, AddressOf BookFlightToolStripMenuItem_Click
+
+        myBookingsToolStripMenuItem = New ToolStripMenuItem("My Bookings")
+        AddHandler myBookingsToolStripMenuItem.Click, AddressOf MyBookingsToolStripMenuItem_Click
+
+        profileToolStripMenuItem = New ToolStripMenuItem("Profile")
+        AddHandler profileToolStripMenuItem.Click, AddressOf ProfileToolStripMenuItem_Click
+
+        logoutToolStripMenuItem = New ToolStripMenuItem("Logout")
+        AddHandler logoutToolStripMenuItem.Click, AddressOf LogoutToolStripMenuItem_Click
+
+        ' Admin menu
+        adminMenu = New ToolStripMenuItem("Admin")
+        createFlightToolStripMenuItem = New ToolStripMenuItem("Create Flight")
+        AddHandler createFlightToolStripMenuItem.Click, AddressOf CreateFlightToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(createFlightToolStripMenuItem)
+
+        customersToolStripMenuItem = New ToolStripMenuItem("Customers")
+        AddHandler customersToolStripMenuItem.Click, AddressOf CustomersToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(customersToolStripMenuItem)
+
+        masterBookingsToolStripMenuItem = New ToolStripMenuItem("Master Bookings")
+        AddHandler masterBookingsToolStripMenuItem.Click, AddressOf MasterBookingsToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(masterBookingsToolStripMenuItem)
+
+        menuStrip.Items.Add(flightsToolStripMenuItem)
+        menuStrip.Items.Add(bookFlightToolStripMenuItem)
+        menuStrip.Items.Add(myBookingsToolStripMenuItem)
+        menuStrip.Items.Add(profileToolStripMenuItem)
+        menuStrip.Items.Add(adminMenu)
+        menuStrip.Items.Add(logoutToolStripMenuItem)
+
+        Me.MainMenuStrip = menuStrip
+        Me.Controls.Add(menuStrip)
+
+        ' Welcome label
+        lblWelcome = New Label()
+        lblWelcome.Font = New Font("Arial", 12, FontStyle.Bold)
+        lblWelcome.AutoSize = True
+        lblWelcome.Location = New Point(20, 40)
+        Me.Controls.Add(lblWelcome)
+    End Sub
+
+    Private Sub CheckSession()
+        SessionManager.CheckTimeout()
+        If Not SessionManager.IsAuthenticated() Then
+            Me.Hide()
+            Dim loginForm As New LoginForm()
+            loginForm.Show()
+            Me.Close()
+        End If
+    End Sub
+
+    Private Sub UpdateMenu()
+        If SessionManager.IsAuthenticated() Then
+            lblWelcome.Text = "Welcome, " & SessionManager.CurrentUser.FullName & "!"
+            adminMenu.Visible = SessionManager.IsAdmin()
+        End If
+    End Sub
+
+    Private Sub FlightsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim flightsForm As New FlightsForm()
+        flightsForm.ShowDialog()
+    End Sub
+
+    Private Sub BookFlightToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        ' Show flights form first to select a flight
+        Dim flightsForm As New FlightsForm()
+        flightsForm.ShowDialog()
+    End Sub
+
+    Private Sub MyBookingsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim bookingsForm As New MyBookingsForm()
+        bookingsForm.ShowDialog()
+    End Sub
+
+    Private Sub ProfileToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim profileForm As New ProfileForm()
+        profileForm.ShowDialog()
+    End Sub
+
+    Private Sub CreateFlightToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim createForm As New CreateFlightForm()
+        createForm.ShowDialog()
+    End Sub
+
+    Private Sub CustomersToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim customersForm As New CustomersForm()
+        customersForm.ShowDialog()
+    End Sub
+
+    Private Sub MasterBookingsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim masterForm As New MasterBookingsForm()
+        masterForm.ShowDialog()
+    End Sub
+
+    Private Sub LogoutToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        SessionManager.Logout()
+        Me.Hide()
+        Dim loginForm As New LoginForm()
+        loginForm.Show()
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: UpdateMenu (PRT-104)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub UpdateMenu()
+        If SessionManager.IsAuthenticated() Then
+            lblWelcome.Text = "Welcome, " & SessionManager.CurrentUser.FullName & "!"
+            adminMenu.Visible = SessionManager.IsAdmin()
+        End If
+    End Sub
+
+==================================================
+Part: New (PRT-113)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Public Sub New()
+        InitializeComponent()
+        CheckSession()
+        UpdateMenu()
+    End Sub
+
+==================================================
+Part: FlightRepository (REPO-126)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Class FlightRepository
+    Public Shared Function GetAll() As List(Of Flight)
+        Dim flights As New List(Of Flight)
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight ORDER BY departure_date ASC, departure_time ASC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                flights.Add(New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                })
+            End While
+        End Using
+        Return flights
+    End Function
+
+    Public Shared Function GetById(id As Integer) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function FlightNumberExists(flightNumber As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM Flight WHERE flight_number = @flight_number"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@flight_number", flightNumber)))
+        Return count > 0
+    End Function
+
+    Public Shared Function Create(flight As Flight) As Integer
+        Dim query As String = "INSERT INTO Flight (flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at) VALUES (@flight_number, @origin, @destination, @departure_date, @departure_time, @arrival_time, @price, @available_seats, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@created_at", flight.CreatedAt)
+        ))
+        Return id
+    End Function
+
+    Public Shared Sub Update(flight As Flight)
+        Dim query As String = "UPDATE Flight SET flight_number = @flight_number, origin = @origin, destination = @destination, departure_date = @departure_date, departure_time = @departure_time, arrival_time = @arrival_time, price = @price, available_seats = @available_seats WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@id", flight.Id)
+        )
+    End Sub
+
+    Public Shared Sub Delete(id As Integer)
+        Dim query As String = "DELETE FROM Flight WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query, New NpgsqlParameter("@id", id))
+    End Sub
+
+    Public Shared Function LockForUpdate(id As Integer, transaction As NpgsqlTransaction) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id FOR UPDATE"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            Using reader As NpgsqlDataReader = cmd.ExecuteReader()
+                If reader.Read() Then
+                    Return New Flight With {
+                        .Id = reader.GetInt32(0),
+                        .FlightNumber = reader.GetString(1),
+                        .Origin = reader.GetString(2),
+                        .Destination = reader.GetString(3),
+                        .DepartureDate = reader.GetDateTime(4),
+                        .DepartureTime = reader.GetTimeSpan(5),
+                        .ArrivalTime = reader.GetTimeSpan(6),
+                        .Price = reader.GetDecimal(7),
+                        .AvailableSeats = reader.GetInt32(8),
+                        .CreatedAt = reader.GetDateTime(9)
+                    }
+                End If
+            End Using
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Sub DecrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats - 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
+    Public Shared Sub IncrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats + 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+End Class
+
+==================================================
+Part: LockForUpdate (PRT-131)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Function LockForUpdate(id As Integer, transaction As NpgsqlTransaction) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id FOR UPDATE"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            Using reader As NpgsqlDataReader = cmd.ExecuteReader()
+                If reader.Read() Then
+                    Return New Flight With {
+                        .Id = reader.GetInt32(0),
+                        .FlightNumber = reader.GetString(1),
+                        .Origin = reader.GetString(2),
+                        .Destination = reader.GetString(3),
+                        .DepartureDate = reader.GetDateTime(4),
+                        .DepartureTime = reader.GetTimeSpan(5),
+                        .ArrivalTime = reader.GetTimeSpan(6),
+                        .Price = reader.GetDecimal(7),
+                        .AvailableSeats = reader.GetInt32(8),
+                        .CreatedAt = reader.GetDateTime(9)
+                    }
+                End If
+            End Using
+        End Using
+        Return Nothing
+    End Function
+
+==================================================
+Part: Update (PRT-132)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Sub Update(flight As Flight)
+        Dim query As String = "UPDATE Flight SET flight_number = @flight_number, origin = @origin, destination = @destination, departure_date = @departure_date, departure_time = @departure_time, arrival_time = @arrival_time, price = @price, available_seats = @available_seats WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@id", flight.Id)
+        )
+    End Sub
+
+==================================================
+Part: DecrementSeats (PRT-134)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Sub DecrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats - 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
+==================================================
+Part: IncrementSeats (PRT-135)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Sub IncrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats + 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
+==================================================
+Part: UserRepository (REPO-136)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Class UserRepository
+    Public Shared Function GetByUsername(username As String) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE username = @username"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@username", username))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function GetById(id As Integer) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function UsernameExists(username As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE username = @username"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@username", username)))
+        Return count > 0
+    End Function
+
+    Public Shared Function EmailExists(email As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE email = @email"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@email", email)))
+        Return count > 0
+    End Function
+
+    Public Shared Function Create(user As User) As Integer
+        Dim query As String = "INSERT INTO ""User"" (username, password, email, full_name, role, created_at) VALUES (@username, @password, @email, @full_name, @role, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@username", user.Username),
+            New NpgsqlParameter("@password", user.Password),
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@role", user.Role),
+            New NpgsqlParameter("@created_at", user.CreatedAt)
+        ))
+        Return id
+    End Function
+
+    Public Shared Sub Update(user As User)
+        Dim query As String = "UPDATE ""User"" SET email = @email, full_name = @full_name WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@id", user.Id)
+        )
+    End Sub
+
+    Public Shared Sub UpdatePassword(userId As Integer, hashedPassword As String)
+        Dim query As String = "UPDATE ""User"" SET password = @password WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@password", hashedPassword),
+            New NpgsqlParameter("@id", userId)
+        )
+    End Sub
+
+    Public Shared Function GetAll() As List(Of User)
+        Dim users As New List(Of User)
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" ORDER BY created_at DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                users.Add(New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return users
+    End Function
+
+    Public Shared Function VerifyPassword(plainPassword As String, hashedPassword As String) As Boolean
+        Dim hash As String = HashPassword(plainPassword)
+        Return hash.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase)
+    End Function
+
+    Public Shared Function HashPassword(password As String) As String
+        Using sha1 As SHA1 = SHA1.Create()
+            Dim hash As Byte() = sha1.ComputeHash(Encoding.UTF8.GetBytes(password))
+            Return BitConverter.ToString(hash).Replace("-", "").ToUpper()
+        End Using
+    End Function
+End Class
+
+==================================================
+Part: Update (PRT-145)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Sub Update(user As User)
+        Dim query As String = "UPDATE ""User"" SET email = @email, full_name = @full_name WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@id", user.Id)
+        )
+    End Sub
+
+==================================================
+Part: UpdatePassword (PRT-146)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Sub UpdatePassword(userId As Integer, hashedPassword As String)
+        Dim query As String = "UPDATE ""User"" SET password = @password WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@password", hashedPassword),
+            New NpgsqlParameter("@id", userId)
+        )
+    End Sub
+
+==================================================
+Part: BookingRepository (REPO-147)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Class BookingRepository
+    Public Shared Function GetByUserId(userId As Integer) As List(Of Booking)
+        Dim bookings As New List(Of Booking)
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b WHERE b.user_id = @user_id ORDER BY b.booking_date DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@user_id", userId))
+            While reader.Read()
+                bookings.Add(New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return bookings
+    End Function
+
+    Public Shared Function GetAll() As List(Of Booking)
+        Dim bookings As New List(Of Booking)
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b ORDER BY b.booking_date DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                bookings.Add(New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return bookings
+    End Function
+
+    Public Shared Function GetById(id As Integer) As Booking
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b WHERE b.id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function Create(booking As Booking, transaction As NpgsqlTransaction) As Integer
+        Dim query As String = "INSERT INTO Booking (flight_id, user_id, passenger_name, passenger_email, seat_number, booking_date) VALUES (@flight_id, @user_id, @passenger_name, @passenger_email, @seat_number, @booking_date) RETURNING id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@flight_id", booking.FlightId))
+            If booking.UserId.HasValue Then
+                cmd.Parameters.Add(New NpgsqlParameter("@user_id", booking.UserId.Value))
+            Else
+                cmd.Parameters.Add(New NpgsqlParameter("@user_id", DBNull.Value))
+            End If
+            cmd.Parameters.Add(New NpgsqlParameter("@passenger_name", booking.PassengerName))
+            cmd.Parameters.Add(New NpgsqlParameter("@passenger_email", booking.PassengerEmail))
+            If Not String.IsNullOrEmpty(booking.SeatNumber) Then
+                cmd.Parameters.Add(New NpgsqlParameter("@seat_number", booking.SeatNumber))
+            Else
+                cmd.Parameters.Add(New NpgsqlParameter("@seat_number", DBNull.Value))
+            End If
+            cmd.Parameters.Add(New NpgsqlParameter("@booking_date", booking.BookingDate))
+            Return Convert.ToInt32(cmd.ExecuteScalar())
+        End Using
+    End Function
+
+    Public Shared Sub Update(booking As Booking)
+        Dim query As String = "UPDATE Booking SET passenger_name = @passenger_name, passenger_email = @passenger_email, seat_number = @seat_number WHERE id = @id"
+        Dim parameters As New List(Of NpgsqlParameter) From {
+            New NpgsqlParameter("@passenger_name", booking.PassengerName),
+            New NpgsqlParameter("@passenger_email", booking.PassengerEmail),
+            New NpgsqlParameter("@id", booking.Id)
+        }
+        If Not String.IsNullOrEmpty(booking.SeatNumber) Then
+            parameters.Add(New NpgsqlParameter("@seat_number", booking.SeatNumber))
+        Else
+            parameters.Add(New NpgsqlParameter("@seat_number", DBNull.Value))
+        End If
+        DatabaseHelper.ExecuteNonQuery(query, parameters.ToArray())
+    End Sub
+
+    Public Shared Sub Delete(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "DELETE FROM Booking WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+End Class
+
+==================================================
+Part: Update (PRT-152)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Shared Sub Update(booking As Booking)
+        Dim query As String = "UPDATE Booking SET passenger_name = @passenger_name, passenger_email = @passenger_email, seat_number = @seat_number WHERE id = @id"
+        Dim parameters As New List(Of NpgsqlParameter) From {
+            New NpgsqlParameter("@passenger_name", booking.PassengerName),
+            New NpgsqlParameter("@passenger_email", booking.PassengerEmail),
+            New NpgsqlParameter("@id", booking.Id)
+        }
+        If Not String.IsNullOrEmpty(booking.SeatNumber) Then
+            parameters.Add(New NpgsqlParameter("@seat_number", booking.SeatNumber))
+        Else
+            parameters.Add(New NpgsqlParameter("@seat_number", DBNull.Value))
+        End If
+        DatabaseHelper.ExecuteNonQuery(query, parameters.ToArray())
+    End Sub

@@ -1,0 +1,39 @@
+Private Sub LoadBookings()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        Dim bookings As List(Of Booking) = BookingRepository.GetByUserId(SessionManager.CurrentUser.Id)
+
+        dgvBookings.Columns.Clear()
+        dgvBookings.Columns.Add("Id", "ID")
+        dgvBookings.Columns("Id").Visible = False
+        dgvBookings.Columns.Add("FlightId", "Flight ID")
+        dgvBookings.Columns("FlightId").Visible = False
+        dgvBookings.Columns.Add("FlightNumber", "Flight Number")
+        dgvBookings.Columns.Add("Route", "Route")
+        dgvBookings.Columns.Add("DepartureDate", "Departure Date")
+        dgvBookings.Columns.Add("DepartureTime", "Departure Time")
+        dgvBookings.Columns.Add("ArrivalTime", "Arrival Time")
+        dgvBookings.Columns.Add("PassengerName", "Passenger Name")
+        dgvBookings.Columns.Add("PassengerEmail", "Passenger Email")
+        dgvBookings.Columns.Add("SeatNumber", "Seat Number")
+        dgvBookings.Columns.Add("Price", "Price")
+        dgvBookings.Columns("Price").DefaultCellStyle.Format = "C"
+        dgvBookings.Columns.Add("BookingDate", "Booking Date")
+
+        dgvBookings.Rows.Clear()
+        For Each booking In bookings
+            Dim flight As Flight = FlightRepository.GetById(booking.FlightId)
+            dgvBookings.Rows.Add(booking.Id, booking.FlightId, flight.FlightNumber,
+                               flight.Origin & " → " & flight.Destination,
+                               flight.DepartureDate.ToString("yyyy-MM-dd"),
+                               flight.DepartureTime.ToString("hh\:mm"),
+                               flight.ArrivalTime.ToString("hh\:mm"),
+                               booking.PassengerName, booking.PassengerEmail,
+                               If(String.IsNullOrEmpty(booking.SeatNumber), "N/A", booking.SeatNumber),
+                               flight.Price, booking.BookingDate.ToString("yyyy-MM-dd HH:mm"))
+        Next
+    End Sub

@@ -1,0 +1,17 @@
+Public Shared Function GetById(id As Integer) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function

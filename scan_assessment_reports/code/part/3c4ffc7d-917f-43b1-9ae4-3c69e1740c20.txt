@@ -1,0 +1,6 @@
+Private Function GetSelectedFlightId() As Integer?
+        If dgvFlights.SelectedRows.Count > 0 Then
+            Return Convert.ToInt32(dgvFlights.SelectedRows(0).Cells("Id").Value)
+        End If
+        Return Nothing
+    End Function

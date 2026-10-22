@@ -1,0 +1,9 @@
+Public Shared Function ExecuteReader(query As String, ParamArray parameters As NpgsqlParameter()) As NpgsqlDataReader
+        Dim conn As NpgsqlConnection = GetConnection()
+        conn.Open()
+        Dim cmd As New NpgsqlCommand(query, conn)
+        If parameters IsNot Nothing Then
+            cmd.Parameters.AddRange(parameters)
+        End If
+        Return cmd.ExecuteReader(CommandBehavior.CloseConnection)
+    End Function

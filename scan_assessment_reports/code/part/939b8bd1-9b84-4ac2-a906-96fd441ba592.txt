@@ -1,0 +1,4 @@
+Public Shared Function VerifyPassword(plainPassword As String, hashedPassword As String) As Boolean
+        Dim hash As String = HashPassword(plainPassword)
+        Return hash.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase)
+    End Function

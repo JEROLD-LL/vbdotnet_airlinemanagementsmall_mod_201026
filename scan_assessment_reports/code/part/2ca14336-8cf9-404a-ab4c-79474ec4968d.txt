@@ -1,0 +1,6 @@
+Private Sub BtnBook_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim bookForm As New BookFlightForm(flight.Id)
+        bookForm.ShowDialog()
+        Me.Close()
+    End Sub

@@ -1,0 +1,242 @@
+# Legacy to Modern .NET Package and Assembly Mappings
+# Used by dotnet-dependency-suggestor agent to recommend package replacements
+
+version: 1.0.0
+
+# NuGet Package Mappings
+# Maps legacy packages to their modern .NET Core/.NET 5+ equivalents
+packageMappings:
+  # ASP.NET MVC → ASP.NET Core MVC
+  - legacyId: "Microsoft.AspNet.Mvc"
+    modernId: "Microsoft.AspNetCore.Mvc"
+    minVersion: "8.0.0"
+    migrationNotes: "Full framework migration required - controllers, filters, and routing differ"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyId: "Microsoft.AspNet.Razor"
+    modernId: "Microsoft.AspNetCore.Mvc.Razor"
+    minVersion: "8.0.0"
+    migrationNotes: "Razor syntax mostly compatible, base classes differ"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+    
+  - legacyId: "Microsoft.AspNet.WebPages"
+    modernId: "Microsoft.AspNetCore.Mvc.RazorPages"
+    minVersion: "8.0.0"
+    migrationNotes: "Web Pages replaced by Razor Pages with different programming model"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+
+  # Entity Framework → Entity Framework Core
+  - legacyId: "EntityFramework"
+    modernId: "Microsoft.EntityFrameworkCore"
+    minVersion: "8.0.0"
+    migrationNotes: "DbContext configuration, migrations, and some LINQ methods differ"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyId: "EntityFramework.SqlServer"
+    modernId: "Microsoft.EntityFrameworkCore.SqlServer"
+    minVersion: "8.0.0"
+    migrationNotes: "Provider-specific configuration changes required"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+
+  # ASP.NET Identity → ASP.NET Core Identity
+  - legacyId: "Microsoft.AspNet.Identity.Core"
+    modernId: "Microsoft.AspNetCore.Identity"
+    minVersion: "8.0.0"
+    migrationNotes: "User/Role models compatible, database schema migration may be needed"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyId: "Microsoft.AspNet.Identity.EntityFramework"
+    modernId: "Microsoft.AspNetCore.Identity.EntityFrameworkCore"
+    minVersion: "8.0.0"
+    migrationNotes: "Integrates with EF Core, requires EF Core migration"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyId: "Microsoft.AspNet.Identity.Owin"
+    modernId: "Microsoft.AspNetCore.Identity"
+    minVersion: "8.0.0"
+    migrationNotes: "OWIN integration replaced by ASP.NET Core middleware"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+
+  # OWIN → ASP.NET Core Middleware
+  - legacyId: "Microsoft.Owin"
+    modernId: "Microsoft.AspNetCore.Http"
+    minVersion: "8.0.0"
+    migrationNotes: "OWIN middleware replaced by ASP.NET Core middleware pipeline"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+    
+  - legacyId: "Microsoft.Owin.Host.SystemWeb"
+    modernId: "Microsoft.AspNetCore.Server.Kestrel"
+    minVersion: "8.0.0"
+    migrationNotes: "System.Web hosting replaced by Kestrel or IIS integration"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyId: "Microsoft.Owin.Security"
+    modernId: "Microsoft.AspNetCore.Authentication"
+    minVersion: "8.0.0"
+    migrationNotes: "Authentication middleware API differs significantly"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyId: "Microsoft.Owin.Security.Cookies"
+    modernId: "Microsoft.AspNetCore.Authentication.Cookies"
+    minVersion: "8.0.0"
+    migrationNotes: "Cookie authentication configuration API changed"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+    
+  - legacyId: "Microsoft.Owin.Security.OAuth"
+    modernId: "Microsoft.AspNetCore.Authentication.OAuth"
+    minVersion: "8.0.0"
+    migrationNotes: "OAuth provider configuration modernized"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+    
+  - legacyId: "Microsoft.Owin.Security.Facebook"
+    modernId: "Microsoft.AspNetCore.Authentication.Facebook"
+    minVersion: "8.0.0"
+    migrationNotes: "Facebook authentication provider modernized"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "medium"
+    
+  - legacyId: "Microsoft.Owin.Security.Google"
+    modernId: "Microsoft.AspNetCore.Authentication.Google"
+    minVersion: "8.0.0"
+    migrationNotes: "Google authentication provider modernized"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "medium"
+    
+  - legacyId: "Microsoft.Owin.Security.Twitter"
+    modernId: "Microsoft.AspNetCore.Authentication.Twitter"
+    minVersion: "8.0.0"
+    migrationNotes: "Twitter authentication provider modernized"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "medium"
+    
+  - legacyId: "Microsoft.Owin.Security.MicrosoftAccount"
+    modernId: "Microsoft.AspNetCore.Authentication.MicrosoftAccount"
+    minVersion: "8.0.0"
+    migrationNotes: "Microsoft Account authentication provider modernized"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "medium"
+
+  # Web Optimization
+  - legacyId: "Microsoft.AspNet.Web.Optimization"
+    modernId: "WebOptimizer.Core"
+    minVersion: "3.0.0"
+    migrationNotes: "Bundle/minification replaced by WebOptimizer or build tools"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "medium"
+    
+  - legacyId: "WebGrease"
+    modernId: "WebOptimizer.Core"
+    minVersion: "3.0.0"
+    migrationNotes: "Asset optimization handled by WebOptimizer or webpack/vite"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "low"
+    
+  - legacyId: "Microsoft.Web.Infrastructure"
+    modernId: null
+    minVersion: null
+    migrationNotes: "Built into ASP.NET Core - no separate package needed"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "low"
+
+  # SignalR
+  - legacyId: "Microsoft.AspNet.SignalR"
+    modernId: "Microsoft.AspNetCore.SignalR"
+    minVersion: "8.0.0"
+    migrationNotes: "SignalR API significantly changed - hubs and connections differ"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+
+  # Web API
+  - legacyId: "Microsoft.AspNet.WebApi"
+    modernId: "Microsoft.AspNetCore.Mvc"
+    minVersion: "8.0.0"
+    migrationNotes: "Web API merged into MVC in ASP.NET Core"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+
+# Framework Assembly Mappings
+# Maps legacy framework assemblies to modern package equivalents
+assemblyMappings:
+  # System.Web.* → ASP.NET Core
+  - legacyAssembly: "System.Web"
+    modernPackage: "Microsoft.AspNetCore.Http"
+    minVersion: "8.0.0"
+    migrationNotes: "Core ASP.NET assembly - requires full ASP.NET Core migration"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyAssembly: "System.Web.Mvc"
+    modernPackage: "Microsoft.AspNetCore.Mvc"
+    minVersion: "8.0.0"
+    migrationNotes: "MVC controllers and filters API changed"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyAssembly: "System.Web.Http"
+    modernPackage: "Microsoft.AspNetCore.Mvc"
+    minVersion: "8.0.0"
+    migrationNotes: "Web API merged into MVC"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    
+  - legacyAssembly: "System.Web.Razor"
+    modernPackage: "Microsoft.AspNetCore.Mvc.Razor"
+    minVersion: "8.0.0"
+    migrationNotes: "Razor engine updated, base classes changed"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+    
+  - legacyAssembly: "System.Web.Optimization"
+    modernPackage: "WebOptimizer.Core"
+    minVersion: "3.0.0"
+    migrationNotes: "Bundling/minification approach changed"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "medium"
+
+  # WCF → gRPC or Web API
+  - legacyAssembly: "System.ServiceModel"
+    modernPackage: "Grpc.AspNetCore"
+    minVersion: "2.60.0"
+    migrationNotes: "WCF replaced by gRPC (recommended) or REST APIs"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "critical"
+    alternativeApproach: "REST API with ASP.NET Core Web API"
+
+  # Other obsolete assemblies
+  - legacyAssembly: "System.Drawing"
+    modernPackage: "System.Drawing.Common"
+    minVersion: "8.0.0"
+    migrationNotes: "Windows-only in .NET 6+, use SkiaSharp or ImageSharp for cross-platform"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "medium"
+    alternativeApproach: "SkiaSharp or SixLabors.ImageSharp for cross-platform"
+    
+  - legacyAssembly: "System.Configuration"
+    modernPackage: "System.Configuration.ConfigurationManager"
+    minVersion: "8.0.0"
+    migrationNotes: "Available as NuGet package, but prefer appsettings.json in ASP.NET Core"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "low"
+    alternativeApproach: "Use Microsoft.Extensions.Configuration with appsettings.json"
+
+  - legacyAssembly: "System.Runtime.Remoting"
+    modernPackage: null
+    minVersion: null
+    migrationNotes: "No direct replacement - use gRPC, Web API, or other RPC mechanism"
+    applicableFrameworks: ["net6.0", "net7.0", "net8.0"]
+    priority: "high"
+    alternativeApproach: "gRPC or REST API"
+

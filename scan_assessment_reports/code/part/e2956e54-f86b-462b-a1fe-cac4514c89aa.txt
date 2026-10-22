@@ -1,0 +1,25 @@
+Private Sub LoadFlights()
+        Dim flights As List(Of Flight) = FlightRepository.GetAll()
+
+        dgvFlights.Columns.Clear()
+        dgvFlights.Columns.Add("Id", "ID")
+        dgvFlights.Columns("Id").Visible = False
+        dgvFlights.Columns.Add("FlightNumber", "Flight Number")
+        dgvFlights.Columns.Add("Origin", "Origin")
+        dgvFlights.Columns.Add("Destination", "Destination")
+        dgvFlights.Columns.Add("DepartureDate", "Departure Date")
+        dgvFlights.Columns.Add("DepartureTime", "Departure Time")
+        dgvFlights.Columns.Add("ArrivalTime", "Arrival Time")
+        dgvFlights.Columns.Add("Price", "Price")
+        dgvFlights.Columns("Price").DefaultCellStyle.Format = "C"
+        dgvFlights.Columns.Add("AvailableSeats", "Available Seats")
+
+        dgvFlights.Rows.Clear()
+        For Each flight In flights
+            dgvFlights.Rows.Add(flight.Id, flight.FlightNumber, flight.Origin, flight.Destination,
+                              flight.DepartureDate.ToString("yyyy-MM-dd"),
+                              flight.DepartureTime.ToString("hh\:mm"),
+                              flight.ArrivalTime.ToString("hh\:mm"),
+                              flight.Price, flight.AvailableSeats)
+        Next
+    End Sub

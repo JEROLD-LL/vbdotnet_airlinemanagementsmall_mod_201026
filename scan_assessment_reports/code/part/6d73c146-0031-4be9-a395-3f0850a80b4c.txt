@@ -1,0 +1,53 @@
+Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim passengerName As String = txtPassengerName.Text.Trim()
+        Dim passengerEmail As String = txtPassengerEmail.Text.Trim()
+        Dim seatNumber As String = txtSeatNumber.Text.Trim()
+
+        ' Validate passenger name
+        If String.IsNullOrWhiteSpace(passengerName) Then
+            errors.Add("Passenger name is required.")
+        ElseIf passengerName.Length < 2 OrElse passengerName.Length > 255 Then
+            errors.Add("Passenger name must be between 2 and 255 characters.")
+        ElseIf Not Regex.IsMatch(passengerName, "^[a-zA-Z\s'-]+$") Then
+            errors.Add("Passenger name can only contain letters, spaces, hyphens, and apostrophes.")
+        End If
+
+        ' Validate email
+        If String.IsNullOrWhiteSpace(passengerEmail) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(passengerEmail, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        ElseIf passengerEmail.Length > 255 Then
+            errors.Add("Email must be 255 characters or less.")
+        End If
+
+        ' Validate seat number
+        If Not String.IsNullOrWhiteSpace(seatNumber) Then
+            If seatNumber.Length > 10 Then
+                errors.Add("Seat number must be 10 characters or less.")
+            ElseIf Not Regex.IsMatch(seatNumber, "^[0-9]{1,3}[A-Z]{1,2}$", RegexOptions.IgnoreCase) Then
+                errors.Add("Seat number format is invalid. Use format like '12A' or '123AB'.")
+            End If
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        booking.PassengerName = passengerName
+        booking.PassengerEmail = passengerEmail
+        booking.SeatNumber = If(String.IsNullOrWhiteSpace(seatNumber), String.Empty, seatNumber.ToUpper())
+
+        Try
+            BookingRepository.Update(booking)
+            MessageBox.Show("Booking updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub

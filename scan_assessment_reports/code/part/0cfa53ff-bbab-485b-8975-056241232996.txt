@@ -1,0 +1,55 @@
+Private Sub InitializeComponent()
+        Me.Text = "Airline Management System"
+        Me.Size = New Size(800, 600)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.WindowState = FormWindowState.Maximized
+
+        ' Menu Strip
+        menuStrip = New MenuStrip()
+
+        flightsToolStripMenuItem = New ToolStripMenuItem("Flights")
+        AddHandler flightsToolStripMenuItem.Click, AddressOf FlightsToolStripMenuItem_Click
+
+        bookFlightToolStripMenuItem = New ToolStripMenuItem("Book Flight")
+        AddHandler bookFlightToolStripMenuItem.Click, AddressOf BookFlightToolStripMenuItem_Click
+
+        myBookingsToolStripMenuItem = New ToolStripMenuItem("My Bookings")
+        AddHandler myBookingsToolStripMenuItem.Click, AddressOf MyBookingsToolStripMenuItem_Click
+
+        profileToolStripMenuItem = New ToolStripMenuItem("Profile")
+        AddHandler profileToolStripMenuItem.Click, AddressOf ProfileToolStripMenuItem_Click
+
+        logoutToolStripMenuItem = New ToolStripMenuItem("Logout")
+        AddHandler logoutToolStripMenuItem.Click, AddressOf LogoutToolStripMenuItem_Click
+
+        ' Admin menu
+        adminMenu = New ToolStripMenuItem("Admin")
+        createFlightToolStripMenuItem = New ToolStripMenuItem("Create Flight")
+        AddHandler createFlightToolStripMenuItem.Click, AddressOf CreateFlightToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(createFlightToolStripMenuItem)
+
+        customersToolStripMenuItem = New ToolStripMenuItem("Customers")
+        AddHandler customersToolStripMenuItem.Click, AddressOf CustomersToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(customersToolStripMenuItem)
+
+        masterBookingsToolStripMenuItem = New ToolStripMenuItem("Master Bookings")
+        AddHandler masterBookingsToolStripMenuItem.Click, AddressOf MasterBookingsToolStripMenuItem_Click
+        adminMenu.DropDownItems.Add(masterBookingsToolStripMenuItem)
+
+        menuStrip.Items.Add(flightsToolStripMenuItem)
+        menuStrip.Items.Add(bookFlightToolStripMenuItem)
+        menuStrip.Items.Add(myBookingsToolStripMenuItem)
+        menuStrip.Items.Add(profileToolStripMenuItem)
+        menuStrip.Items.Add(adminMenu)
+        menuStrip.Items.Add(logoutToolStripMenuItem)
+
+        Me.MainMenuStrip = menuStrip
+        Me.Controls.Add(menuStrip)
+
+        ' Welcome label
+        lblWelcome = New Label()
+        lblWelcome.Font = New Font("Arial", 12, FontStyle.Bold)
+        lblWelcome.AutoSize = True
+        lblWelcome.Location = New Point(20, 40)
+        Me.Controls.Add(lblWelcome)
+    End Sub

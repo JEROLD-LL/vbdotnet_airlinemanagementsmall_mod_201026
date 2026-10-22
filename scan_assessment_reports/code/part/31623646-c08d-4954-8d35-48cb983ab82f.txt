@@ -1,0 +1,4 @@
+Private Sub CreateFlightToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim createForm As New CreateFlightForm()
+        createForm.ShowDialog()
+    End Sub

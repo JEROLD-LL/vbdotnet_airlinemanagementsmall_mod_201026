@@ -1,0 +1,5 @@
+Public Sub New(selectedFlightId As Integer)
+        flightId = selectedFlightId
+        InitializeComponent()
+        LoadFlight()
+    End Sub

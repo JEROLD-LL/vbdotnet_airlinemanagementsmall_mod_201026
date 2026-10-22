@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>AirlineManagement</RootNamespace>
+    <AssemblyName>AirlineManagement</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="8.0.5" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Import Include="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.vb" />
+    <Compile Include="Models\User.vb" />
+    <Compile Include="Models\Flight.vb" />
+    <Compile Include="Models\Booking.vb" />
+    <Compile Include="Data\DatabaseHelper.vb" />
+    <Compile Include="Repositories\UserRepository.vb" />
+    <Compile Include="Repositories\FlightRepository.vb" />
+    <Compile Include="Repositories\BookingRepository.vb" />
+    <Compile Include="Services\BookingService.vb" />
+    <Compile Include="Services\ValidationHelper.vb" />
+    <Compile Include="Services\SessionManager.vb" />
+    <Compile Include="Forms\LoginForm.vb" />
+    <Compile Include="Forms\RegisterForm.vb" />
+    <Compile Include="Forms\MainForm.vb" />
+    <Compile Include="Forms\FlightsForm.vb" />
+    <Compile Include="Forms\ViewFlightForm.vb" />
+    <Compile Include="Forms\BookFlightForm.vb" />
+    <Compile Include="Forms\MyBookingsForm.vb" />
+    <Compile Include="Forms\ViewBookingForm.vb" />
+    <Compile Include="Forms\EditBookingForm.vb" />
+    <Compile Include="Forms\CreateFlightForm.vb" />
+    <Compile Include="Forms\EditFlightForm.vb" />
+    <Compile Include="Forms\CustomersForm.vb" />
+    <Compile Include="Forms\MasterBookingsForm.vb" />
+    <Compile Include="Forms\ProfileForm.vb" />
+    <Compile Include="Forms\EditProfileForm.vb" />
+  </ItemGroup>
+
+</Project>
+

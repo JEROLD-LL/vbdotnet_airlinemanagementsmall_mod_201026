@@ -1,0 +1,5 @@
+Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Dim editForm As New EditProfileForm()
+        editForm.ShowDialog()
+        LoadProfile()
+    End Sub

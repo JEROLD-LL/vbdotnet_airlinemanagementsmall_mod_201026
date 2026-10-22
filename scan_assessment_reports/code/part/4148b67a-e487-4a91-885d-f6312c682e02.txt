@@ -1,0 +1,7 @@
+Private Sub LogoutToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        SessionManager.Logout()
+        Me.Hide()
+        Dim loginForm As New LoginForm()
+        loginForm.Show()
+        Me.Close()
+    End Sub

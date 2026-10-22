@@ -1,0 +1,54 @@
+{
+  "domain_key": "process_flow",
+  "item_type": "ProcessFlow",
+  "dataset_key": "process_flow",
+  "key_prefix": "pf",
+  "extraction_query": "Extract distinct end-to-end business process flows evidenced in executable code. A process flow is a sequence of business steps from trigger to outcome — not a single method or UI event. Cover maintenance and configuration journeys (pricing, rate plans, room types, guest registration, seasonal updates) as separate flows when they have their own entry points, not only core checkout or reservation paths. For each flow state its trigger, actor, goal, ordered steps, decision branches, alternate or error paths, and business outcome. Set fields.actor_key to the exact act- item_key of the performing actor from the parent-supplied closed actor list when the source names that role; leave actor_key empty only when no actor can be grounded — never invent act- keys that are not on the list. Build decision branches from the actual executable branch and fallback, not from comments, CSV headers, usage text, or operation labels. Preserve exact comparison direction and polarity. If the code branches on one explicit value and an else path, document two branches; do not invent additional enum values from the apparent business vocabulary. Put verbatim user-visible denial or error text in alternate_paths only when that exact contiguous literal exists in source; otherwise paraphrase without quotation marks. If staff and self-service share a business outcome, emit two flows or an explicit alternate path — do not keep only the staff path. Do not restate individual business rules here; reference them only when a step explicitly enforces one. A defined but uncalled or commented flow is dormant, not a live journey.",
+  "categories": [
+    { "key": "transaction", "name": "Transactional Processes" },
+    { "key": "query_report", "name": "Query and Reporting Processes" },
+    { "key": "batch_scheduled", "name": "Batch and Scheduled Processes" },
+    { "key": "authentication", "name": "Authentication and Access Processes" },
+    { "key": "integration", "name": "Integration Processes" },
+    { "key": "maintenance", "name": "Maintenance Processes" }
+  ],
+  "item_fields": [
+    "trigger",
+    "actor_key",
+    "goal",
+    "flow_steps",
+    "decision_branches",
+    "alternate_paths",
+    "outcome"
+  ],
+  "evidence_roles": ["ENTRY_POINT", "STEP", "BRANCH", "PERSISTS"],
+  "discovery": {
+    "seed_phrases": [
+      "business workflow process",
+      "user journey form submit",
+      "order placement checkout",
+      "authentication login logout",
+      "batch job scheduled process",
+      "report generation print",
+      "guest registration check in",
+      "rate plan pricing quote",
+      "room type maintenance update",
+      "invoice payment billing"
+    ],
+    "component_filters": ["controller", "handler", "form", "service", "module"],
+    "mcp_discovery_tools": [
+      "mcm_detect_process_flows",
+      "mcm_trace_business_flow",
+      "mcm_trace_call_path",
+      "mcm_get_function_callgraph"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 100,
+    "batch_size": 8
+  },
+  "relates_to": [
+    { "kind": "USES_ENTITY", "target_domain": "data_entity" },
+    { "kind": "PERFORMED_BY", "target_domain": "actor" },
+    { "kind": "ENFORCES", "target_domain": "business_rule" }
+  ]
+}

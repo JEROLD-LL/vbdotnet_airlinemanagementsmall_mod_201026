@@ -1,0 +1,4 @@
+Public Sub New(selectedBookingId As Integer)
+        InitializeComponent()
+        LoadBooking(selectedBookingId)
+    End Sub

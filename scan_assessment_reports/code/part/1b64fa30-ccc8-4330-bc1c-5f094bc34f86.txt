@@ -1,0 +1,3 @@
+Private Sub BtnClose_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub

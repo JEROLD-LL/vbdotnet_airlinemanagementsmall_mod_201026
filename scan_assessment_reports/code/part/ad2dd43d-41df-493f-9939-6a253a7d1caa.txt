@@ -1,0 +1,7 @@
+Public Shared Function ValidatePrice(price As Decimal) As List(Of String)
+        Dim errors As New List(Of String)
+        If price <= 0 Then
+            errors.Add("Price must be greater than 0.")
+        End If
+        Return errors
+    End Function

@@ -1,0 +1,8 @@
+Public Shared Sub Update(user As User)
+        Dim query As String = "UPDATE ""User"" SET email = @email, full_name = @full_name WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@id", user.Id)
+        )
+    End Sub

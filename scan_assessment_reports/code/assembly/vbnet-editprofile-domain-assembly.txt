@@ -1,0 +1,478 @@
+
+==================================================
+Part: EditProfileForm (UI-041)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Public Class EditProfileForm
+    Inherits Form
+
+    Private user As User
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblPassword As Label
+    Private txtEmail As TextBox
+    Private txtFullName As TextBox
+    Private txtPassword As TextBox
+    Private btnUpdate As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+        LoadProfile()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Edit Profile"
+        Me.Size = New Size(500, 350)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email: *"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        txtEmail = New TextBox()
+        txtEmail.Location = New Point(20, yPos + 20)
+        txtEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtEmail)
+        yPos += 50
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name: *"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        txtFullName = New TextBox()
+        txtFullName.Location = New Point(20, yPos + 20)
+        txtFullName.Size = New Size(450, 25)
+        Me.Controls.Add(txtFullName)
+        yPos += 50
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "New Password (Optional):"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(20, yPos)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(20, yPos + 20)
+        txtPassword.Size = New Size(450, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+        yPos += 50
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, yPos)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+        yPos += 50
+
+        ' Buttons
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Profile"
+        btnUpdate.Location = New Point(20, yPos)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, yPos)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+    Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtEmail.Text = user.Email
+        txtFullName.Text = user.FullName
+    End Sub
+
+    Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        If Not String.IsNullOrWhiteSpace(password) Then
+            errors.AddRange(ValidationHelper.ValidatePassword(password))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        user.Email = email
+        user.FullName = fullName
+
+        Try
+            UserRepository.Update(user)
+
+            If Not String.IsNullOrWhiteSpace(password) Then
+                UserRepository.UpdatePassword(user.Id, UserRepository.HashPassword(password))
+            End If
+
+            SessionManager.CurrentUser.FullName = user.FullName
+            SessionManager.CurrentUser.Email = user.Email
+
+            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: InitializeComponent (UI-042)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub InitializeComponent()
+        Me.Text = "Edit Profile"
+        Me.Size = New Size(500, 350)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email: *"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        txtEmail = New TextBox()
+        txtEmail.Location = New Point(20, yPos + 20)
+        txtEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtEmail)
+        yPos += 50
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name: *"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        txtFullName = New TextBox()
+        txtFullName.Location = New Point(20, yPos + 20)
+        txtFullName.Size = New Size(450, 25)
+        Me.Controls.Add(txtFullName)
+        yPos += 50
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "New Password (Optional):"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(20, yPos)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(20, yPos + 20)
+        txtPassword.Size = New Size(450, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+        yPos += 50
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, yPos)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+        yPos += 50
+
+        ' Buttons
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Profile"
+        btnUpdate.Location = New Point(20, yPos)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, yPos)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+==================================================
+Part: LoadProfile (PRT-043)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtEmail.Text = user.Email
+        txtFullName.Text = user.FullName
+    End Sub
+
+==================================================
+Part: BtnUpdate_Click (PRT-044)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        If Not String.IsNullOrWhiteSpace(password) Then
+            errors.AddRange(ValidationHelper.ValidatePassword(password))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        user.Email = email
+        user.FullName = fullName
+
+        Try
+            UserRepository.Update(user)
+
+            If Not String.IsNullOrWhiteSpace(password) Then
+                UserRepository.UpdatePassword(user.Id, UserRepository.HashPassword(password))
+            End If
+
+            SessionManager.CurrentUser.FullName = user.FullName
+            SessionManager.CurrentUser.Email = user.Email
+
+            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+==================================================
+Part: BtnCancel_Click (PRT-045)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+
+==================================================
+Part: New (PRT-046)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Public Sub New()
+        InitializeComponent()
+        LoadProfile()
+    End Sub
+
+==================================================
+Part: ProfileForm (UI-084)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/ProfileForm.vb
+==================================================
+Public Class ProfileForm
+    Inherits Form
+
+    Private user As User
+    Private lblUsername As Label
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblCreatedAt As Label
+    Private btnEdit As Button
+    Private btnClose As Button
+
+    Public Sub New()
+        InitializeComponent()
+        LoadProfile()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "My Profile"
+        Me.Size = New Size(500, 300)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Username
+        lblUsername = New Label()
+        lblUsername.Text = "Username:"
+        lblUsername.AutoSize = True
+        lblUsername.Location = New Point(20, yPos)
+        Me.Controls.Add(lblUsername)
+
+        Dim lblUsernameValue As New Label()
+        lblUsernameValue.AutoSize = True
+        lblUsernameValue.Location = New Point(150, yPos)
+        lblUsernameValue.Font = New Font("Arial", 10, FontStyle.Bold)
+        Me.Controls.Add(lblUsernameValue)
+        yPos += 30
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email:"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        Dim lblEmailValue As New Label()
+        lblEmailValue.AutoSize = True
+        lblEmailValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblEmailValue)
+        yPos += 30
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name:"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        Dim lblFullNameValue As New Label()
+        lblFullNameValue.AutoSize = True
+        lblFullNameValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblFullNameValue)
+        yPos += 30
+
+        ' Member Since
+        lblCreatedAt = New Label()
+        lblCreatedAt.Text = "Member Since:"
+        lblCreatedAt.AutoSize = True
+        lblCreatedAt.Location = New Point(20, yPos)
+        Me.Controls.Add(lblCreatedAt)
+
+        Dim lblCreatedAtValue As New Label()
+        lblCreatedAtValue.AutoSize = True
+        lblCreatedAtValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblCreatedAtValue)
+        yPos += 50
+
+        ' Buttons
+        btnEdit = New Button()
+        btnEdit.Text = "Edit Profile"
+        btnEdit.Location = New Point(20, yPos)
+        btnEdit.Size = New Size(150, 30)
+        AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+        Me.Controls.Add(btnEdit)
+
+        btnClose = New Button()
+        btnClose.Text = "Close"
+        btnClose.Location = New Point(320, yPos)
+        btnClose.Size = New Size(150, 30)
+        AddHandler btnClose.Click, AddressOf BtnClose_Click
+        Me.Controls.Add(btnClose)
+
+        ' Store references for updating
+        Me.Tag = New Object() {lblUsernameValue, lblEmailValue, lblFullNameValue, lblCreatedAtValue}
+    End Sub
+
+    Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        Dim labels As Object() = CType(Me.Tag, Object())
+        CType(labels(0), Label).Text = user.Username & " (cannot be changed)"
+        CType(labels(1), Label).Text = user.Email
+        CType(labels(2), Label).Text = user.FullName
+        CType(labels(3), Label).Text = user.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+    End Sub
+
+    Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Dim editForm As New EditProfileForm()
+        editForm.ShowDialog()
+        LoadProfile()
+    End Sub
+
+    Private Sub BtnClose_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: BtnEdit_Click (PRT-087)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/ProfileForm.vb
+==================================================
+Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Dim editForm As New EditProfileForm()
+        editForm.ShowDialog()
+        LoadProfile()
+    End Sub

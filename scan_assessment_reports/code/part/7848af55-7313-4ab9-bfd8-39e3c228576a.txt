@@ -1,0 +1,40 @@
+Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        If Not String.IsNullOrWhiteSpace(password) Then
+            errors.AddRange(ValidationHelper.ValidatePassword(password))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        user.Email = email
+        user.FullName = fullName
+
+        Try
+            UserRepository.Update(user)
+
+            If Not String.IsNullOrWhiteSpace(password) Then
+                UserRepository.UpdatePassword(user.Id, UserRepository.HashPassword(password))
+            End If
+
+            SessionManager.CurrentUser.FullName = user.FullName
+            SessionManager.CurrentUser.Email = user.Email
+
+            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub

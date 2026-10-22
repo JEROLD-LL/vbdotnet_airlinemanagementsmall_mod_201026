@@ -1,0 +1,248 @@
+{
+  "grounding": {
+    "audience": "The published section is for business stakeholders. Write in business language: what people do, what the product does, what happens, and what is out of scope. Research catalogs and MCP tools internally; do not put catalog keys, tool names, graph identifiers, class or method names, matcher expressions, or resolution statistics in the published text. Those belong only in the lineage sidecar.",
+    "closed_names": "Do not invent a product, role, function, or counterpart. Use only names and facts present in tool results and the shared briefs. Prefer canonical_names from system_brief.json, then names stakeholders would recognize (capability, actor, and process names) over internal module names.",
+    "one_story": "A behaviour has one status for the whole document. Use status_ledger from system_brief.json. If the ledger or evidence shows it is incomplete, commented out, disabled, or not dispatched, it is not a live capability. Do not describe it as a working step, outcome, or interface in this section.",
+    "quote_conditions": "When a rule has a number, status word, formula, or explicit condition, keep that wording in the business explanation. Do not invent a different threshold or rename a status.",
+    "scope_not_inventory": "Tool results describe the operational landscape so you do not invent systems. They are not a table to dump into the document. If the landscape is broader than the specified capabilities and processes, say in plain language that those areas are not specified here.",
+    "do_not_universalize": "Do not claim a control applies to every user, request, or path unless the records say so. Mention exceptions that appear in evidence, in business terms.",
+    "publish_structure": "When process_flow records include flow_steps or alternate_paths, publish that structure as numbered steps with Goal, System Response, and Outcome per step, and quote user-visible denial text from alternate_paths. Do not flatten those records into a single narrative paragraph. A Mermaid diagram supplements the steps; it does not replace them.",
+    "publish_related": "When a data entity and a constraint or rule describe the same fact, publish it on the entity and in the rules or validation section. Do not leave the fact only in lineage. Surface related config flags, related-party fields, and self-service variants instead of dropping them as too detailed.",
+    "verify_before_publishing": "Each section's required_mcp is a mandatory floor (always mcm_get_domain_bundle): load every preferred_domain on each project before composing. Escalation tools when a claim is thin, ambiguous, or contradicted are optional depth, not a substitute for those bundle loads. Deeper evidence sharpens your conclusion; it does not enter the wording."
+  },
+  "order": [
+    "document_summary",
+    "what_this_system_does",
+    "who_uses_it",
+    "business_value",
+    "core_business_functions",
+    "feature_specifications",
+    "primary_user_journeys",
+    "user_actions_and_outcomes",
+    "business_logic",
+    "validation_rules",
+    "decision_points",
+    "business_data_types",
+    "information_flow",
+    "user_interactions",
+    "external_business_connections",
+    "glossary",
+    "integration_points",
+    "functional_issues_and_anomalies",
+    "dependencies_on_other_subsections",
+    "assumptions_confidence_and_gaps"
+  ],
+  "sections": {
+    "document_summary": {
+      "heading": "Document Summary",
+      "template_path": "functional_specification_document.document_summary",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "capability",
+        "actor"
+      ],
+      "query": "Write a Document Summary with two distinct sections:\n\nFIRST SECTION - Document Metadata (do NOT include 'PART 1' or any section header in output):\nProvide the following metadata fields with bold labels:\n(1) System/Application Name. CRITICAL: Read `system_type` and `type_evidence` from architecture_brief.json. Put that type after the system name in parentheses. Format example: 'SystemName (VB6 Desktop Application for [brief description])'. Use `system_type` verbatim; do not inspect local file extensions such as .vbp, .frm, or .cls.\n(2) Document Purpose (state it is a Business Functional Specification)\n(3) Analysis Date\n(4) Source of Analysis (e.g., reverse engineering from application source code, component documentation, assembly specifications)\n(5) Scope Exclusions (state: excludes technical implementation details including programming languages, frameworks, database schemas, system architecture, performance metrics, infrastructure requirements, and deployment specifications)\n(6) Intended Audience (list roles: business managers, product owners, business analysts, compliance officers, end users, stakeholders, operations staff)\n\nAdd a horizontal rule separator (---) after the metadata section.\n\nSECOND SECTION - Executive Overview (add only '**Executive Overview**' as section header, do NOT include 'PART 2'):\nWrite a concise 3-4 sentence executive summary (target: 180-220 words maximum) for C-level stakeholders. Present as flowing prose covering: (1) primary business problem solved (one sentence), (2) top 3-4 capabilities in ONE sentence with inline comma-separated list (example format: 'Key capabilities include monitoring, tracking, reporting, and alerts'), (3) primary user types in ONE sentence with inline comma-separated list (example format: 'Primary users include managers, technicians, and administrators'), (4) top business value in ONE sentence focusing on 1-2 key benefits (example format: 'Delivers operational efficiency and regulatory compliance'). CRITICAL CONSTRAINTS: Use ONLY summary-level prose - NO bullet points, NO bold section labels like 'Key Capabilities:', NO detailed descriptions, NO multi-paragraph explanations. Total length MUST be under 220 words. This is a high-level executive briefing - avoid duplicating details that appear in subsequent document sections. Derive the system name from the catalogs and the system type from architecture_brief.json. Keep the executive overview at summary level and free of implementation vocabulary. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "what_this_system_does": {
+      "heading": "What This System Does",
+      "template_path": "functional_specification_document.business_overview.what_this_system_does",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "capability",
+        "constraint"
+      ],
+      "query": "Describe the high-level business purpose and problem statement: (1) What business problem or operational challenge does this system address? (2) What is the primary business purpose? (3) Define business scope boundaries - what operational areas does it handle vs. explicitly NOT handle? Bound those boundaries from capability and constraint records only. Do not invent out-of-scope product names, channels, or exclusions that do not appear in the records. Do NOT enumerate specific business functions (those belong in Core Business Functions section). Do NOT describe user roles (those belong in Who Uses It section). Do NOT list business value or outcomes (those belong in Business Value section). Focus exclusively on problem context and scope boundaries - keep this to 2-3 concise paragraphs. FORMATTING: Use proper paragraph breaks. After every 2-3 sentences, start a new paragraph for readability. Describe what the product does and does not do; do not turn this into a module map. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals.",
+      "diagram_query": "Create a SIMPLE high-level system overview with MAX 5-7 nodes. Show only major modules - NO granular details, NO subcomponents. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the process, relationship, or structure being described. Visual simplicity must not result in loss of important business or conceptual information. Produce only valid Mermaid.js code. Output nothing else. Label diagram nodes with business names of roles, capabilities, journeys, or outcomes from the records you used. Do not invent labels. Do not use catalog keys as node text."
+    },
+    "who_uses_it": {
+      "heading": "Who Uses It",
+      "metric_key": "user_roles",
+      "template_path": "functional_specification_document.business_overview.who_uses_it",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "actor"
+      ],
+      "query": "Provide comprehensive documentation of ALL distinct user types and roles from the actor catalog. Publish every distinct actor record using that record's item name as the role heading. Do not merge named roles into a single operator or staff paragraph to save space. This is the ONLY section for user role information. For each user type, specify: (1) Role name and description, (2) Primary business goals, (3) Key activities they perform in the system, (4) How their success is measured, (5) Permission levels and access constraints, (6) Business context for why this role exists. Include every actor category present in the catalog: operators, managers and supervisors, administrators, external parties, and system accounts. Be thorough and complete - this section should be the single authoritative source for understanding who uses the system and how. CRITICAL FORMATTING: Limit each role description to 3-4 concise sentences maximum covering all required elements. Use semicolon-separated lists for activities and goals to maintain brevity while ensuring completeness. Describe access and constraints in business terms, only where records support them. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals.",
+      "diagram_query": "Create an org chart of distinct user roles from the actor catalog. Include every named actor as a node when there are 12 or fewer; if there are more, show the main categories as nodes and still list every named role in the prose. MAX 12 nodes. Show role names - NO individual permission strings, NO catalog keys. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the process, relationship, or structure being described. Visual simplicity must not result in loss of important business or conceptual information. Produce only valid Mermaid.js code. Output nothing else. Label diagram nodes with business names of roles from the records you used. Do not invent labels. Do not use catalog keys as node text."
+    },
+    "business_value": {
+      "heading": "Business Value",
+      "template_path": "functional_specification_document.business_overview.business_value",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "capability",
+        "business_rule"
+      ],
+      "query": "Provide comprehensive documentation of ALL business value delivered by the system. This is the ONLY section for business value, outcomes, and benefits. Organize by value categories and describe: (1) Operational Efficiency - how the system streamlines operations, reduces overhead, accelerates processes, with specific efficiency gains and time savings, (2) Data Accuracy and Compliance - how validation, audit trails, and data integrity support regulatory compliance and operational accountability, (3) User Productivity - how interfaces, workflows, and automation improve user efficiency and reduce training burden, (4) Process Improvements - how the system enhances workflow quality, reduces errors, and improves operational coordination, (5) Risk Mitigation and Safety - how the system prevents errors, ensures compliance, and reduces operational risk, (6) Cost Reduction - how automation and efficiency translate to reduced labor costs and operational expenses, (7) Accountability and Transparency - how audit trails and tracking build organizational trust and support compliance verification. Be thorough and specific - this section should be the single authoritative source for understanding business value delivery. IMPORTANT: Keep each value category concise - maximum 4-5 sentences per category. Focus on the most impactful benefits and use clear, direct language without excessive repetition. Claim value only where capabilities and rules support it. Do not treat incomplete behaviour as a delivered benefit. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "core_business_functions": {
+      "heading": "Core Business Functions",
+      "metric_key": "business_functions",
+      "template_path": "functional_specification_document.functional_capabilities.core_business_functions",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "capability"
+      ],
+      "query": "Provide comprehensive documentation of ALL functional areas and capabilities. This is the ONLY section for detailed business function enumeration. One published functional area per capability record. Call out cross-cutting operational modes that have their own capability records (for example multi-site operations, any-location fulfilment, shared inventory) as their own areas, not only as a mention inside another function. For each functional area, describe: (1) Functional area name and purpose, (2) Specific capabilities provided within this area, (3) Business impact in terms of efficiency, compliance, revenue, user satisfaction, or risk mitigation, (4) How this function supports business operations. Be thorough and complete - this section should be the single authoritative source for understanding what the system does functionally. FORMATTING: Use proper paragraph breaks. After every 2-3 sentences, start a new paragraph for readability. CRITICAL BOUNDARY: Focus on WHAT the system does (functional capabilities) and WHY it matters (business impact). Do NOT include detailed user scenarios, step-by-step workflows, or specific user interaction examples - those belong in Feature Specifications and User Journeys sections. Keep descriptions at the functional capability level, not the feature implementation level. Describe capabilities in general terms without walking through specific usage scenarios. If the operational landscape includes areas with no capability write-up, mention those as unspecified in business language. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals.",
+      "diagram_query": "Create a SIMPLE flowchart with MAX 6-8 functional areas. Show only top-level business functions - NO sub-functions, NO detailed processes. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the process, relationship, or structure being described. Visual simplicity must not result in loss of important business or conceptual information. Produce only valid Mermaid.js code. Output nothing else. Label diagram nodes with business names of roles, capabilities, journeys, or outcomes from the records you used. Do not invent labels. Do not use catalog keys as node text."
+    },
+    "feature_specifications": {
+      "heading": "Feature Specifications",
+      "template_path": "functional_specification_document.functional_capabilities.feature_specifications",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "capability",
+        "process_flow"
+      ],
+      "query": "For each major feature, drive the write-up from process_flow records. After a short business-need sentence, publish a numbered step list. Each step must have three labelled sub-fields: Goal (what the user is trying to do), System Response (what the product does), and Outcome (what is true when the step succeeds). Source steps from process_flow flow_steps; source Goal and Outcome from the flow's goal and outcome fields when they apply to that step. After the steps, list denial and alternate paths using the verbatim user-visible wording from alternate_paths when present — do not paraphrase those strings down to 'an error is shown'. Also state success measures and dependencies on other processes. Do not flatten this into 2-3 narrative paragraphs. Do NOT repeat general functional capability descriptions. User-facing scenarios from process flows and capabilities. A step that does not actually run must not appear as a successful scenario. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals.",
+      "diagram_query": "Create a SIMPLE dependency graph with MAX 6-8 major features only. Show only primary dependencies - NO granular breakdowns, NO minor connections. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the process, relationship, or structure being described. Visual simplicity must not result in loss of important business or conceptual information. Produce only valid Mermaid.js code. Output nothing else. If features interact through request-response or data handoff patterns between distinct components, prefer a sequence diagram to show the interaction. Label diagram nodes with business names of roles, capabilities, journeys, or outcomes from the records you used. Do not invent labels. Do not use catalog keys as node text."
+    },
+    "primary_user_journeys": {
+      "heading": "Primary User Journeys",
+      "metric_key": "user_journeys",
+      "template_path": "functional_specification_document.user_journeys.primary_user_journeys",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "process_flow",
+        "actor"
+      ],
+      "query": "Generate complete user journeys from process_flow records. Create an ordered array of journey blocks: First, provide a PRIMARY journey overview that summarizes all user journeys with a SIMPLE high-level diagram (MAX 5-7 nodes) showing sub-journeys as components. Then, for EACH distinct sub-journey, provide: (1) Journey Name, (2) User Type, (3) Business Trigger, (4) Goal, (5) numbered Step-by-Step Flow where each step has Goal, System Response, and Outcome, (6) Decision Points, (7) Alternative Paths with verbatim denial text from alternate_paths, (8) Business Outcome. Preserve staff and self-service variants as separate blocks or as explicit alternate paths when both exist in the records. Each block must include BOTH the numbered step contract AND a SIMPLE Mermaid diagram (MAX 5-7 nodes per diagram). The diagram supplements the steps; it does not replace them. Choose 'flowchart' for process flows or 'sequence' for multi-party interactions (MAX 4 participants, MAX 6-8 messages). All diagrams: Design for 4:3 aspect ratio - use vertical (TD) layout. Produce only valid Mermaid.js code. Do not collapse the journey into 3-4 narrative paragraphs. Participants are roles and business systems as users would recognize them. Omit steps that evidence says do not run. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "user_actions_and_outcomes": {
+      "heading": "User Actions and Outcomes",
+      "template_path": "functional_specification_document.user_journeys.user_actions_and_outcomes",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "process_flow",
+        "interface"
+      ],
+      "query": "List significant user actions across all journeys, and for each action, describe the business context, the user's intent, the data required, the system's response, and the resulting business outcome. Group actions by journey or functional area for clarity. Keep each action description concise (2-3 sentences) while ensuring all critical action details are preserved. User-visible actions and results only. Keep the same live-versus-not-live story as the journeys. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "business_logic": {
+      "heading": "Business Logic",
+      "metric_key": "business_rules",
+      "template_path": "functional_specification_document.business_rules_and_processes.business_logic",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "business_rule"
+      ],
+      "query": "Describe all relevant business rule categories, and for each rule, state its name, when it applies, the business logic in clear terms, and its business impact. Include important business calculations with their purpose, logic, and where their results are used. Surface related records instead of dropping them as too detailed: self-service versus staff variants, implicit invariants (what does not happen), configuration flags, and policies marked as not applied at runtime. Do not describe a not-applied setting as a live calculation. Limit each rule description to 3-5 concise sentences. Keep numeric and status wording from the records. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "validation_rules": {
+      "heading": "Validation Rules",
+      "template_path": "functional_specification_document.business_rules_and_processes.validation_rules",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "constraint",
+        "business_rule"
+      ],
+      "query": "List all business validation rules by data type, specifying whether they are required, the accepted format or pattern, the business logic behind the validation, and the importance of enforcing the rule from a business perspective. Include constraints that attach to the same data types, and related-party or policy fields that the records treat as required. Keep each validation rule description concise (2-3 sentences) while ensuring all business-critical validation logic is fully documented. What users must provide and what happens when they cannot. Do not generalize access or format rules beyond the records. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "decision_points": {
+      "heading": "Decision Points",
+      "template_path": "functional_specification_document.business_rules_and_processes.decision_points",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "business_rule",
+        "process_flow"
+      ],
+      "query": "List the key business decision points in the system, and for each, describe the context, the criteria for making the decision, the available options with their expected outcomes, and the logic used to select an option. Keep each decision point description concise (3-4 sentences) while ensuring all business-critical decision logic is fully documented. Business decisions, options, and outcomes from the records. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals.",
+      "diagram_query": "Create a SIMPLE decision tree with MAX 5-7 decision points. Show only key business decisions - NO edge cases, NO detailed branches. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the process, relationship, or structure being described. Visual simplicity must not result in loss of important business or conceptual information. Produce only valid Mermaid.js code. Output nothing else. Label diagram nodes with business names of roles, capabilities, journeys, or outcomes from the records you used. Do not invent labels. Do not use catalog keys as node text."
+    },
+    "business_data_types": {
+      "heading": "Business Data Types",
+      "template_path": "functional_specification_document.data_and_information.business_data_types",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "data_entity"
+      ],
+      "query": "List all business data entities handled by the system, and for each, state its purpose, the important fields and their business use, the data sources, where the data is used, and the lifecycle stages from creation to deletion. Publish the business-significant fields from key_fields, including related-party fields, policy flags, location or channel flags, and configuration knobs — do not reduce an entity to identity fields only. If a setting is recorded as stored or displayed but not applied at runtime, say so in the entity write-up. When a constraint or rule describes the same fact, still mention it here. Keep each entity description concise while ensuring those fields are named. Information the business cares about, from the data catalog only. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "information_flow": {
+      "heading": "Information Flow",
+      "template_path": "functional_specification_document.data_and_information.information_flow",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "process_flow",
+        "integration"
+      ],
+      "query": "Describe the flow of information in the business process, starting from data entry (source and method), through processing (which processes use the data), to storage (who has access), and finally to output (reports generated and notifications sent). Use concise language (2-3 sentences per flow stage) while ensuring all critical data transformation and handoff points are documented. How information moves between business functions. Do not invent stores or brokers. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals.",
+      "diagram_query": "Create a SIMPLE data flow with MAX 6-8 nodes. Show only: Input → Processing → Storage → Output. NO detailed field mappings, NO transformation logic. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the process, relationship, or structure being described. Visual simplicity must not result in loss of important business or conceptual information. Produce only valid Mermaid.js code. Output nothing else. If the information flow involves multiple distinct actors or components exchanging data in a request-response pattern, prefer a sequence diagram over a flowchart. Label diagram nodes with business names of roles, capabilities, journeys, or outcomes from the records you used. Do not invent labels. Do not use catalog keys as node text."
+    },
+    "user_interactions": {
+      "heading": "User Interactions",
+      "template_path": "functional_specification_document.business_interfaces.user_interactions",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "interface"
+      ],
+      "query": "List all user-facing business interfaces (e.g., dashboards, forms), and for each, describe its business purpose, the capabilities it offers, and the information it displays. Keep each interface description concise (2-3 sentences) while ensuring all key business capabilities are documented. What users see and do, from the interface catalog. If that catalog is empty, say so and write nothing invented. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "external_business_connections": {
+      "heading": "External Business Connections",
+      "template_path": "functional_specification_document.business_interfaces.external_business_connections",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "integration"
+      ],
+      "query": "List all external business systems that the system integrates with, and for each, describe the relationship and purpose of integration, the data shared, the process integration points, and the business value gained from this integration. Keep each integration description concise (3-4 sentences) while ensuring all critical integration characteristics are documented. Outside parties in business terms. Unresolved connections are unknown counterparties, not a health report. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals.",
+      "diagram_query": "Create a SIMPLE integration diagram with MAX 5-7 external systems. Show only system names and connection direction - NO API details, NO data specifics. Design for 4:3 aspect ratio - use vertical (TD) layout to ensure balanced height-to-width. Ensure the diagram captures the full essence of the process, relationship, or structure being described. Visual simplicity must not result in loss of important business or conceptual information. Produce only valid Mermaid.js code. Output nothing else. If external systems interact via request-response or data exchange patterns, prefer a sequence diagram to show the interaction flow between participants. Label diagram nodes with business names of roles, capabilities, journeys, or outcomes from the records you used. Do not invent labels. Do not use catalog keys as node text."
+    },
+    "glossary": {
+      "heading": "Glossary",
+      "template_path": "functional_specification_document.glossary",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "glossary_term",
+        "business_rule",
+        "actor"
+      ],
+      "query": "Provide definitions for domain-specific business terms, technical concepts, acronyms, processes, and roles used throughout the system. Include terms that appear as named rules or settings in the catalogs, including settings labelled as not applied at runtime — define those as configuration that is not live policy. Focus on terminology that requires explanation for business stakeholders to understand system operations. For each term, include: (1) Clear definition, (2) Context of use in system operations, (3) Related terms for cross-reference. Do NOT include business value drivers (Operational Efficiency, Cost Reduction, Regulatory Compliance, User Productivity, Risk Mitigation, Safety, Data Accuracy, Maintainability, Scalability, Performance, Security, etc.) as these are comprehensively covered in the Business Value section. Do NOT include detailed business goals or value propositions - keep definitions focused on explaining what the term means and how it's used operationally. Terms users and operators need. If the glossary catalog is empty, define terms from capabilities, actors, rules, and settings without claiming a glossary catalog exists. Write for business stakeholders. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim. If evidence marks a behaviour incomplete or not executed, do not present it as working. If operations exist that are not specified, say so in plain language without listing internals."
+    },
+    "integration_points": {
+      "heading": "Business Process Handoffs",
+      "metric_key": "integration_points",
+      "template_path": "functional_specification_document.project_level_functional_details.integration_points",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "capability",
+        "process_flow",
+        "actor"
+      ],
+      "query": "Write a concise stakeholder register of internal business-process handoffs. Include only event-based transfers where one role, capability, journey, or business function passes information, responsibility, or an outcome to another inside the product. For each handoff use exactly four labelled fields: Handoff, From / To, Trigger, and Business outcome. Keep each field to one sentence. Use business names that stakeholders recognize. Do not list external systems, APIs, protocols, or counterparties — those belong in External Business Connections. Do not list static prerequisites — those belong in Cross-Functional Dependencies. If no internal handoffs are evidenced, say so in one sentence. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim."
+    },
+    "functional_issues_and_anomalies": {
+      "heading": "Known Functional Limitations",
+      "metric_key": "issues_anomalies",
+      "template_path": "functional_specification_document.project_level_functional_details.functional_issues_and_anomalies",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "constraint",
+        "capability",
+        "process_flow"
+      ],
+      "query": "Write a concise stakeholder register of known functional limitations. Organize evidenced items under two headings only: Unavailable or incomplete functions, and Inconsistent or unexpected behaviour. For each item use exactly three labelled fields: Behaviour, Business impact, and Current status. State plainly whether the function is unavailable, incomplete, or inconsistent. Include only behaviour users or business operations can experience. Exclude codebase structure, programming or infrastructure details, speculative root causes, and normal configurable choices unless a setting creates a demonstrated user-facing limitation. Do not restate working capabilities. If a group has no evidence, write 'None evidenced.' Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim."
+    },
+    "dependencies_on_other_subsections": {
+      "heading": "Cross-Functional Dependencies",
+      "template_path": "functional_specification_document.project_level_functional_details.dependencies_on_other_subsections",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "process_flow",
+        "capability",
+        "business_rule"
+      ],
+      "query": "Write a concise stakeholder register of cross-functional prerequisites between business capabilities, processes, roles, rules, and information. Describe what one business function requires from another before it can operate correctly; do not describe dependencies between headings or sections of this document. For each dependency use exactly three labelled fields: Business function, Depends on, and Why it matters. Use stakeholder-recognizable business names and explain the operational consequence if the dependency is unavailable. Do not repeat event-based transfers already covered in Business Process Handoffs. If no cross-functional dependencies are evidenced, say so in one sentence. Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim."
+    },
+    "assumptions_confidence_and_gaps": {
+      "heading": "Evidence, Assumptions and Gaps",
+      "template_path": "functional_specification_document.project_level_functional_details.assumptions_confidence_and_gaps",
+      "required_mcp": ["mcm_get_domain_bundle"],
+      "preferred_domains": [
+        "constraint",
+        "capability"
+      ],
+      "query": "Write a concise stakeholder evidence register in exactly four labelled groups: Confirmed, Inferred, Assumptions, and Information gaps. Confirmed contains directly evidenced business behaviour. Inferred contains likely business behaviour that follows from evidence but is not directly demonstrated. Assumptions contains only interpretations required to understand scope. Information gaps contains only business questions the available evidence cannot answer. Each bullet must be one plain-language sentence that states why the point matters to stakeholders. Do not include confidence scores, catalog terminology, codebase structure, programming details, or invented gaps. Do not repeat known limitations unless the unresolved business question itself is the gap. If a group has no evidence, write 'None evidenced.' Keep catalog keys, tool names, and implementation identifiers out of the published text; use them only while researching and put them in lineage. Invent nothing, and research as deeply as the evidence requires before publishing or dropping a claim."
+    }
+  }
+}

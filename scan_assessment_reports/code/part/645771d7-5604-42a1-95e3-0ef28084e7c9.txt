@@ -1,0 +1,27 @@
+Private Sub InitializeComponent()
+        Me.Text = "Flight Details"
+        Me.Size = New Size(500, 400)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        lblDetails = New Label()
+        lblDetails.Location = New Point(20, 20)
+        lblDetails.Size = New Size(450, 300)
+        lblDetails.AutoSize = False
+        Me.Controls.Add(lblDetails)
+
+        btnBook = New Button()
+        btnBook.Text = "Book This Flight"
+        btnBook.Location = New Point(20, 330)
+        btnBook.Size = New Size(150, 30)
+        AddHandler btnBook.Click, AddressOf BtnBook_Click
+        Me.Controls.Add(btnBook)
+
+        btnClose = New Button()
+        btnClose.Text = "Close"
+        btnClose.Location = New Point(320, 330)
+        btnClose.Size = New Size(150, 30)
+        AddHandler btnClose.Click, AddressOf BtnClose_Click
+        Me.Controls.Add(btnClose)
+    End Sub

@@ -1,0 +1,17 @@
+Private Sub LoadCustomers()
+        Dim users As List(Of User) = UserRepository.GetAll()
+
+        dgvCustomers.Columns.Clear()
+        dgvCustomers.Columns.Add("Id", "ID")
+        dgvCustomers.Columns.Add("Username", "Username")
+        dgvCustomers.Columns.Add("Email", "Email")
+        dgvCustomers.Columns.Add("FullName", "Full Name")
+        dgvCustomers.Columns.Add("Role", "Role")
+        dgvCustomers.Columns.Add("CreatedAt", "Member Since")
+
+        dgvCustomers.Rows.Clear()
+        For Each user In users
+            Dim roleDisplay As String = If(user.Role = "admin", "Admin", "User")
+            dgvCustomers.Rows.Add(user.Id, user.Username, user.Email, user.FullName, roleDisplay, user.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"))
+        Next
+    End Sub

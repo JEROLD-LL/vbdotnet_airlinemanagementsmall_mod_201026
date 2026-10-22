@@ -1,0 +1,62 @@
+Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim flightNumber As String = txtFlightNumber.Text.Trim()
+        Dim origin As String = txtOrigin.Text.Trim()
+        Dim destination As String = txtDestination.Text.Trim()
+        Dim departureDate As DateTime = dtpDepartureDate.Value.Date
+        Dim departureTime As TimeSpan = dtpDepartureTime.Value.TimeOfDay
+        Dim arrivalTime As TimeSpan = dtpArrivalTime.Value.TimeOfDay
+        Dim price As Decimal
+        Dim availableSeats As Integer
+
+        If String.IsNullOrWhiteSpace(flightNumber) Then
+            errors.Add("Flight number is required.")
+        ElseIf flightNumber <> flight.FlightNumber AndAlso FlightRepository.FlightNumberExists(flightNumber) Then
+            errors.Add("Flight number already exists. Please use a unique flight number.")
+        End If
+
+        If String.IsNullOrWhiteSpace(origin) Then
+            errors.Add("Origin is required.")
+        End If
+
+        If String.IsNullOrWhiteSpace(destination) Then
+            errors.Add("Destination is required.")
+        End If
+
+        If Not Decimal.TryParse(txtPrice.Text, price) Then
+            errors.Add("Valid price is required.")
+        Else
+            errors.AddRange(ValidationHelper.ValidatePrice(price))
+        End If
+
+        If Not Integer.TryParse(txtAvailableSeats.Text, availableSeats) Then
+            errors.Add("Valid available seats is required.")
+        Else
+            errors.AddRange(ValidationHelper.ValidateAvailableSeats(availableSeats))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        flight.FlightNumber = flightNumber
+        flight.Origin = origin
+        flight.Destination = destination
+        flight.DepartureDate = departureDate
+        flight.DepartureTime = departureTime
+        flight.ArrivalTime = arrivalTime
+        flight.Price = price
+        flight.AvailableSeats = availableSeats
+
+        Try
+            FlightRepository.Update(flight)
+            MessageBox.Show("Flight updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub

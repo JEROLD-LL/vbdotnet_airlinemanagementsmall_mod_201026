@@ -1,0 +1,51 @@
+Imports System.Data
+Imports Npgsql
+
+Public Class DatabaseHelper
+    Private Shared ReadOnly ConnectionString As String = "Host=localhost;Database=AirlineManagement;Username=postgres;Password=postgres123"
+
+    Public Shared Function GetConnection() As NpgsqlConnection
+        Return New NpgsqlConnection(ConnectionString)
+    End Function
+
+    Public Shared Function ExecuteNonQuery(query As String, ParamArray parameters As NpgsqlParameter()) As Integer
+        Using conn As NpgsqlConnection = GetConnection()
+            conn.Open()
+            Using cmd As New NpgsqlCommand(query, conn)
+                If parameters IsNot Nothing Then
+                    cmd.Parameters.AddRange(parameters)
+                End If
+                Return cmd.ExecuteNonQuery()
+            End Using
+        End Using
+    End Function
+
+    Public Shared Function ExecuteScalar(query As String, ParamArray parameters As NpgsqlParameter()) As Object
+        Using conn As NpgsqlConnection = GetConnection()
+            conn.Open()
+            Using cmd As New NpgsqlCommand(query, conn)
+                If parameters IsNot Nothing Then
+                    cmd.Parameters.AddRange(parameters)
+                End If
+                Return cmd.ExecuteScalar()
+            End Using
+        End Using
+    End Function
+
+    Public Shared Function ExecuteReader(query As String, ParamArray parameters As NpgsqlParameter()) As NpgsqlDataReader
+        Dim conn As NpgsqlConnection = GetConnection()
+        conn.Open()
+        Dim cmd As New NpgsqlCommand(query, conn)
+        If parameters IsNot Nothing Then
+            cmd.Parameters.AddRange(parameters)
+        End If
+        Return cmd.ExecuteReader(CommandBehavior.CloseConnection)
+    End Function
+
+    Public Shared Function BeginTransaction() As NpgsqlTransaction
+        Dim conn As NpgsqlConnection = GetConnection()
+        conn.Open()
+        Return conn.BeginTransaction()
+    End Function
+End Class
+

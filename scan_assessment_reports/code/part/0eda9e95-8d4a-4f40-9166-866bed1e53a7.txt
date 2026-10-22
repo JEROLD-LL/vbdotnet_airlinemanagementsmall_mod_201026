@@ -1,0 +1,9 @@
+Public Shared Function ValidateEmail(email As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(email) Then
+            errors.Add("Email is required.")
+        ElseIf Not Regex.IsMatch(email, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$") Then
+            errors.Add("Invalid email format.")
+        End If
+        Return errors
+    End Function

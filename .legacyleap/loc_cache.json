@@ -1,0 +1,37 @@
+{
+  "code_count": 2291,
+  "documentation_count": 1381,
+  "empty_count": 1042,
+  "string_count": 540,
+  "file_count": 35,
+  "source_count": 2831,
+  "test_code_count": 0,
+  "test_documentation_count": 0,
+  "test_empty_count": 0,
+  "test_string_count": 0,
+  "test_file_count": 0,
+  "test_source_count": 0,
+  "languages": [
+    {
+      "language": "VB.net",
+      "code_count": 2291,
+      "documentation_count": 85,
+      "empty_count": 413,
+      "string_count": 0,
+      "file_count": 26,
+      "source_count": 2291
+    },
+    {
+      "language": "Markdown",
+      "code_count": 0,
+      "documentation_count": 1296,
+      "empty_count": 629,
+      "string_count": 540,
+      "file_count": 9,
+      "source_count": 540
+    }
+  ],
+  "test_languages": [],
+  "scan_duration_ms": 762,
+  "scanned_at": "2026-10-22T11:55:55.077418Z"
+}

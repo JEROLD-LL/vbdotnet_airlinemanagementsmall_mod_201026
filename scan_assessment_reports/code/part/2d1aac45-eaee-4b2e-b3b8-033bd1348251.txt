@@ -1,0 +1,7 @@
+Public Shared Sub DecrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats - 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub

@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0",
+  "dataset": {
+    "required": [
+      "schema_version",
+      "project_id",
+      "domain_key",
+      "dataset_key",
+      "item_type",
+      "categories",
+      "items",
+      "rejected"
+    ],
+    "shape": {
+      "schema_version": "string",
+      "project_id": "string",
+      "domain_key": "string",
+      "dataset_key": "string",
+      "item_type": "string",
+      "categories": "Category[]",
+      "items": "Item[]",
+      "rejected": "RejectedCandidate[]"
+    }
+  },
+  "category": {
+    "required": [
+      "category_key",
+      "category_name",
+      "item_count",
+      "item_keys"
+    ],
+    "shape": {
+      "category_key": "string",
+      "category_name": "string",
+      "item_count": "integer",
+      "item_keys": "string[]"
+    }
+  },
+  "item": {
+    "required": [
+      "item_key",
+      "item_name",
+      "statement",
+      "category_key",
+      "confidence",
+      "fields",
+      "evidence",
+      "relationships"
+    ],
+    "shape": {
+      "item_key": "string",
+      "item_name": "string",
+      "statement": "string",
+      "category_key": "string",
+      "confidence": "observed|inferred",
+      "fields": "object",
+      "evidence": "Evidence[]",
+      "relationships": "Relationship[]"
+    }
+  },
+  "evidence": {
+    "required": [
+      "part_id",
+      "part_name",
+      "role",
+      "quote",
+      "file_path",
+      "line_number",
+      "enclosing_symbol"
+    ]
+  },
+  "relationship": {
+    "required": [
+      "kind",
+      "target_domain",
+      "target_key",
+      "shared_part_ids"
+    ]
+  },
+  "rejected_candidate": {
+    "required": [
+      "candidate_id",
+      "reason"
+    ]
+  },
+  "batch": {
+    "required": [
+      "batch_id",
+      "project_id",
+      "domain_key",
+      "items",
+      "rejected",
+      "stats"
+    ],
+    "shape": {
+      "batch_id": "string",
+      "project_id": "string",
+      "domain_key": "string",
+      "items": "Item[]",
+      "rejected": "RejectedCandidate[]",
+      "stats": "object"
+    },
+    "item_required": [
+      "item_key",
+      "item_name",
+      "statement",
+      "category_key",
+      "confidence",
+      "fields",
+      "evidence",
+      "relationships"
+    ],
+    "evidence_required": [
+      "part_id",
+      "part_name",
+      "role",
+      "quote",
+      "file_path",
+      "line_number",
+      "enclosing_symbol"
+    ],
+    "confidence_enum": ["observed", "inferred"],
+    "notes": [
+      "Use category_key, never category",
+      "confidence must be a string enum, never a number",
+      "relationships must be [] in batch files"
+    ]
+  }
+}

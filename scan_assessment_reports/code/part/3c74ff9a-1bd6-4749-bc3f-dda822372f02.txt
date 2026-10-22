@@ -1,0 +1,12 @@
+Public Shared Function Create(user As User) As Integer
+        Dim query As String = "INSERT INTO ""User"" (username, password, email, full_name, role, created_at) VALUES (@username, @password, @email, @full_name, @role, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@username", user.Username),
+            New NpgsqlParameter("@password", user.Password),
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@role", user.Role),
+            New NpgsqlParameter("@created_at", user.CreatedAt)
+        ))
+        Return id
+    End Function

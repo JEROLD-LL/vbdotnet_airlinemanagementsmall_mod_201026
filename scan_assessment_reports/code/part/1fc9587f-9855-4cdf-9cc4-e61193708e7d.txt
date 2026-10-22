@@ -1,0 +1,5 @@
+Public Shared Function EmailExists(email As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE email = @email"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@email", email)))
+        Return count > 0
+    End Function

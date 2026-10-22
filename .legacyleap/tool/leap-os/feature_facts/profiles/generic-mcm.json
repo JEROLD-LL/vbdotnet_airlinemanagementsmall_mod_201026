@@ -1,0 +1,62 @@
+{
+  "name": "generic-mcm",
+  "description": "Language-neutral fallback driven by MCM kinds, layers, relationships and cognitive text.",
+  "priority": 0,
+  "detect": {},
+  "screen": {
+    "kinds": ["Class", "Form", "Configuration", "API", "Component", "Controller", "Page"],
+    "designer_path_regex": "(?!x)x",
+    "strip_suffixes": [],
+    "framework_prefixes": [],
+    "generated_path_regex": "(^|/)(generated|dist|build|vendor|node_modules)/",
+    "ui_strategy": "layer_if_any",
+    "ui_layer_regex": "(presentation|ui|frontend|client|web|controller|endpoint)",
+    "entry_kinds": ["Form", "API", "Component", "Controller", "Page"]
+  },
+  "database": {
+    "driver_regex": "connection|datasource|client|driver|command|adapter|reader|transaction|session|entitymanager|repository|jdbc|odbc|mongoose|sequelize|hibernate|^open$|^close$|^execute|^dispose$",
+    "require_schema": false
+  },
+  "events": {
+    "qualified_name_regex": ".*",
+    "name_regex": "^(?:(?P<control>.+?)[_.-])?(?P<event>on[A-Z][A-Za-z0-9_]*|on_[a-z0-9_]+|click|change|submit|load|input|blur|focus|validate|validating|keydown|keyup)$"
+  },
+  "controls": {
+    "members": ["items", "value", "checked", "selected", "options", "text", "label", "placeholder", "dataSource", "src", "disabled", "visible"],
+    "ignore_names": ["me", "e", "event", "sender", "this", "self", "string", "system"],
+    "case_insensitive": true
+  },
+  "navigation": {
+    "nouns": ["form", "control", "screen", "window", "dialog", "page", "panel", "module", "view", "route", "endpoint"],
+    "verbs_regex": "open|show|display|embed|load|launch|navigat|redirect|route|switch|forward",
+    "direct_methods": ["Show", "ShowDialog", "navigate", "redirect", "push", "replace"]
+  },
+    "features": {
+        "authentication_key_regex": "log[_-]?in|sign[_-]?in|log[_-]?on|splash|auth|session",
+        "platform_reason": "not recognized as a user-facing entry point by the selected profile"
+    },
+    "openapi": {
+        "server": {
+            "default_url": "http://localhost:8000",
+            "description": "Replace {baseUrl} with the deployed service root URL.",
+            "url_template": "{baseUrl}/api",
+            "base_url_variable_description": "Service base URL (scheme + host + optional port)."
+        },
+        "security": {
+            "scheme_name": "BearerAuth",
+            "type": "http",
+            "scheme": "bearer",
+            "format": "JWT",
+            "description": "Token obtained from the authentication endpoint. Required on all non-authentication endpoints."
+        },
+        "recommendations": {
+            "password_hash": "a secure one-way hash (e.g. bcrypt cost \u2265 12 or Argon2id)",
+            "auth_response_example": "token, role, error body"
+        }
+    },
+    "endpoint_strategies": {
+        "enabled_dep_types": ["DATABASE", "API"],
+        "skip_dep_types": ["LIBRARY", "EVENT"],
+        "notes": "API deps with an HTTP verb+path in endpoint_or_identifier are emitted as REST endpoints. API deps without an HTTP verb (e.g. WinForms Show()) are skipped by HttpApiEndpointStrategy returning None."
+    }
+}

@@ -1,0 +1,47 @@
+{
+  "domain_key": "integration",
+  "item_type": "Integration",
+  "dataset_key": "integration",
+  "key_prefix": "int",
+  "extraction_query": "Extract connections between this application and external systems. An integration is a boundary crossing to another system, file exchange, message channel, or remote service — not an internal module call. For each integration state the external system, direction, protocol, data exchanged, trigger, and failure handling evidenced in executable code. Scope each protocol and security property to the exact client, tool, or path that constructs the connection. Do not generalize SSL/TLS, authentication, retry, transaction, or certificate behavior from one path to all integrations. A defined database or client helper is dormant when no live caller reaches it; record it as present but not applied at runtime rather than as an active integration.",
+  "categories": [
+    { "key": "inbound_api", "name": "Inbound APIs" },
+    { "key": "outbound_api", "name": "Outbound APIs" },
+    { "key": "file_batch", "name": "File and Batch Exchange" },
+    { "key": "messaging", "name": "Messaging" },
+    { "key": "database_link", "name": "Database Links" },
+    { "key": "desktop_os", "name": "Desktop and OS Integration" }
+  ],
+  "item_fields": [
+    "external_system",
+    "direction",
+    "protocol",
+    "data_exchanged",
+    "trigger",
+    "failure_handling"
+  ],
+  "evidence_roles": ["CALLS_EXTERNAL", "RECEIVES", "TRANSFORMS"],
+  "discovery": {
+    "seed_phrases": [
+      "external api http client",
+      "email outlook smtp",
+      "file import export",
+      "message queue event",
+      "database connection remote"
+    ],
+    "component_filters": ["client", "gateway", "adapter", "service", "handler"],
+    "mcp_discovery_tools": [
+      "mcm_get_technical_profile",
+      "mcm_list_microservices",
+      "mcm_find_boundary_violations",
+      "mcm_grep_source_code"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 50,
+    "batch_size": 8
+  },
+  "relates_to": [
+    { "kind": "EXCHANGES", "target_domain": "data_entity" },
+    { "kind": "PART_OF", "target_domain": "process_flow" }
+  ]
+}

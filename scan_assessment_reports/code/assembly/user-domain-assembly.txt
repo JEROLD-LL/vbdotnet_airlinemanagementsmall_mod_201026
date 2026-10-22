@@ -1,0 +1,976 @@
+
+==================================================
+Part: User (PRT-004)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Models/User.vb
+==================================================
+Public Class User
+    Public Property Id As Integer
+    Public Property Username As String
+    Public Property Password As String
+    Public Property Email As String
+    Public Property FullName As String
+    Public Property Role As String
+    Public Property CreatedAt As DateTime
+End Class
+
+==================================================
+Part: ValidateUsername (PRT-006)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/ValidationHelper.vb
+==================================================
+Public Shared Function ValidateUsername(username As String) As List(Of String)
+        Dim errors As New List(Of String)
+        If String.IsNullOrWhiteSpace(username) Then
+            errors.Add("Username is required.")
+        ElseIf username.Length < 3 OrElse username.Length > 50 Then
+            errors.Add("Username must be between 3 and 50 characters.")
+        ElseIf Not Regex.IsMatch(username, "^[a-zA-Z0-9_]+$") Then
+            errors.Add("Username can only contain letters, numbers, and underscores.")
+        End If
+        Return errors
+    End Function
+
+==================================================
+Part: IsAuthenticated (PRT-016)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Shared Function IsAuthenticated() As Boolean
+        Return CurrentUser IsNot Nothing
+    End Function
+
+==================================================
+Part: Login (PRT-018)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Services/SessionManager.vb
+==================================================
+Public Shared Sub Login(user As User)
+        CurrentUser = user
+        LastActivity = DateTime.Now
+    End Sub
+
+==================================================
+Part: RegisterForm (UI-036)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/RegisterForm.vb
+==================================================
+Public Class RegisterForm
+    Inherits Form
+
+    Private lblTitle As Label
+    Private lblUsername As Label
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblPassword As Label
+    Private txtUsername As TextBox
+    Private txtEmail As TextBox
+    Private txtFullName As TextBox
+    Private txtPassword As TextBox
+    Private btnRegister As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Register - Airline Management System"
+        Me.Size = New Size(450, 350)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        ' Title
+        lblTitle = New Label()
+        lblTitle.Text = "User Registration"
+        lblTitle.Font = New Font("Arial", 12, FontStyle.Bold)
+        lblTitle.AutoSize = True
+        lblTitle.Location = New Point(150, 20)
+        Me.Controls.Add(lblTitle)
+
+        ' Username
+        lblUsername = New Label()
+        lblUsername.Text = "Username: *"
+        lblUsername.AutoSize = True
+        lblUsername.Location = New Point(50, 60)
+        Me.Controls.Add(lblUsername)
+
+        txtUsername = New TextBox()
+        txtUsername.Location = New Point(50, 80)
+        txtUsername.Size = New Size(350, 25)
+        Me.Controls.Add(txtUsername)
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email: *"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(50, 110)
+        Me.Controls.Add(lblEmail)
+
+        txtEmail = New TextBox()
+        txtEmail.Location = New Point(50, 130)
+        txtEmail.Size = New Size(350, 25)
+        Me.Controls.Add(txtEmail)
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name: *"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(50, 160)
+        Me.Controls.Add(lblFullName)
+
+        txtFullName = New TextBox()
+        txtFullName.Location = New Point(50, 180)
+        txtFullName.Size = New Size(350, 25)
+        Me.Controls.Add(txtFullName)
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "Password: *"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(50, 210)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(50, 230)
+        txtPassword.Size = New Size(350, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(50, 260)
+        lblError.Size = New Size(350, 40)
+        Me.Controls.Add(lblError)
+
+        ' Buttons
+        btnRegister = New Button()
+        btnRegister.Text = "Register"
+        btnRegister.Location = New Point(50, 270)
+        btnRegister.Size = New Size(120, 30)
+        AddHandler btnRegister.Click, AddressOf BtnRegister_Click
+        Me.Controls.Add(btnRegister)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(280, 270)
+        btnCancel.Size = New Size(120, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnRegister
+    End Sub
+
+    Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        ' Validate username
+        errors.AddRange(ValidationHelper.ValidateUsername(username))
+        If errors.Count = 0 AndAlso UserRepository.UsernameExists(username) Then
+            errors.Add("Username already exists.")
+        End If
+
+        ' Validate email
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        If errors.Count = 0 AndAlso UserRepository.EmailExists(email) Then
+            errors.Add("Email already exists.")
+        End If
+
+        ' Validate full name
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        ' Validate password
+        errors.AddRange(ValidationHelper.ValidatePassword(password))
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        ' Create user
+        Dim user As New User With {
+            .Username = username,
+            .Password = UserRepository.HashPassword(password),
+            .Email = email,
+            .FullName = fullName,
+            .Role = "user",
+            .CreatedAt = DateTime.Now
+        }
+
+        Try
+            UserRepository.Create(user)
+            MessageBox.Show("Registration successful! Please login.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Hide()
+            Dim loginForm As New LoginForm()
+            loginForm.Show()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim loginForm As New LoginForm()
+        loginForm.Show()
+    End Sub
+End Class
+
+==================================================
+Part: BtnRegister_Click (PRT-038)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/RegisterForm.vb
+==================================================
+Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        ' Validate username
+        errors.AddRange(ValidationHelper.ValidateUsername(username))
+        If errors.Count = 0 AndAlso UserRepository.UsernameExists(username) Then
+            errors.Add("Username already exists.")
+        End If
+
+        ' Validate email
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        If errors.Count = 0 AndAlso UserRepository.EmailExists(email) Then
+            errors.Add("Email already exists.")
+        End If
+
+        ' Validate full name
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        ' Validate password
+        errors.AddRange(ValidationHelper.ValidatePassword(password))
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        ' Create user
+        Dim user As New User With {
+            .Username = username,
+            .Password = UserRepository.HashPassword(password),
+            .Email = email,
+            .FullName = fullName,
+            .Role = "user",
+            .CreatedAt = DateTime.Now
+        }
+
+        Try
+            UserRepository.Create(user)
+            MessageBox.Show("Registration successful! Please login.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Hide()
+            Dim loginForm As New LoginForm()
+            loginForm.Show()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+==================================================
+Part: EditProfileForm (UI-041)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Public Class EditProfileForm
+    Inherits Form
+
+    Private user As User
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblPassword As Label
+    Private txtEmail As TextBox
+    Private txtFullName As TextBox
+    Private txtPassword As TextBox
+    Private btnUpdate As Button
+    Private btnCancel As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+        LoadProfile()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Edit Profile"
+        Me.Size = New Size(500, 350)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email: *"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        txtEmail = New TextBox()
+        txtEmail.Location = New Point(20, yPos + 20)
+        txtEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtEmail)
+        yPos += 50
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name: *"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        txtFullName = New TextBox()
+        txtFullName.Location = New Point(20, yPos + 20)
+        txtFullName.Size = New Size(450, 25)
+        Me.Controls.Add(txtFullName)
+        yPos += 50
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "New Password (Optional):"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(20, yPos)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(20, yPos + 20)
+        txtPassword.Size = New Size(450, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+        yPos += 50
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, yPos)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+        yPos += 50
+
+        ' Buttons
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Profile"
+        btnUpdate.Location = New Point(20, yPos)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, yPos)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub
+
+    Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtEmail.Text = user.Email
+        txtFullName.Text = user.FullName
+    End Sub
+
+    Private Sub BtnUpdate_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim errors As New List(Of String)
+
+        Dim email As String = txtEmail.Text.Trim()
+        Dim fullName As String = txtFullName.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        errors.AddRange(ValidationHelper.ValidateEmail(email))
+        errors.AddRange(ValidationHelper.ValidateFullName(fullName))
+
+        If Not String.IsNullOrWhiteSpace(password) Then
+            errors.AddRange(ValidationHelper.ValidatePassword(password))
+        End If
+
+        If errors.Count > 0 Then
+            lblError.Text = String.Join(vbCrLf, errors)
+            Return
+        End If
+
+        user.Email = email
+        user.FullName = fullName
+
+        Try
+            UserRepository.Update(user)
+
+            If Not String.IsNullOrWhiteSpace(password) Then
+                UserRepository.UpdatePassword(user.Id, UserRepository.HashPassword(password))
+            End If
+
+            SessionManager.CurrentUser.FullName = user.FullName
+            SessionManager.CurrentUser.Email = user.Email
+
+            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
+        Catch ex As Exception
+            lblError.Text = "An error occurred: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: LoadProfile (PRT-043)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/EditProfileForm.vb
+==================================================
+Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtEmail.Text = user.Email
+        txtFullName.Text = user.FullName
+    End Sub
+
+==================================================
+Part: LoginForm (UI-073)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/LoginForm.vb
+==================================================
+Public Class LoginForm
+    Inherits Form
+
+    Private lblTitle As Label
+    Private lblUsername As Label
+    Private lblPassword As Label
+    Private txtUsername As TextBox
+    Private txtPassword As TextBox
+    Private btnLogin As Button
+    Private btnRegister As Button
+    Private lblError As Label
+
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Login - Airline Management System"
+        Me.Size = New Size(400, 300)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        ' Title
+        lblTitle = New Label()
+        lblTitle.Text = "Airline Management System"
+        lblTitle.Font = New Font("Arial", 14, FontStyle.Bold)
+        lblTitle.AutoSize = True
+        lblTitle.Location = New Point(80, 20)
+        Me.Controls.Add(lblTitle)
+
+        ' Username
+        lblUsername = New Label()
+        lblUsername.Text = "Username:"
+        lblUsername.AutoSize = True
+        lblUsername.Location = New Point(50, 70)
+        Me.Controls.Add(lblUsername)
+
+        txtUsername = New TextBox()
+        txtUsername.Location = New Point(50, 90)
+        txtUsername.Size = New Size(300, 25)
+        Me.Controls.Add(txtUsername)
+
+        ' Password
+        lblPassword = New Label()
+        lblPassword.Text = "Password:"
+        lblPassword.AutoSize = True
+        lblPassword.Location = New Point(50, 130)
+        Me.Controls.Add(lblPassword)
+
+        txtPassword = New TextBox()
+        txtPassword.Location = New Point(50, 150)
+        txtPassword.Size = New Size(300, 25)
+        txtPassword.PasswordChar = "*"c
+        Me.Controls.Add(txtPassword)
+
+        ' Error label
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(50, 180)
+        lblError.Size = New Size(300, 20)
+        Me.Controls.Add(lblError)
+
+        ' Buttons
+        btnLogin = New Button()
+        btnLogin.Text = "Login"
+        btnLogin.Location = New Point(50, 210)
+        btnLogin.Size = New Size(120, 30)
+        AddHandler btnLogin.Click, AddressOf BtnLogin_Click
+        Me.Controls.Add(btnLogin)
+
+        btnRegister = New Button()
+        btnRegister.Text = "Register"
+        btnRegister.Location = New Point(230, 210)
+        btnRegister.Size = New Size(120, 30)
+        AddHandler btnRegister.Click, AddressOf BtnRegister_Click
+        Me.Controls.Add(btnRegister)
+
+        ' Accept button
+        Me.AcceptButton = btnLogin
+    End Sub
+
+    Private Sub BtnLogin_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        If String.IsNullOrWhiteSpace(username) OrElse String.IsNullOrWhiteSpace(password) Then
+            lblError.Text = "Username and password are required."
+            Return
+        End If
+
+        Dim user As User = UserRepository.GetByUsername(username)
+        If user Is Nothing OrElse Not UserRepository.VerifyPassword(password, user.Password) Then
+            lblError.Text = "Invalid username or password."
+            Return
+        End If
+
+        ' Login successful
+        SessionManager.Login(user)
+        Me.Hide()
+        Dim mainForm As New MainForm()
+        mainForm.Show()
+    End Sub
+
+    Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim registerForm As New RegisterForm()
+        registerForm.Show()
+    End Sub
+End Class
+
+==================================================
+Part: BtnLogin_Click (PRT-075)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/LoginForm.vb
+==================================================
+Private Sub BtnLogin_Click(sender As Object, e As EventArgs)
+        lblError.Text = ""
+
+        Dim username As String = txtUsername.Text.Trim()
+        Dim password As String = txtPassword.Text
+
+        If String.IsNullOrWhiteSpace(username) OrElse String.IsNullOrWhiteSpace(password) Then
+            lblError.Text = "Username and password are required."
+            Return
+        End If
+
+        Dim user As User = UserRepository.GetByUsername(username)
+        If user Is Nothing OrElse Not UserRepository.VerifyPassword(password, user.Password) Then
+            lblError.Text = "Invalid username or password."
+            Return
+        End If
+
+        ' Login successful
+        SessionManager.Login(user)
+        Me.Hide()
+        Dim mainForm As New MainForm()
+        mainForm.Show()
+    End Sub
+
+==================================================
+Part: BtnRegister_Click (PRT-076)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/LoginForm.vb
+==================================================
+Private Sub BtnRegister_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim registerForm As New RegisterForm()
+        registerForm.Show()
+    End Sub
+
+==================================================
+Part: ProfileForm (UI-084)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/ProfileForm.vb
+==================================================
+Public Class ProfileForm
+    Inherits Form
+
+    Private user As User
+    Private lblUsername As Label
+    Private lblEmail As Label
+    Private lblFullName As Label
+    Private lblCreatedAt As Label
+    Private btnEdit As Button
+    Private btnClose As Button
+
+    Public Sub New()
+        InitializeComponent()
+        LoadProfile()
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "My Profile"
+        Me.Size = New Size(500, 300)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        Dim yPos As Integer = 20
+
+        ' Username
+        lblUsername = New Label()
+        lblUsername.Text = "Username:"
+        lblUsername.AutoSize = True
+        lblUsername.Location = New Point(20, yPos)
+        Me.Controls.Add(lblUsername)
+
+        Dim lblUsernameValue As New Label()
+        lblUsernameValue.AutoSize = True
+        lblUsernameValue.Location = New Point(150, yPos)
+        lblUsernameValue.Font = New Font("Arial", 10, FontStyle.Bold)
+        Me.Controls.Add(lblUsernameValue)
+        yPos += 30
+
+        ' Email
+        lblEmail = New Label()
+        lblEmail.Text = "Email:"
+        lblEmail.AutoSize = True
+        lblEmail.Location = New Point(20, yPos)
+        Me.Controls.Add(lblEmail)
+
+        Dim lblEmailValue As New Label()
+        lblEmailValue.AutoSize = True
+        lblEmailValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblEmailValue)
+        yPos += 30
+
+        ' Full Name
+        lblFullName = New Label()
+        lblFullName.Text = "Full Name:"
+        lblFullName.AutoSize = True
+        lblFullName.Location = New Point(20, yPos)
+        Me.Controls.Add(lblFullName)
+
+        Dim lblFullNameValue As New Label()
+        lblFullNameValue.AutoSize = True
+        lblFullNameValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblFullNameValue)
+        yPos += 30
+
+        ' Member Since
+        lblCreatedAt = New Label()
+        lblCreatedAt.Text = "Member Since:"
+        lblCreatedAt.AutoSize = True
+        lblCreatedAt.Location = New Point(20, yPos)
+        Me.Controls.Add(lblCreatedAt)
+
+        Dim lblCreatedAtValue As New Label()
+        lblCreatedAtValue.AutoSize = True
+        lblCreatedAtValue.Location = New Point(150, yPos)
+        Me.Controls.Add(lblCreatedAtValue)
+        yPos += 50
+
+        ' Buttons
+        btnEdit = New Button()
+        btnEdit.Text = "Edit Profile"
+        btnEdit.Location = New Point(20, yPos)
+        btnEdit.Size = New Size(150, 30)
+        AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+        Me.Controls.Add(btnEdit)
+
+        btnClose = New Button()
+        btnClose.Text = "Close"
+        btnClose.Location = New Point(320, yPos)
+        btnClose.Size = New Size(150, 30)
+        AddHandler btnClose.Click, AddressOf BtnClose_Click
+        Me.Controls.Add(btnClose)
+
+        ' Store references for updating
+        Me.Tag = New Object() {lblUsernameValue, lblEmailValue, lblFullNameValue, lblCreatedAtValue}
+    End Sub
+
+    Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        Dim labels As Object() = CType(Me.Tag, Object())
+        CType(labels(0), Label).Text = user.Username & " (cannot be changed)"
+        CType(labels(1), Label).Text = user.Email
+        CType(labels(2), Label).Text = user.FullName
+        CType(labels(3), Label).Text = user.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+    End Sub
+
+    Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        Dim editForm As New EditProfileForm()
+        editForm.ShowDialog()
+        LoadProfile()
+    End Sub
+
+    Private Sub BtnClose_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class
+
+==================================================
+Part: LoadProfile (PRT-086)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/ProfileForm.vb
+==================================================
+Private Sub LoadProfile()
+        If Not SessionManager.IsAuthenticated() Then
+            MessageBox.Show("Please login first.", "Not Authenticated", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Me.Close()
+            Return
+        End If
+
+        user = UserRepository.GetById(SessionManager.CurrentUser.Id)
+        If user Is Nothing Then
+            MessageBox.Show("User not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        Dim labels As Object() = CType(Me.Tag, Object())
+        CType(labels(0), Label).Text = user.Username & " (cannot be changed)"
+        CType(labels(1), Label).Text = user.Email
+        CType(labels(2), Label).Text = user.FullName
+        CType(labels(3), Label).Text = user.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+    End Sub
+
+==================================================
+Part: ProfileToolStripMenuItem_Click (UI-108)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub ProfileToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim profileForm As New ProfileForm()
+        profileForm.ShowDialog()
+    End Sub
+
+==================================================
+Part: UserRepository (REPO-136)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Class UserRepository
+    Public Shared Function GetByUsername(username As String) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE username = @username"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@username", username))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function GetById(id As Integer) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function UsernameExists(username As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE username = @username"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@username", username)))
+        Return count > 0
+    End Function
+
+    Public Shared Function EmailExists(email As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE email = @email"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@email", email)))
+        Return count > 0
+    End Function
+
+    Public Shared Function Create(user As User) As Integer
+        Dim query As String = "INSERT INTO ""User"" (username, password, email, full_name, role, created_at) VALUES (@username, @password, @email, @full_name, @role, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@username", user.Username),
+            New NpgsqlParameter("@password", user.Password),
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@role", user.Role),
+            New NpgsqlParameter("@created_at", user.CreatedAt)
+        ))
+        Return id
+    End Function
+
+    Public Shared Sub Update(user As User)
+        Dim query As String = "UPDATE ""User"" SET email = @email, full_name = @full_name WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@id", user.Id)
+        )
+    End Sub
+
+    Public Shared Sub UpdatePassword(userId As Integer, hashedPassword As String)
+        Dim query As String = "UPDATE ""User"" SET password = @password WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@password", hashedPassword),
+            New NpgsqlParameter("@id", userId)
+        )
+    End Sub
+
+    Public Shared Function GetAll() As List(Of User)
+        Dim users As New List(Of User)
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" ORDER BY created_at DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                users.Add(New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return users
+    End Function
+
+    Public Shared Function VerifyPassword(plainPassword As String, hashedPassword As String) As Boolean
+        Dim hash As String = HashPassword(plainPassword)
+        Return hash.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase)
+    End Function
+
+    Public Shared Function HashPassword(password As String) As String
+        Using sha1 As SHA1 = SHA1.Create()
+            Dim hash As Byte() = sha1.ComputeHash(Encoding.UTF8.GetBytes(password))
+            Return BitConverter.ToString(hash).Replace("-", "").ToUpper()
+        End Using
+    End Function
+End Class
+
+==================================================
+Part: GetByUsername (PRT-137)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function GetByUsername(username As String) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE username = @username"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@username", username))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+==================================================
+Part: UsernameExists (PRT-139)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function UsernameExists(username As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE username = @username"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@username", username)))
+        Return count > 0
+    End Function
+
+==================================================
+Part: GetByUserId (PRT-148)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Shared Function GetByUserId(userId As Integer) As List(Of Booking)
+        Dim bookings As New List(Of Booking)
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b WHERE b.user_id = @user_id ORDER BY b.booking_date DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@user_id", userId))
+            While reader.Read()
+                bookings.Add(New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return bookings
+    End Function

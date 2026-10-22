@@ -1,0 +1,40 @@
+{
+  "domain_key": "non_functional_control",
+  "item_type": "NonFunctionalControl",
+  "dataset_key": "non_functional_control",
+  "key_prefix": "nfc",
+  "extraction_query": "Extract non-functional controls evidenced in the code. An NFR control is a technical quality mechanism — caching, retries, encryption, health checks, rate limiting, logging — not a business validation rule or domain calculation. For each control state the control statement, observed mechanism, target or threshold when known, and enforcement point.",
+  "categories": [
+    { "key": "performance", "name": "Performance" },
+    { "key": "scalability", "name": "Scalability" },
+    { "key": "security", "name": "Security" },
+    { "key": "reliability", "name": "Reliability" },
+    { "key": "observability", "name": "Observability" }
+  ],
+  "item_fields": [
+    "control_statement",
+    "observed_mechanism",
+    "target_or_threshold",
+    "enforcement_point"
+  ],
+  "evidence_roles": ["ENFORCES", "MONITORS", "MITIGATES"],
+  "discovery": {
+    "seed_phrases": [
+      "cache timeout retry",
+      "encryption tls oauth",
+      "health check failover",
+      "logging metrics monitoring",
+      "rate limit throttle"
+    ],
+    "component_filters": ["security", "config", "service", "middleware", "filter"],
+    "mcp_discovery_tools": [
+      "mcm_assess_security_posture",
+      "mcm_get_code_insights_dashboard",
+      "mcm_grep_source_code"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 50,
+    "batch_size": 8
+  },
+  "relates_to": []
+}

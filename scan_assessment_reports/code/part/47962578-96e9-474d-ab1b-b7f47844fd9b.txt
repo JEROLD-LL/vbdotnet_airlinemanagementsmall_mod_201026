@@ -1,0 +1,7 @@
+Public Shared Function ValidateAvailableSeats(seats As Integer) As List(Of String)
+        Dim errors As New List(Of String)
+        If seats < 0 Then
+            errors.Add("Available seats cannot be negative.")
+        End If
+        Return errors
+    End Function

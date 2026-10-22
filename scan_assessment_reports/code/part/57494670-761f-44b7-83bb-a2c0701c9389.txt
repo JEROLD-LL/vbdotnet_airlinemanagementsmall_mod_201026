@@ -1,0 +1,4 @@
+Public Shared Sub Delete(id As Integer)
+        Dim query As String = "DELETE FROM Flight WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query, New NpgsqlParameter("@id", id))
+    End Sub

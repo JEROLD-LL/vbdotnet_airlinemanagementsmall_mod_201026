@@ -1,0 +1,236 @@
+{% if functional_specification_document.document_summary %}
+{{ functional_specification_document.document_summary.content }}
+{% endif %}
+
+## Table of Contents
+
+- [1. Business Overview](#1-business-overview)
+  - [1.1 What This System Does](#11-what-this-system-does)
+  - [1.2 Who Uses It](#12-who-uses-it)
+  - [1.3 Business Value](#13-business-value)
+- [2. Functional Capabilities](#2-functional-capabilities)
+  - [2.1 Core Business Functions](#21-core-business-functions)
+  - [2.2 Feature Specifications](#22-feature-specifications)
+- [3. User Journeys](#3-user-journeys)
+  - [3.1 Primary User Journeys](#31-primary-user-journeys)
+  - [3.2 User Actions and Outcomes](#32-user-actions-and-outcomes)
+- [4. Business Rules and Processes](#4-business-rules-and-processes)
+  - [4.1 Business Logic](#41-business-logic)
+  - [4.2 Validation Rules](#42-validation-rules)
+  - [4.3 Decision Points](#43-decision-points)
+- [5. Data and Information](#5-data-and-information)
+  - [5.1 Business Data Types](#51-business-data-types)
+  - [5.2 Information Flow](#52-information-flow)
+- [6. Business Interfaces](#6-business-interfaces)
+  - [6.1 User Interactions](#61-user-interactions)
+  - [6.2 External Business Connections](#62-external-business-connections)
+- [7. Glossary](#7-glossary)
+
+---
+
+## 1. Business Overview
+
+### 1.1 What This System Does
+
+{% if functional_specification_document.business_overview.what_this_system_does %}
+{{ functional_specification_document.business_overview.what_this_system_does.content }}
+
+{% if functional_specification_document.business_overview.what_this_system_does.diagram %}
+![System Overview Diagram]({{ functional_specification_document.business_overview.what_this_system_does.diagram }}){width=100%}
+{% endif %}
+{% endif %}
+
+### 1.2 Who Uses It
+
+{% if functional_specification_document.business_overview.who_uses_it %}
+{{ functional_specification_document.business_overview.who_uses_it.content }}
+
+{% if functional_specification_document.business_overview.who_uses_it.diagram %}
+![User Roles Diagram]({{ functional_specification_document.business_overview.who_uses_it.diagram }}){width=100%}
+{% endif %}
+{% endif %}
+
+### 1.3 Business Value
+
+{% if functional_specification_document.business_overview.business_value %}
+{{ functional_specification_document.business_overview.business_value.content }}
+{% endif %}
+
+---
+
+## 2. Functional Capabilities
+
+### 2.1 Core Business Functions
+
+{% if functional_specification_document.functional_capabilities.core_business_functions %}
+{{ functional_specification_document.functional_capabilities.core_business_functions.content }}
+
+{% if functional_specification_document.functional_capabilities.core_business_functions.diagram %}
+![Core Business Functions Diagram]({{ functional_specification_document.functional_capabilities.core_business_functions.diagram }}){width=100%}
+{% endif %}
+{% endif %}
+
+### 2.2 Feature Specifications
+
+{% if functional_specification_document.functional_capabilities.feature_specifications %}
+{{ functional_specification_document.functional_capabilities.feature_specifications.content }}
+
+{% if functional_specification_document.functional_capabilities.feature_specifications.diagram %}
+![Feature Dependencies Diagram]({{ functional_specification_document.functional_capabilities.feature_specifications.diagram }}){width=100%}
+{% endif %}
+{% endif %}
+
+---
+
+## 3. User Journeys
+
+### 3.1 Primary User Journeys
+
+{% if functional_specification_document.user_journeys.primary_user_journeys %}
+
+{% if functional_specification_document.user_journeys.primary_user_journeys.journey_blocks %}
+<!-- Unified Journey Blocks Mode: Multiple Primary Journeys with Sub-Journeys -->
+{% set journey_blocks = functional_specification_document.user_journeys.primary_user_journeys.journey_blocks %}
+
+{# Render each primary journey with its sub-journeys grouped together #}
+{% for block in journey_blocks %}
+{% if block.journey_type == "primary" %}
+
+#### Primary Journey: {{ block.journey_name }}
+
+{{ block.text_content }}
+
+{% if block.diagram_path %}
+*Diagram Type: {{ block.diagram_type | default('flowchart') | capitalize }}*
+
+![{{ block.journey_name }} Diagram]({{ block.diagram_path }}){width=100%}
+{% endif %}
+
+{# Render sub-journeys that belong to this primary journey #}
+{% for sub_block in journey_blocks %}
+{% if sub_block.journey_type == "sub_journey" and sub_block.parent_journey == block.journey_name %}
+
+##### Sub-Journey: {{ sub_block.journey_name }}
+
+{{ sub_block.text_content }}
+
+{% if sub_block.diagram_path %}
+*Diagram Type: {{ sub_block.diagram_type | default('flowchart') | capitalize }}*
+
+![{{ sub_block.journey_name }} Diagram]({{ sub_block.diagram_path }}){width=100%}
+{% endif %}
+
+{% endif %}
+{% endfor %}
+
+---
+
+{% endif %}
+{% endfor %}
+
+{% else %}
+<!-- Legacy Mode: Content + Separate Diagrams -->
+{{ functional_specification_document.user_journeys.primary_user_journeys.content }}
+
+{% if functional_specification_document.user_journeys.primary_user_journeys.sub_journey_diagrams %}
+<!-- Sub-Journey Diagrams -->
+{% for sj_diagram in functional_specification_document.user_journeys.primary_user_journeys.sub_journey_diagrams %}
+
+#### {{ sj_diagram.name }}
+
+*Diagram Type: {{ sj_diagram.diagram_type | default('flowchart') | capitalize }}*
+
+![{{ sj_diagram.name }} Flow]({{ sj_diagram.path }}){width=100%}
+
+{% endfor %}
+{% elif functional_specification_document.user_journeys.primary_user_journeys.diagram %}
+{% if functional_specification_document.user_journeys.primary_user_journeys.diagram_type %}*Diagram Type: {{ functional_specification_document.user_journeys.primary_user_journeys.diagram_type | capitalize }}*{% endif %}
+
+![User Journey Flowchart]({{ functional_specification_document.user_journeys.primary_user_journeys.diagram }}){width=100%}
+{% endif %}
+{% endif %}
+{% endif %}
+
+### 3.2 User Actions and Outcomes
+
+{% if functional_specification_document.user_journeys.user_actions_and_outcomes %}
+{{ functional_specification_document.user_journeys.user_actions_and_outcomes.content }}
+{% endif %}
+
+---
+
+## 4. Business Rules and Processes
+
+### 4.1 Business Logic
+
+{% if functional_specification_document.business_rules_and_processes.business_logic %}
+{{ functional_specification_document.business_rules_and_processes.business_logic.content }}
+{% endif %}
+
+### 4.2 Validation Rules
+
+{% if functional_specification_document.business_rules_and_processes.validation_rules %}
+{{ functional_specification_document.business_rules_and_processes.validation_rules.content }}
+{% endif %}
+
+### 4.3 Decision Points
+
+{% if functional_specification_document.business_rules_and_processes.decision_points %}
+{{ functional_specification_document.business_rules_and_processes.decision_points.content }}
+
+{% if functional_specification_document.business_rules_and_processes.decision_points.diagram %}
+![Decision Points Diagram]({{ functional_specification_document.business_rules_and_processes.decision_points.diagram }}){width=100%}
+{% endif %}
+{% endif %}
+
+---
+
+## 5. Data and Information
+
+### 5.1 Business Data Types
+
+{% if functional_specification_document.data_and_information.business_data_types %}
+{{ functional_specification_document.data_and_information.business_data_types.content }}
+{% endif %}
+
+### 5.2 Information Flow
+
+{% if functional_specification_document.data_and_information.information_flow %}
+{{ functional_specification_document.data_and_information.information_flow.content }}
+
+{% if functional_specification_document.data_and_information.information_flow.diagram %}
+![Information Flow Diagram]({{ functional_specification_document.data_and_information.information_flow.diagram }}){width=100%}
+{% endif %}
+{% endif %}
+
+---
+
+## 6. Business Interfaces
+
+### 6.1 User Interactions
+
+{% if functional_specification_document.business_interfaces.user_interactions %}
+{{ functional_specification_document.business_interfaces.user_interactions.content }}
+{% endif %}
+
+### 6.2 External Business Connections
+
+{% if functional_specification_document.business_interfaces.external_business_connections %}
+{{ functional_specification_document.business_interfaces.external_business_connections.content }}
+
+{% if functional_specification_document.business_interfaces.external_business_connections.diagram %}
+![External Systems Integration Diagram]({{ functional_specification_document.business_interfaces.external_business_connections.diagram }}){width=100%}
+{% endif %}
+{% endif %}
+
+---
+
+## 7. Glossary
+
+{% if functional_specification_document.glossary %}
+{{ functional_specification_document.glossary.content }}
+{% endif %}
+
+---
+
+*This document was automatically generated from system analysis and is intended for business stakeholders, product owners, and business analysts.*

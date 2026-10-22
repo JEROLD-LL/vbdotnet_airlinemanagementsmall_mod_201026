@@ -1,0 +1,6 @@
+Public Shared Function HashPassword(password As String) As String
+        Using sha1 As SHA1 = SHA1.Create()
+            Dim hash As Byte() = sha1.ComputeHash(Encoding.UTF8.GetBytes(password))
+            Return BitConverter.ToString(hash).Replace("-", "").ToUpper()
+        End Using
+    End Function

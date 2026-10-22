@@ -1,0 +1,74 @@
+Public Class ViewFlightForm
+    Inherits Form
+
+    Private flight As Flight
+    Private lblDetails As Label
+    Private btnBook As Button
+    Private btnClose As Button
+
+    Public Sub New(selectedFlightId As Integer)
+        InitializeComponent()
+        LoadFlight(selectedFlightId)
+    End Sub
+
+    Private Sub InitializeComponent()
+        Me.Text = "Flight Details"
+        Me.Size = New Size(500, 400)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        lblDetails = New Label()
+        lblDetails.Location = New Point(20, 20)
+        lblDetails.Size = New Size(450, 300)
+        lblDetails.AutoSize = False
+        Me.Controls.Add(lblDetails)
+
+        btnBook = New Button()
+        btnBook.Text = "Book This Flight"
+        btnBook.Location = New Point(20, 330)
+        btnBook.Size = New Size(150, 30)
+        AddHandler btnBook.Click, AddressOf BtnBook_Click
+        Me.Controls.Add(btnBook)
+
+        btnClose = New Button()
+        btnClose.Text = "Close"
+        btnClose.Location = New Point(320, 330)
+        btnClose.Size = New Size(150, 30)
+        AddHandler btnClose.Click, AddressOf BtnClose_Click
+        Me.Controls.Add(btnClose)
+    End Sub
+
+    Private Sub LoadFlight(flightId As Integer)
+        flight = FlightRepository.GetById(flightId)
+        If flight Is Nothing Then
+            MessageBox.Show("Flight not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        lblDetails.Text = "Flight Number: " & flight.FlightNumber & vbCrLf &
+                         "Route: " & flight.Origin & " → " & flight.Destination & vbCrLf &
+                         "Departure Date: " & flight.DepartureDate.ToString("yyyy-MM-dd") & vbCrLf &
+                         "Departure Time: " & flight.DepartureTime.ToString("hh\:mm") & vbCrLf &
+                         "Arrival Time: " & flight.ArrivalTime.ToString("hh\:mm") & vbCrLf &
+                         "Price: " & flight.Price.ToString("C") & vbCrLf &
+                         "Available Seats: " & flight.AvailableSeats
+
+        If flight.AvailableSeats = 0 Then
+            btnBook.Enabled = False
+            btnBook.Text = "Sold Out"
+        End If
+    End Sub
+
+    Private Sub BtnBook_Click(sender As Object, e As EventArgs)
+        Me.Hide()
+        Dim bookForm As New BookFlightForm(flight.Id)
+        bookForm.ShowDialog()
+        Me.Close()
+    End Sub
+
+    Private Sub BtnClose_Click(sender As Object, e As EventArgs)
+        Me.Close()
+    End Sub
+End Class

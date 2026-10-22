@@ -1,0 +1,44 @@
+{
+  "domain_key": "interface",
+  "item_type": "Interface",
+  "dataset_key": "interface",
+  "key_prefix": "ui",
+  "extraction_query": "Extract user-facing interfaces where people initiate work or consume information. An interface is a screen, form, page, dialog, dashboard, report, or notification surface — not a REST endpoint or bare controller without a user surface. Emit one record per distinct form class, page, home view, list view, detail view, payment or checkout surface, and print or report template evidenced in code; do not merge multiple screens into one dashboard or module record. Include admin and manager landing pages and CRUD forms when they exist. For each interface state surface type, purpose, capabilities offered, information displayed, and entry-point part id.",
+  "categories": [
+    { "key": "data_entry", "name": "Data Entry Surfaces" },
+    { "key": "monitoring_dashboard", "name": "Monitoring Dashboards" },
+    { "key": "reporting_print", "name": "Reporting and Print" },
+    { "key": "admin_configuration", "name": "Admin Configuration" },
+    { "key": "notification", "name": "Notifications" }
+  ],
+  "item_fields": [
+    "surface_type",
+    "purpose",
+    "capabilities_offered",
+    "information_displayed",
+    "entry_point_part_id"
+  ],
+  "evidence_roles": ["RENDERS", "CAPTURES", "DISPLAYS"],
+  "discovery": {
+    "seed_phrases": [
+      "user form screen dialog",
+      "dashboard report view",
+      "print preview label",
+      "settings configuration screen",
+      "notification alert message"
+    ],
+    "component_filters": ["form", "view", "controller", "page", "window"],
+    "mcp_discovery_tools": [
+      "mcm_list_components",
+      "mcm_list_assemblies",
+      "mcm_grep_source_code"
+    ],
+    "candidate_limit_per_query": 15,
+    "max_unique_candidates": 90,
+    "batch_size": 8
+  },
+  "relates_to": [
+    { "kind": "TRIGGERS", "target_domain": "process_flow" },
+    { "kind": "CAPTURES", "target_domain": "business_rule" }
+  ]
+}

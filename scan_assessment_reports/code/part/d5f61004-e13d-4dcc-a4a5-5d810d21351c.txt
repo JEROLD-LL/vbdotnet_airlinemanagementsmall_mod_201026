@@ -1,0 +1,21 @@
+Private Sub LoadFlight(flightId As Integer)
+        flight = FlightRepository.GetById(flightId)
+        If flight Is Nothing Then
+            MessageBox.Show("Flight not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        lblDetails.Text = "Flight Number: " & flight.FlightNumber & vbCrLf &
+                         "Route: " & flight.Origin & " → " & flight.Destination & vbCrLf &
+                         "Departure Date: " & flight.DepartureDate.ToString("yyyy-MM-dd") & vbCrLf &
+                         "Departure Time: " & flight.DepartureTime.ToString("hh\:mm") & vbCrLf &
+                         "Arrival Time: " & flight.ArrivalTime.ToString("hh\:mm") & vbCrLf &
+                         "Price: " & flight.Price.ToString("C") & vbCrLf &
+                         "Available Seats: " & flight.AvailableSeats
+
+        If flight.AvailableSeats = 0 Then
+            btnBook.Enabled = False
+            btnBook.Text = "Sold Out"
+        End If
+    End Sub

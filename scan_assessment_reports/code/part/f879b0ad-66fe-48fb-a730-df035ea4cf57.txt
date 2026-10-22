@@ -1,0 +1,69 @@
+Private Sub InitializeComponent()
+        Me.Text = "Edit Booking"
+        Me.Size = New Size(500, 400)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+
+        lblBookingInfo = New Label()
+        lblBookingInfo.Location = New Point(20, 20)
+        lblBookingInfo.Size = New Size(450, 60)
+        lblBookingInfo.AutoSize = False
+        Me.Controls.Add(lblBookingInfo)
+
+        lblPassengerName = New Label()
+        lblPassengerName.Text = "Passenger Name: *"
+        lblPassengerName.AutoSize = True
+        lblPassengerName.Location = New Point(20, 90)
+        Me.Controls.Add(lblPassengerName)
+
+        txtPassengerName = New TextBox()
+        txtPassengerName.Location = New Point(20, 110)
+        txtPassengerName.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerName)
+
+        lblPassengerEmail = New Label()
+        lblPassengerEmail.Text = "Passenger Email: *"
+        lblPassengerEmail.AutoSize = True
+        lblPassengerEmail.Location = New Point(20, 140)
+        Me.Controls.Add(lblPassengerEmail)
+
+        txtPassengerEmail = New TextBox()
+        txtPassengerEmail.Location = New Point(20, 160)
+        txtPassengerEmail.Size = New Size(450, 25)
+        Me.Controls.Add(txtPassengerEmail)
+
+        lblSeatNumber = New Label()
+        lblSeatNumber.Text = "Seat Number (Optional):"
+        lblSeatNumber.AutoSize = True
+        lblSeatNumber.Location = New Point(20, 190)
+        Me.Controls.Add(lblSeatNumber)
+
+        txtSeatNumber = New TextBox()
+        txtSeatNumber.Location = New Point(20, 210)
+        txtSeatNumber.Size = New Size(450, 25)
+        Me.Controls.Add(txtSeatNumber)
+
+        lblError = New Label()
+        lblError.ForeColor = Color.Red
+        lblError.AutoSize = True
+        lblError.Location = New Point(20, 240)
+        lblError.Size = New Size(450, 40)
+        Me.Controls.Add(lblError)
+
+        btnUpdate = New Button()
+        btnUpdate.Text = "Update Booking"
+        btnUpdate.Location = New Point(20, 280)
+        btnUpdate.Size = New Size(150, 30)
+        AddHandler btnUpdate.Click, AddressOf BtnUpdate_Click
+        Me.Controls.Add(btnUpdate)
+
+        btnCancel = New Button()
+        btnCancel.Text = "Cancel"
+        btnCancel.Location = New Point(320, 280)
+        btnCancel.Size = New Size(150, 30)
+        AddHandler btnCancel.Click, AddressOf BtnCancel_Click
+        Me.Controls.Add(btnCancel)
+
+        Me.AcceptButton = btnUpdate
+    End Sub

@@ -1,0 +1,14 @@
+Public Shared Sub Update(flight As Flight)
+        Dim query As String = "UPDATE Flight SET flight_number = @flight_number, origin = @origin, destination = @destination, departure_date = @departure_date, departure_time = @departure_time, arrival_time = @arrival_time, price = @price, available_seats = @available_seats WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@id", flight.Id)
+        )
+    End Sub

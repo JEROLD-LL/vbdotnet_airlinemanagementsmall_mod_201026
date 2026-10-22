@@ -1,0 +1,84 @@
+
+==================================================
+Part: FlightsToolStripMenuItem_Click (UI-105)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub FlightsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim flightsForm As New FlightsForm()
+        flightsForm.ShowDialog()
+    End Sub
+
+==================================================
+Part: BookFlightToolStripMenuItem_Click (UI-106)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub BookFlightToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        ' Show flights form first to select a flight
+        Dim flightsForm As New FlightsForm()
+        flightsForm.ShowDialog()
+    End Sub
+
+==================================================
+Part: MyBookingsToolStripMenuItem_Click (UI-107)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub MyBookingsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim bookingsForm As New MyBookingsForm()
+        bookingsForm.ShowDialog()
+    End Sub
+
+==================================================
+Part: ProfileToolStripMenuItem_Click (UI-108)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub ProfileToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim profileForm As New ProfileForm()
+        profileForm.ShowDialog()
+    End Sub
+
+==================================================
+Part: CreateFlightToolStripMenuItem_Click (UI-109)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub CreateFlightToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim createForm As New CreateFlightForm()
+        createForm.ShowDialog()
+    End Sub
+
+==================================================
+Part: CustomersToolStripMenuItem_Click (UI-110)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub CustomersToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim customersForm As New CustomersForm()
+        customersForm.ShowDialog()
+    End Sub
+
+==================================================
+Part: MasterBookingsToolStripMenuItem_Click (UI-111)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub MasterBookingsToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        Dim masterForm As New MasterBookingsForm()
+        masterForm.ShowDialog()
+    End Sub
+
+==================================================
+Part: LogoutToolStripMenuItem_Click (UI-112)
+Type: ui_screen
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Forms/MainForm.vb
+==================================================
+Private Sub LogoutToolStripMenuItem_Click(sender As Object, e As EventArgs)
+        SessionManager.Logout()
+        Me.Hide()
+        Dim loginForm As New LoginForm()
+        loginForm.Show()
+        Me.Close()
+    End Sub

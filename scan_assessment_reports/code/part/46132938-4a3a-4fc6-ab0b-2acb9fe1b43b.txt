@@ -1,0 +1,17 @@
+Private Sub LoadFlight(flightId As Integer)
+        flight = FlightRepository.GetById(flightId)
+        If flight Is Nothing Then
+            MessageBox.Show("Flight not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
+        txtFlightNumber.Text = flight.FlightNumber
+        txtOrigin.Text = flight.Origin
+        txtDestination.Text = flight.Destination
+        dtpDepartureDate.Value = flight.DepartureDate
+        dtpDepartureTime.Value = DateTime.Today.Add(flight.DepartureTime)
+        dtpArrivalTime.Value = DateTime.Today.Add(flight.ArrivalTime)
+        txtPrice.Text = flight.Price.ToString()
+        txtAvailableSeats.Text = flight.AvailableSeats.ToString()
+    End Sub

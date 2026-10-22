@@ -1,0 +1,894 @@
+
+==================================================
+Part: DatabaseHelper (REPO-120)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Data/DatabaseHelper.vb
+==================================================
+Public Class DatabaseHelper
+    Private Shared ReadOnly ConnectionString As String = "Host=localhost;Database=AirlineManagement;Username=postgres;Password=postgres123"
+
+    Public Shared Function GetConnection() As NpgsqlConnection
+        Return New NpgsqlConnection(ConnectionString)
+    End Function
+
+    Public Shared Function ExecuteNonQuery(query As String, ParamArray parameters As NpgsqlParameter()) As Integer
+        Using conn As NpgsqlConnection = GetConnection()
+            conn.Open()
+            Using cmd As New NpgsqlCommand(query, conn)
+                If parameters IsNot Nothing Then
+                    cmd.Parameters.AddRange(parameters)
+                End If
+                Return cmd.ExecuteNonQuery()
+            End Using
+        End Using
+    End Function
+
+    Public Shared Function ExecuteScalar(query As String, ParamArray parameters As NpgsqlParameter()) As Object
+        Using conn As NpgsqlConnection = GetConnection()
+            conn.Open()
+            Using cmd As New NpgsqlCommand(query, conn)
+                If parameters IsNot Nothing Then
+                    cmd.Parameters.AddRange(parameters)
+                End If
+                Return cmd.ExecuteScalar()
+            End Using
+        End Using
+    End Function
+
+    Public Shared Function ExecuteReader(query As String, ParamArray parameters As NpgsqlParameter()) As NpgsqlDataReader
+        Dim conn As NpgsqlConnection = GetConnection()
+        conn.Open()
+        Dim cmd As New NpgsqlCommand(query, conn)
+        If parameters IsNot Nothing Then
+            cmd.Parameters.AddRange(parameters)
+        End If
+        Return cmd.ExecuteReader(CommandBehavior.CloseConnection)
+    End Function
+
+    Public Shared Function BeginTransaction() As NpgsqlTransaction
+        Dim conn As NpgsqlConnection = GetConnection()
+        conn.Open()
+        Return conn.BeginTransaction()
+    End Function
+End Class
+
+==================================================
+Part: ExecuteNonQuery (PRT-122)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Data/DatabaseHelper.vb
+==================================================
+Public Shared Function ExecuteNonQuery(query As String, ParamArray parameters As NpgsqlParameter()) As Integer
+        Using conn As NpgsqlConnection = GetConnection()
+            conn.Open()
+            Using cmd As New NpgsqlCommand(query, conn)
+                If parameters IsNot Nothing Then
+                    cmd.Parameters.AddRange(parameters)
+                End If
+                Return cmd.ExecuteNonQuery()
+            End Using
+        End Using
+    End Function
+
+==================================================
+Part: ExecuteScalar (PRT-123)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Data/DatabaseHelper.vb
+==================================================
+Public Shared Function ExecuteScalar(query As String, ParamArray parameters As NpgsqlParameter()) As Object
+        Using conn As NpgsqlConnection = GetConnection()
+            conn.Open()
+            Using cmd As New NpgsqlCommand(query, conn)
+                If parameters IsNot Nothing Then
+                    cmd.Parameters.AddRange(parameters)
+                End If
+                Return cmd.ExecuteScalar()
+            End Using
+        End Using
+    End Function
+
+==================================================
+Part: ExecuteReader (PRT-124)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Data/DatabaseHelper.vb
+==================================================
+Public Shared Function ExecuteReader(query As String, ParamArray parameters As NpgsqlParameter()) As NpgsqlDataReader
+        Dim conn As NpgsqlConnection = GetConnection()
+        conn.Open()
+        Dim cmd As New NpgsqlCommand(query, conn)
+        If parameters IsNot Nothing Then
+            cmd.Parameters.AddRange(parameters)
+        End If
+        Return cmd.ExecuteReader(CommandBehavior.CloseConnection)
+    End Function
+
+==================================================
+Part: FlightRepository (REPO-126)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Class FlightRepository
+    Public Shared Function GetAll() As List(Of Flight)
+        Dim flights As New List(Of Flight)
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight ORDER BY departure_date ASC, departure_time ASC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                flights.Add(New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                })
+            End While
+        End Using
+        Return flights
+    End Function
+
+    Public Shared Function GetById(id As Integer) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function FlightNumberExists(flightNumber As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM Flight WHERE flight_number = @flight_number"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@flight_number", flightNumber)))
+        Return count > 0
+    End Function
+
+    Public Shared Function Create(flight As Flight) As Integer
+        Dim query As String = "INSERT INTO Flight (flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at) VALUES (@flight_number, @origin, @destination, @departure_date, @departure_time, @arrival_time, @price, @available_seats, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@created_at", flight.CreatedAt)
+        ))
+        Return id
+    End Function
+
+    Public Shared Sub Update(flight As Flight)
+        Dim query As String = "UPDATE Flight SET flight_number = @flight_number, origin = @origin, destination = @destination, departure_date = @departure_date, departure_time = @departure_time, arrival_time = @arrival_time, price = @price, available_seats = @available_seats WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@id", flight.Id)
+        )
+    End Sub
+
+    Public Shared Sub Delete(id As Integer)
+        Dim query As String = "DELETE FROM Flight WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query, New NpgsqlParameter("@id", id))
+    End Sub
+
+    Public Shared Function LockForUpdate(id As Integer, transaction As NpgsqlTransaction) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id FOR UPDATE"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            Using reader As NpgsqlDataReader = cmd.ExecuteReader()
+                If reader.Read() Then
+                    Return New Flight With {
+                        .Id = reader.GetInt32(0),
+                        .FlightNumber = reader.GetString(1),
+                        .Origin = reader.GetString(2),
+                        .Destination = reader.GetString(3),
+                        .DepartureDate = reader.GetDateTime(4),
+                        .DepartureTime = reader.GetTimeSpan(5),
+                        .ArrivalTime = reader.GetTimeSpan(6),
+                        .Price = reader.GetDecimal(7),
+                        .AvailableSeats = reader.GetInt32(8),
+                        .CreatedAt = reader.GetDateTime(9)
+                    }
+                End If
+            End Using
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Sub DecrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats - 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
+    Public Shared Sub IncrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats + 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+End Class
+
+==================================================
+Part: GetAll (PRT-127)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Function GetAll() As List(Of Flight)
+        Dim flights As New List(Of Flight)
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight ORDER BY departure_date ASC, departure_time ASC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                flights.Add(New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                })
+            End While
+        End Using
+        Return flights
+    End Function
+
+==================================================
+Part: GetById (PRT-128)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Function GetById(id As Integer) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Flight With {
+                    .Id = reader.GetInt32(0),
+                    .FlightNumber = reader.GetString(1),
+                    .Origin = reader.GetString(2),
+                    .Destination = reader.GetString(3),
+                    .DepartureDate = reader.GetDateTime(4),
+                    .DepartureTime = reader.GetTimeSpan(5),
+                    .ArrivalTime = reader.GetTimeSpan(6),
+                    .Price = reader.GetDecimal(7),
+                    .AvailableSeats = reader.GetInt32(8),
+                    .CreatedAt = reader.GetDateTime(9)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+==================================================
+Part: FlightNumberExists (PRT-129)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Function FlightNumberExists(flightNumber As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM Flight WHERE flight_number = @flight_number"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@flight_number", flightNumber)))
+        Return count > 0
+    End Function
+
+==================================================
+Part: Create (PRT-130)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Function Create(flight As Flight) As Integer
+        Dim query As String = "INSERT INTO Flight (flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at) VALUES (@flight_number, @origin, @destination, @departure_date, @departure_time, @arrival_time, @price, @available_seats, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@created_at", flight.CreatedAt)
+        ))
+        Return id
+    End Function
+
+==================================================
+Part: LockForUpdate (PRT-131)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Function LockForUpdate(id As Integer, transaction As NpgsqlTransaction) As Flight
+        Dim query As String = "SELECT id, flight_number, origin, destination, departure_date, departure_time, arrival_time, price, available_seats, created_at FROM Flight WHERE id = @id FOR UPDATE"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            Using reader As NpgsqlDataReader = cmd.ExecuteReader()
+                If reader.Read() Then
+                    Return New Flight With {
+                        .Id = reader.GetInt32(0),
+                        .FlightNumber = reader.GetString(1),
+                        .Origin = reader.GetString(2),
+                        .Destination = reader.GetString(3),
+                        .DepartureDate = reader.GetDateTime(4),
+                        .DepartureTime = reader.GetTimeSpan(5),
+                        .ArrivalTime = reader.GetTimeSpan(6),
+                        .Price = reader.GetDecimal(7),
+                        .AvailableSeats = reader.GetInt32(8),
+                        .CreatedAt = reader.GetDateTime(9)
+                    }
+                End If
+            End Using
+        End Using
+        Return Nothing
+    End Function
+
+==================================================
+Part: Update (PRT-132)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Sub Update(flight As Flight)
+        Dim query As String = "UPDATE Flight SET flight_number = @flight_number, origin = @origin, destination = @destination, departure_date = @departure_date, departure_time = @departure_time, arrival_time = @arrival_time, price = @price, available_seats = @available_seats WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@flight_number", flight.FlightNumber),
+            New NpgsqlParameter("@origin", flight.Origin),
+            New NpgsqlParameter("@destination", flight.Destination),
+            New NpgsqlParameter("@departure_date", flight.DepartureDate),
+            New NpgsqlParameter("@departure_time", flight.DepartureTime),
+            New NpgsqlParameter("@arrival_time", flight.ArrivalTime),
+            New NpgsqlParameter("@price", flight.Price),
+            New NpgsqlParameter("@available_seats", flight.AvailableSeats),
+            New NpgsqlParameter("@id", flight.Id)
+        )
+    End Sub
+
+==================================================
+Part: Delete (PRT-133)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Sub Delete(id As Integer)
+        Dim query As String = "DELETE FROM Flight WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query, New NpgsqlParameter("@id", id))
+    End Sub
+
+==================================================
+Part: DecrementSeats (PRT-134)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Sub DecrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats - 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
+==================================================
+Part: IncrementSeats (PRT-135)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/FlightRepository.vb
+==================================================
+Public Shared Sub IncrementSeats(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "UPDATE Flight SET available_seats = available_seats + 1 WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
+==================================================
+Part: UserRepository (REPO-136)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Class UserRepository
+    Public Shared Function GetByUsername(username As String) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE username = @username"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@username", username))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function GetById(id As Integer) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function UsernameExists(username As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE username = @username"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@username", username)))
+        Return count > 0
+    End Function
+
+    Public Shared Function EmailExists(email As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE email = @email"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@email", email)))
+        Return count > 0
+    End Function
+
+    Public Shared Function Create(user As User) As Integer
+        Dim query As String = "INSERT INTO ""User"" (username, password, email, full_name, role, created_at) VALUES (@username, @password, @email, @full_name, @role, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@username", user.Username),
+            New NpgsqlParameter("@password", user.Password),
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@role", user.Role),
+            New NpgsqlParameter("@created_at", user.CreatedAt)
+        ))
+        Return id
+    End Function
+
+    Public Shared Sub Update(user As User)
+        Dim query As String = "UPDATE ""User"" SET email = @email, full_name = @full_name WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@id", user.Id)
+        )
+    End Sub
+
+    Public Shared Sub UpdatePassword(userId As Integer, hashedPassword As String)
+        Dim query As String = "UPDATE ""User"" SET password = @password WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@password", hashedPassword),
+            New NpgsqlParameter("@id", userId)
+        )
+    End Sub
+
+    Public Shared Function GetAll() As List(Of User)
+        Dim users As New List(Of User)
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" ORDER BY created_at DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                users.Add(New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return users
+    End Function
+
+    Public Shared Function VerifyPassword(plainPassword As String, hashedPassword As String) As Boolean
+        Dim hash As String = HashPassword(plainPassword)
+        Return hash.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase)
+    End Function
+
+    Public Shared Function HashPassword(password As String) As String
+        Using sha1 As SHA1 = SHA1.Create()
+            Dim hash As Byte() = sha1.ComputeHash(Encoding.UTF8.GetBytes(password))
+            Return BitConverter.ToString(hash).Replace("-", "").ToUpper()
+        End Using
+    End Function
+End Class
+
+==================================================
+Part: GetByUsername (PRT-137)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function GetByUsername(username As String) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE username = @username"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@username", username))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+==================================================
+Part: GetById (PRT-138)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function GetById(id As Integer) As User
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" WHERE id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+==================================================
+Part: UsernameExists (PRT-139)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function UsernameExists(username As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE username = @username"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@username", username)))
+        Return count > 0
+    End Function
+
+==================================================
+Part: EmailExists (PRT-140)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function EmailExists(email As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM ""User"" WHERE email = @email"
+        Dim count As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query, New NpgsqlParameter("@email", email)))
+        Return count > 0
+    End Function
+
+==================================================
+Part: Create (PRT-141)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function Create(user As User) As Integer
+        Dim query As String = "INSERT INTO ""User"" (username, password, email, full_name, role, created_at) VALUES (@username, @password, @email, @full_name, @role, @created_at) RETURNING id"
+        Dim id As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(query,
+            New NpgsqlParameter("@username", user.Username),
+            New NpgsqlParameter("@password", user.Password),
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@role", user.Role),
+            New NpgsqlParameter("@created_at", user.CreatedAt)
+        ))
+        Return id
+    End Function
+
+==================================================
+Part: GetAll (PRT-142)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Function GetAll() As List(Of User)
+        Dim users As New List(Of User)
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" ORDER BY created_at DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                users.Add(New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return users
+    End Function
+
+==================================================
+Part: Update (PRT-145)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Sub Update(user As User)
+        Dim query As String = "UPDATE ""User"" SET email = @email, full_name = @full_name WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@email", user.Email),
+            New NpgsqlParameter("@full_name", user.FullName),
+            New NpgsqlParameter("@id", user.Id)
+        )
+    End Sub
+
+==================================================
+Part: UpdatePassword (PRT-146)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/UserRepository.vb
+==================================================
+Public Shared Sub UpdatePassword(userId As Integer, hashedPassword As String)
+        Dim query As String = "UPDATE ""User"" SET password = @password WHERE id = @id"
+        DatabaseHelper.ExecuteNonQuery(query,
+            New NpgsqlParameter("@password", hashedPassword),
+            New NpgsqlParameter("@id", userId)
+        )
+    End Sub
+
+==================================================
+Part: BookingRepository (REPO-147)
+Type: repository
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Class BookingRepository
+    Public Shared Function GetByUserId(userId As Integer) As List(Of Booking)
+        Dim bookings As New List(Of Booking)
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b WHERE b.user_id = @user_id ORDER BY b.booking_date DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@user_id", userId))
+            While reader.Read()
+                bookings.Add(New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return bookings
+    End Function
+
+    Public Shared Function GetAll() As List(Of Booking)
+        Dim bookings As New List(Of Booking)
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b ORDER BY b.booking_date DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                bookings.Add(New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return bookings
+    End Function
+
+    Public Shared Function GetById(id As Integer) As Booking
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b WHERE b.id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+    Public Shared Function Create(booking As Booking, transaction As NpgsqlTransaction) As Integer
+        Dim query As String = "INSERT INTO Booking (flight_id, user_id, passenger_name, passenger_email, seat_number, booking_date) VALUES (@flight_id, @user_id, @passenger_name, @passenger_email, @seat_number, @booking_date) RETURNING id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@flight_id", booking.FlightId))
+            If booking.UserId.HasValue Then
+                cmd.Parameters.Add(New NpgsqlParameter("@user_id", booking.UserId.Value))
+            Else
+                cmd.Parameters.Add(New NpgsqlParameter("@user_id", DBNull.Value))
+            End If
+            cmd.Parameters.Add(New NpgsqlParameter("@passenger_name", booking.PassengerName))
+            cmd.Parameters.Add(New NpgsqlParameter("@passenger_email", booking.PassengerEmail))
+            If Not String.IsNullOrEmpty(booking.SeatNumber) Then
+                cmd.Parameters.Add(New NpgsqlParameter("@seat_number", booking.SeatNumber))
+            Else
+                cmd.Parameters.Add(New NpgsqlParameter("@seat_number", DBNull.Value))
+            End If
+            cmd.Parameters.Add(New NpgsqlParameter("@booking_date", booking.BookingDate))
+            Return Convert.ToInt32(cmd.ExecuteScalar())
+        End Using
+    End Function
+
+    Public Shared Sub Update(booking As Booking)
+        Dim query As String = "UPDATE Booking SET passenger_name = @passenger_name, passenger_email = @passenger_email, seat_number = @seat_number WHERE id = @id"
+        Dim parameters As New List(Of NpgsqlParameter) From {
+            New NpgsqlParameter("@passenger_name", booking.PassengerName),
+            New NpgsqlParameter("@passenger_email", booking.PassengerEmail),
+            New NpgsqlParameter("@id", booking.Id)
+        }
+        If Not String.IsNullOrEmpty(booking.SeatNumber) Then
+            parameters.Add(New NpgsqlParameter("@seat_number", booking.SeatNumber))
+        Else
+            parameters.Add(New NpgsqlParameter("@seat_number", DBNull.Value))
+        End If
+        DatabaseHelper.ExecuteNonQuery(query, parameters.ToArray())
+    End Sub
+
+    Public Shared Sub Delete(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "DELETE FROM Booking WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+End Class
+
+==================================================
+Part: GetByUserId (PRT-148)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Shared Function GetByUserId(userId As Integer) As List(Of Booking)
+        Dim bookings As New List(Of Booking)
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b WHERE b.user_id = @user_id ORDER BY b.booking_date DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@user_id", userId))
+            While reader.Read()
+                bookings.Add(New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return bookings
+    End Function
+
+==================================================
+Part: GetAll (PRT-149)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Shared Function GetAll() As List(Of Booking)
+        Dim bookings As New List(Of Booking)
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b ORDER BY b.booking_date DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                bookings.Add(New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return bookings
+    End Function
+
+==================================================
+Part: GetById (PRT-150)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Shared Function GetById(id As Integer) As Booking
+        Dim query As String = "SELECT b.id, b.flight_id, b.user_id, b.passenger_name, b.passenger_email, b.seat_number, b.booking_date FROM Booking b WHERE b.id = @id"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query, New NpgsqlParameter("@id", id))
+            If reader.Read() Then
+                Return New Booking With {
+                    .Id = reader.GetInt32(0),
+                    .FlightId = reader.GetInt32(1),
+                    .UserId = If(reader.IsDBNull(2), Nothing, New Integer?(reader.GetInt32(2))),
+                    .PassengerName = reader.GetString(3),
+                    .PassengerEmail = reader.GetString(4),
+                    .SeatNumber = If(reader.IsDBNull(5), String.Empty, reader.GetString(5)),
+                    .BookingDate = reader.GetDateTime(6)
+                }
+            End If
+        End Using
+        Return Nothing
+    End Function
+
+==================================================
+Part: Create (PRT-151)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Shared Function Create(booking As Booking, transaction As NpgsqlTransaction) As Integer
+        Dim query As String = "INSERT INTO Booking (flight_id, user_id, passenger_name, passenger_email, seat_number, booking_date) VALUES (@flight_id, @user_id, @passenger_name, @passenger_email, @seat_number, @booking_date) RETURNING id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@flight_id", booking.FlightId))
+            If booking.UserId.HasValue Then
+                cmd.Parameters.Add(New NpgsqlParameter("@user_id", booking.UserId.Value))
+            Else
+                cmd.Parameters.Add(New NpgsqlParameter("@user_id", DBNull.Value))
+            End If
+            cmd.Parameters.Add(New NpgsqlParameter("@passenger_name", booking.PassengerName))
+            cmd.Parameters.Add(New NpgsqlParameter("@passenger_email", booking.PassengerEmail))
+            If Not String.IsNullOrEmpty(booking.SeatNumber) Then
+                cmd.Parameters.Add(New NpgsqlParameter("@seat_number", booking.SeatNumber))
+            Else
+                cmd.Parameters.Add(New NpgsqlParameter("@seat_number", DBNull.Value))
+            End If
+            cmd.Parameters.Add(New NpgsqlParameter("@booking_date", booking.BookingDate))
+            Return Convert.ToInt32(cmd.ExecuteScalar())
+        End Using
+    End Function
+
+==================================================
+Part: Update (PRT-152)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Shared Sub Update(booking As Booking)
+        Dim query As String = "UPDATE Booking SET passenger_name = @passenger_name, passenger_email = @passenger_email, seat_number = @seat_number WHERE id = @id"
+        Dim parameters As New List(Of NpgsqlParameter) From {
+            New NpgsqlParameter("@passenger_name", booking.PassengerName),
+            New NpgsqlParameter("@passenger_email", booking.PassengerEmail),
+            New NpgsqlParameter("@id", booking.Id)
+        }
+        If Not String.IsNullOrEmpty(booking.SeatNumber) Then
+            parameters.Add(New NpgsqlParameter("@seat_number", booking.SeatNumber))
+        Else
+            parameters.Add(New NpgsqlParameter("@seat_number", DBNull.Value))
+        End If
+        DatabaseHelper.ExecuteNonQuery(query, parameters.ToArray())
+    End Sub
+
+==================================================
+Part: Delete (PRT-153)
+Type: class
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Repositories/BookingRepository.vb
+==================================================
+Public Shared Sub Delete(id As Integer, transaction As NpgsqlTransaction)
+        Dim query As String = "DELETE FROM Booking WHERE id = @id"
+        Using cmd As New NpgsqlCommand(query, transaction.Connection, transaction)
+            cmd.Parameters.Add(New NpgsqlParameter("@id", id))
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub

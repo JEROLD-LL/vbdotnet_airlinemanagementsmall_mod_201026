@@ -1,0 +1,14 @@
+
+==================================================
+Part: Program (PRT-001)
+Type: module
+File: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code/AirlineManagement_VBNetLegacy/Program.vb
+==================================================
+Module Program
+    <STAThread>
+    Sub Main()
+        Application.EnableVisualStyles()
+        Application.SetCompatibleTextRenderingDefault(False)
+        Application.Run(New LoginForm())
+    End Sub
+End Module

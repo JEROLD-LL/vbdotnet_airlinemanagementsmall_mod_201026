@@ -1,0 +1,4 @@
+Public Shared Sub Logout()
+        CurrentUser = Nothing
+        LastActivity = DateTime.MinValue
+    End Sub

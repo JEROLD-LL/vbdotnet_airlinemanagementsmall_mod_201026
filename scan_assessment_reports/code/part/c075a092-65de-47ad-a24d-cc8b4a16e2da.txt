@@ -1,0 +1,18 @@
+Public Shared Function GetAll() As List(Of User)
+        Dim users As New List(Of User)
+        Dim query As String = "SELECT id, username, password, email, full_name, role, created_at FROM ""User"" ORDER BY created_at DESC"
+        Using reader As NpgsqlDataReader = DatabaseHelper.ExecuteReader(query)
+            While reader.Read()
+                users.Add(New User With {
+                    .Id = reader.GetInt32(0),
+                    .Username = reader.GetString(1),
+                    .Password = reader.GetString(2),
+                    .Email = reader.GetString(3),
+                    .FullName = reader.GetString(4),
+                    .Role = reader.GetString(5),
+                    .CreatedAt = reader.GetDateTime(6)
+                })
+            End While
+        End Using
+        Return users
+    End Function

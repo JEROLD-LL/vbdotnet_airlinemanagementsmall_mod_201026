@@ -1,0 +1,10 @@
+Public Shared Sub CheckTimeout()
+        If IsAuthenticated() Then
+            Dim timeSinceLastActivity As TimeSpan = DateTime.Now - LastActivity
+            If timeSinceLastActivity.TotalMinutes > 30 Then
+                Logout()
+            Else
+                LastActivity = DateTime.Now
+            End If
+        End If
+    End Sub
