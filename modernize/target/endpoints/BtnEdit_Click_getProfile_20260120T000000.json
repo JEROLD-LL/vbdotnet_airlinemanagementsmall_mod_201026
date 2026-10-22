@@ -1,0 +1,196 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Profile",
+    "description": "Migrated from the legacy VB.NET AirlineManagement_VBNetLegacy application. Covers the profile view and the edit-profile flow behind the ProfileForm 'Edit Profile' button (BtnEdit_Click). Supports Markdown (CommonMark).",
+    "termsOfService": "https://example.com/terms",
+    "contact": {
+      "name": "Airline Management Team",
+      "url": "https://example.com/contact",
+      "email": "support@example.com"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Legacy source reference: Forms/ProfileForm.vb (BtnEdit_Click, LoadProfile)",
+    "url": "https://example.com/docs/legacy-profile-form"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/{basePath}",
+      "description": "Airline Management API server",
+      "variables": {
+        "basePath": {
+          "enum": ["v1"],
+          "default": "v1",
+          "description": "API version base path"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Profile",
+      "description": "Operations for the authenticated user's profile",
+      "externalDocs": {
+        "description": "Legacy ProfileForm (VB.NET)",
+        "url": "https://example.com/docs/legacy-profile-form"
+      }
+    }
+  ],
+  "paths": {
+    "/profile": {
+      "summary": "Current user profile",
+      "description": "Profile of the currently authenticated user.",
+      "get": {
+        "tags": ["Profile"],
+        "summary": "Get current user's profile",
+        "description": "Returns the profile of the currently authenticated user, as shown by the legacy ProfileForm after the Edit Profile dialog closes (LoadProfile). The session is cookie/session based in the legacy app; the modern equivalent requires a Bearer token. The password hash is never returned. Legacy behavior: if no user is logged in the response is 401; if the user record cannot be found the response is 404.\n\n**Legacy reference:** `AirlineManagement_VBNetLegacy.Forms.ProfileForm.ProfileForm.BtnEdit_Click.2.Object.EventArgs`",
+        "operationId": "getProfile(AirlineManagement_VBNetLegacy.Forms.ProfileForm.ProfileForm.BtnEdit_Click.2.Object.EventArgs)",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer token identifying the authenticated user (replaces SessionManager.CurrentUser).",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile loaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["username", "email", "fullName", "createdAt"],
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "description": "Username. Displayed as '<username> (cannot be changed)' in the legacy UI.",
+                      "readOnly": true,
+                      "example": "jdoe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email",
+                      "description": "User email address",
+                      "example": "john.doe@example.com"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "description": "User full name",
+                      "example": "John Doe"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Account creation timestamp (legacy format yyyy-MM-dd HH:mm:ss, shown as 'Member Since')",
+                      "example": "2024-03-15T10:30:00Z"
+                    }
+                  }
+                },
+                "example": {
+                  "username": "jdoe",
+                  "email": "john.doe@example.com",
+                  "fullName": "John Doe",
+                  "createdAt": "2024-03-15T10:30:00Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated. Legacy message: 'Please login first.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["message"],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Please login first."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Please login first."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The token is valid but the caller is not allowed to access this profile."
+          },
+          "404": {
+            "description": "User not found. Legacy message: 'User not found.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["message"],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User not found."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["message"],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "An unexpected error occurred."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token replacing the legacy SessionManager session state"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

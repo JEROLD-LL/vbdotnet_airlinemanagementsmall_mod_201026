@@ -1,0 +1,191 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "REST API for the Airline Management system, migrated from the VB.NET WinForms application to .NET 9 / React. This document defines the user profile endpoint derived from the legacy ProfileForm.LoadProfile method.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference: Forms/ProfileForm.vb (LoadProfile)",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User account and profile operations"
+    }
+  ],
+  "paths": {
+    "/users/profile": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get the current user's profile",
+        "description": "Returns the profile of the currently authenticated user. Mirrors the legacy `ProfileForm.LoadProfile` behavior:\n\n1. If no user is authenticated (`SessionManager.IsAuthenticated()` is false), the request is rejected with 401 (legacy: 'Please login first.' warning, form closed).\n2. The user is loaded by the session user's id via `UserRepository.GetById`. If no record exists, the request returns 404 (legacy: 'User not found.' error, form closed).\n3. Otherwise the profile fields are returned. `createdAt` is formatted as `yyyy-MM-dd HH:mm:ss`, matching the legacy label. The password is never returned.\n\nRequires a valid Bearer token.",
+        "operationId": "getUserProfile(AirlineManagement_VBNetLegacy.Forms.ProfileForm.ProfileForm.LoadProfile.0)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "username",
+                    "email",
+                    "fullName",
+                    "createdAt"
+                  ],
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "description": "Unique username of the user. Displayed with the legacy suffix ' (cannot be changed)' in the UI only.",
+                      "example": "john_doe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email",
+                      "description": "Email address of the user",
+                      "example": "john@example.com"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "description": "Full display name of the user",
+                      "example": "John Doe"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Account creation timestamp. Legacy display format is yyyy-MM-dd HH:mm:ss.",
+                      "example": "2025-01-15 10:30:00"
+                    }
+                  }
+                },
+                "example": {
+                  "username": "john_doe",
+                  "email": "john@example.com",
+                  "fullName": "John Doe",
+                  "createdAt": "2025-01-15 10:30:00"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. No authenticated user session (legacy: 'Please login first.')",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 401,
+                  "error": "Unauthorized",
+                  "message": "Please login first."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found (legacy: 'User not found.')",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "error": "Not Found",
+                  "message": "User not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token identifying the authenticated user. Replaces the legacy static SessionManager.CurrentUser."
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 401
+          },
+          "error": {
+            "type": "string",
+            "example": "Unauthorized"
+          },
+          "message": {
+            "type": "string",
+            "example": "Please login first."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,5454 @@
+[
+  {
+    "path": "/flights/{flightId}",
+    "method": "GET",
+    "operation_id": "getFlightById(AirlineManagement_VBNetLegacy.Forms.ViewFlightForm.ViewFlightForm.LoadFlight.1.Integer)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Unique numeric identifier of the flight (legacy flightId Integer argument)."
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight found and returned successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/Flight"
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "departureDate": "2025-06-15",
+          "departureTime": "08:30:00",
+          "arrivalTime": "20:45:00",
+          "price": 499.99,
+          "availableSeats": 42,
+          "createdAt": "2025-01-10T09:00:00Z"
+        }
+      },
+      "400": {
+        "description": "Invalid flightId (not a valid 32-bit integer).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Not applicable to legacy code; reserved for gateway auth."
+      },
+      "403": {
+        "description": "Forbidden. Not applicable to legacy code."
+      },
+      "404": {
+        "description": "Flight not found (legacy: 'Flight not found.' error, form closed).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "FLIGHT_NOT_FOUND",
+          "message": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error (database/data-access failure in FlightRepository.GetById).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/users/profile",
+    "method": "GET",
+    "operation_id": "getUserProfile(AirlineManagement_VBNetLegacy.Forms.ProfileForm.ProfileForm.LoadProfile.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token of the authenticated user (format: 'Bearer <token>')"
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "User profile retrieved successfully",
+        "content_type": "application/json",
+        "schema": {
+          "username": {
+            "type": "string",
+            "required": true,
+            "example": "john_doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "required": true,
+            "example": "john@example.com"
+          },
+          "fullName": {
+            "type": "string",
+            "required": true,
+            "example": "John Doe"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "required": true,
+            "description": "Legacy display format yyyy-MM-dd HH:mm:ss",
+            "example": "2025-01-15 10:30:00"
+          }
+        },
+        "example": {
+          "username": "john_doe",
+          "email": "john@example.com",
+          "fullName": "John Doe",
+          "createdAt": "2025-01-15 10:30:00"
+        }
+      },
+      "400": {
+        "description": "Bad request"
+      },
+      "401": {
+        "description": "Unauthorized. No authenticated user session (legacy: 'Please login first.')",
+        "schema": {
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Please login first."
+        }
+      },
+      "403": {
+        "description": "Forbidden"
+      },
+      "404": {
+        "description": "User not found (legacy: 'User not found.')",
+        "schema": {
+          "status": 404,
+          "error": "Not Found",
+          "message": "User not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error"
+      }
+    }
+  },
+  {
+    "path": "/customers",
+    "method": "GET",
+    "operation_id": "getCustomers(AirlineManagement_VBNetLegacy.Forms.CustomersForm.CustomersForm.LoadCustomers.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "List of customers retrieved successfully. An empty array is returned when no users exist.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Customer"
+          }
+        },
+        "example": [
+          {
+            "id": 3,
+            "username": "jane_admin",
+            "email": "jane@example.com",
+            "fullName": "Jane Doe",
+            "role": "Admin",
+            "createdAt": "2026-03-15 10:45:30"
+          },
+          {
+            "id": 2,
+            "username": "john_doe",
+            "email": "john@example.com",
+            "fullName": "John Doe",
+            "role": "User",
+            "createdAt": "2026-02-01 08:12:05"
+          }
+        ]
+      },
+      "500": {
+        "description": "Internal server error. The customer list could not be retrieved from the database.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "status": 500,
+          "error": "Internal Server Error",
+          "message": "Failed to retrieve customers."
+        }
+      }
+    }
+  },
+  {
+    "path": "/profile",
+    "method": "GET",
+    "operation_id": "getProfile(AirlineManagement_VBNetLegacy.Forms.EditProfileForm.EditProfileForm.LoadProfile.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "The authenticated user's profile was loaded successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/UserProfile"
+        },
+        "example": {
+          "id": 1,
+          "username": "jdoe",
+          "email": "john.doe@example.com",
+          "fullName": "John Doe",
+          "role": "customer",
+          "createdAt": "2025-01-15T09:30:00Z"
+        }
+      },
+      "401": {
+        "description": "Not authenticated. Legacy equivalent: 'Please login first.' (SessionManager.IsAuthenticated() returned false).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "NOT_AUTHENTICATED",
+          "message": "Please login first."
+        }
+      },
+      "404": {
+        "description": "The authenticated user no longer exists. Legacy equivalent: 'User not found.' (UserRepository.GetById returned Nothing).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "USER_NOT_FOUND",
+          "message": "User not found."
+        }
+      },
+      "500": {
+        "description": "Unexpected server error while loading the profile (e.g. database failure).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/my-bookings",
+    "method": "GET",
+    "operation_id": "getMyBookings(AirlineManagement_VBNetLegacy.Forms.MyBookingsForm.MyBookingsForm.LoadBookings.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer access token of the logged-in user. Replaces legacy SessionManager.CurrentUser."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "List of bookings for the authenticated user (empty array if none). Ordered by booking date descending.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "id": {
+              "type": "integer"
+            },
+            "flightId": {
+              "type": "integer"
+            },
+            "flightNumber": {
+              "type": "string"
+            },
+            "route": {
+              "type": "string"
+            },
+            "departureDate": {
+              "type": "string",
+              "format": "date"
+            },
+            "departureTime": {
+              "type": "string"
+            },
+            "arrivalTime": {
+              "type": "string"
+            },
+            "passengerName": {
+              "type": "string"
+            },
+            "passengerEmail": {
+              "type": "string",
+              "format": "email"
+            },
+            "seatNumber": {
+              "type": "string"
+            },
+            "price": {
+              "type": "number"
+            },
+            "bookingDate": {
+              "type": "string"
+            }
+          }
+        },
+        "example": [
+          {
+            "id": 101,
+            "flightId": 12,
+            "flightNumber": "AM-204",
+            "route": "New York (JFK) \u2192 London (LHR)",
+            "departureDate": "2026-03-15",
+            "departureTime": "08:30",
+            "arrivalTime": "20:45",
+            "passengerName": "John Doe",
+            "passengerEmail": "john@example.com",
+            "seatNumber": "12A",
+            "price": 549.99,
+            "bookingDate": "2026-02-01 14:22"
+          }
+        ]
+      },
+      "401": {
+        "description": "Not authenticated (legacy: 'Please login first.').",
+        "content_type": "application/json",
+        "example": {
+          "code": "UNAUTHORIZED",
+          "message": "Please login first."
+        }
+      },
+      "500": {
+        "description": "Internal server error while loading bookings or flight details.",
+        "content_type": "application/json",
+        "example": {
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "An unexpected error occurred while loading bookings."
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights",
+    "method": "GET",
+    "operation_id": "getFlights(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnRefresh_Click.2.Object.EventArgs)",
+    "path_params": {},
+    "query_params": {},
+    "header_params": {},
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flights retrieved successfully. Returns an empty array when no flights exist.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Flight"
+          }
+        },
+        "example": [
+          {
+            "id": 1,
+            "flightNumber": "AM101",
+            "origin": "New York (JFK)",
+            "destination": "London (LHR)",
+            "departureDate": "2025-07-15",
+            "departureTime": "08:30",
+            "arrivalTime": "20:45",
+            "price": 549.99,
+            "availableSeats": 120
+          }
+        ]
+      },
+      "401": {
+        "description": "Unauthorized. The request is missing a valid bearer token.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Forbidden. The authenticated user is not permitted to view flights.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error. The flight data could not be retrieved from the database.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}/edit",
+    "method": "GET",
+    "operation_id": "getEditBookingForm(AirlineManagement_VBNetLegacy.Forms.MyBookingsForm.MyBookingsForm.BtnEdit_Click.2.Object.EventArgs)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "example": 101,
+        "description": "Identifier of the booking selected in the My Bookings list (legacy GetSelectedBookingId, 'Id' column of the selected row)."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "example": "Bearer <token>",
+        "description": "Bearer token for the logged-in user. Replaces the legacy SessionManager.IsAuthenticated() check."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Booking loaded for editing (legacy EditBookingForm.LoadBooking).",
+        "content_type": "application/json",
+        "schema": {
+          "bookingId": {
+            "type": "integer"
+          },
+          "flightId": {
+            "type": "integer"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "passengerName": {
+            "type": "string"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "seatNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "example": {
+          "bookingId": 101,
+          "flightId": 12,
+          "flightNumber": "AM-245",
+          "origin": "JFK",
+          "destination": "LHR",
+          "passengerName": "John Doe",
+          "passengerEmail": "john.doe@example.com",
+          "seatNumber": "12A"
+        }
+      },
+      "400": {
+        "description": "No booking selected / invalid bookingId (legacy 'Please select a booking.').",
+        "example": {
+          "code": "NO_BOOKING_SELECTED",
+          "message": "Please select a booking."
+        }
+      },
+      "401": {
+        "description": "Not authenticated (legacy 'Please login first.').",
+        "example": {
+          "code": "NOT_AUTHENTICATED",
+          "message": "Please login first."
+        }
+      },
+      "403": {
+        "description": "Booking belongs to another user (legacy 'Access denied. You can only edit your own bookings.').",
+        "example": {
+          "code": "ACCESS_DENIED",
+          "message": "Access denied. You can only edit your own bookings."
+        }
+      },
+      "404": {
+        "description": "Booking not found (legacy 'Booking not found.').",
+        "example": {
+          "code": "BOOKING_NOT_FOUND",
+          "message": "Booking not found."
+        }
+      },
+      "500": {
+        "description": "Unexpected server error.",
+        "example": {
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/customers",
+    "method": "GET",
+    "operation_id": "getCustomers(AirlineManagement_VBNetLegacy.Forms.CustomersForm.CustomersForm.BtnRefresh_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Customers retrieved successfully",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Customer"
+          }
+        },
+        "example": [
+          {
+            "id": 2,
+            "username": "jdoe",
+            "email": "jdoe@example.com",
+            "fullName": "John Doe",
+            "role": "User",
+            "createdAt": "2026-04-20 14:32:10"
+          },
+          {
+            "id": 1,
+            "username": "admin",
+            "email": "admin@example.com",
+            "fullName": "System Administrator",
+            "role": "Admin",
+            "createdAt": "2026-01-15 09:00:00"
+          }
+        ]
+      },
+      "401": {
+        "description": "Unauthorized. The request is missing a valid bearer token.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error while reading users from the database",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}/bookings",
+    "method": "POST",
+    "operation_id": "AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnBook_Click.2.Object.EventArgs",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "ID of the selected flight (legacy grid column 'Id')."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": false,
+        "description": "Optional bearer token. When supplied, the booking is attached to the user (legacy SessionManager.CurrentUser)."
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "passengerName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z\\s'-]+$"
+        },
+        "passengerEmail": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "maxLength": 255
+        },
+        "seatNumber": {
+          "type": "string",
+          "required": false,
+          "maxLength": 10,
+          "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$",
+          "nullable": true
+        }
+      },
+      "example": {
+        "passengerName": "John Doe",
+        "passengerEmail": "john.doe@example.com",
+        "seatNumber": "12A"
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Booking created successfully (legacy: 'Booking successful!').",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          },
+          "flightId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "passengerName": {
+            "type": "string"
+          },
+          "passengerEmail": {
+            "type": "string"
+          },
+          "seatNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "example": {
+          "message": "Booking successful!",
+          "flightId": 101,
+          "userId": 7,
+          "passengerName": "John Doe",
+          "passengerEmail": "john.doe@example.com",
+          "seatNumber": "12A"
+        }
+      },
+      "400": {
+        "description": "Validation failure or flight with no available seats (legacy BookingService.CreateBooking messages).",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "Passenger name is required."
+        }
+      },
+      "401": {
+        "description": "Invalid or expired bearer token.",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "Invalid or expired token."
+        }
+      },
+      "403": {
+        "description": "Reserved for role-based restrictions; not used by legacy flow.",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "Access denied."
+        }
+      },
+      "404": {
+        "description": "Flight not found (legacy: 'Flight not found.').",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Unexpected failure while creating the booking (legacy: 'An error occurred while creating the booking: ...').",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "An error occurred while creating the booking."
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{id}",
+    "method": "GET",
+    "operation_id": "getFlightById(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnView_Click.2.Object.EventArgs)",
+    "path_params": {
+      "id": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Flight ID selected in the flights grid (legacy Flight.Id)."
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight details retrieved successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "yyyy-MM-dd"
+          },
+          "departureTime": {
+            "type": "string",
+            "description": "HH:mm"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "description": "HH:mm"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "NYC",
+          "destination": "LAX",
+          "departureDate": "2026-05-15",
+          "departureTime": "08:30",
+          "arrivalTime": "11:45",
+          "price": 299.99,
+          "availableSeats": 42,
+          "createdAt": "2026-01-10T09:00:00Z"
+        }
+      },
+      "400": {
+        "description": "Invalid flight ID.",
+        "content_type": "application/json",
+        "example": {
+          "error": "Bad Request",
+          "message": "Please select a flight."
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Missing or invalid bearer token.",
+        "content_type": "application/json",
+        "example": {
+          "error": "Unauthorized",
+          "message": "Authentication is required."
+        }
+      },
+      "403": {
+        "description": "Forbidden.",
+        "content_type": "application/json",
+        "example": {
+          "error": "Forbidden",
+          "message": "You do not have permission to view this flight."
+        }
+      },
+      "404": {
+        "description": "Flight not found.",
+        "content_type": "application/json",
+        "example": {
+          "error": "Not Found",
+          "message": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error.",
+        "content_type": "application/json",
+        "example": {
+          "error": "Internal Server Error",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}",
+    "method": "PUT",
+    "operation_id": "updateBooking(AirlineManagement_VBNetLegacy.Forms.EditBookingForm.EditBookingForm.BtnUpdate_Click.2.Object.EventArgs)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "description": "Unique identifier of the booking to update (legacy Booking.Id)."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer JWT token. Replaces legacy SessionManager authentication.",
+        "format": "bearer"
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "passengerName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z\\s'-]+$"
+        },
+        "passengerEmail": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        },
+        "seatNumber": {
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "maxLength": 10,
+          "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$"
+        }
+      },
+      "example": {
+        "passengerName": "Jane O'Neil-Smith",
+        "passengerEmail": "jane.oneil@example.com",
+        "seatNumber": "12A"
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Booking updated successfully. Returns the updated booking.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer"
+          },
+          "flightId": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "passengerName": {
+            "type": "string"
+          },
+          "passengerEmail": {
+            "type": "string"
+          },
+          "seatNumber": {
+            "type": "string"
+          },
+          "bookingDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": 101,
+          "flightId": 12,
+          "userId": 7,
+          "passengerName": "Jane O'Neil-Smith",
+          "passengerEmail": "jane.oneil@example.com",
+          "seatNumber": "12A",
+          "bookingDate": "2025-01-10T09:30:00Z"
+        }
+      },
+      "400": {
+        "description": "Validation failed. Returns all validation messages from the legacy form.",
+        "content_type": "application/json",
+        "schema": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "errors": [
+            "Passenger name must be between 2 and 255 characters.",
+            "Invalid email format."
+          ]
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Missing or invalid authentication token."
+      },
+      "403": {
+        "description": "Forbidden. The authenticated user is not allowed to edit this booking."
+      },
+      "404": {
+        "description": "Booking not found.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "message": "Booking not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error while persisting the booking update.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "message": "An error occurred: <details>"
+        }
+      }
+    }
+  },
+  {
+    "path": "/auth/register",
+    "method": "POST",
+    "operation_id": "registerUser(AirlineManagement_VBNetLegacy.Forms.RegisterForm.RegisterForm.BtnRegister_Click.2.Object.EventArgs)",
+    "path_params": {},
+    "query_params": {},
+    "header_params": {},
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "username": {
+          "type": "string",
+          "required": true,
+          "minLength": 3,
+          "maxLength": 50,
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        },
+        "fullName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "required": true,
+          "minLength": 6,
+          "writeOnly": true
+        }
+      },
+      "example": {
+        "username": "john_doe",
+        "email": "john@example.com",
+        "fullName": "John Doe",
+        "password": "secret123"
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Registration successful. The user was created with role 'user'.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": 42,
+          "message": "Registration successful! Please login."
+        }
+      },
+      "400": {
+        "description": "Validation failed or username/email already exists.",
+        "content_type": "application/json",
+        "schema": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "errors": [
+            "Username already exists."
+          ]
+        }
+      },
+      "500": {
+        "description": "An unexpected error occurred while creating the user.",
+        "content_type": "application/json",
+        "schema": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "errors": [
+            "An error occurred: <exception message>"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights",
+    "method": "GET",
+    "operation_id": "getFlights(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.LoadFlights.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "A list of flights ordered by departure date and departure time ascending. An empty array is returned when no flights exist.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Flight"
+          }
+        },
+        "example": [
+          {
+            "id": 1,
+            "flightNumber": "AM101",
+            "origin": "New York (JFK)",
+            "destination": "London (LHR)",
+            "departureDate": "2025-06-15",
+            "departureTime": "08:30",
+            "arrivalTime": "20:45",
+            "price": 549.99,
+            "availableSeats": 120
+          }
+        ]
+      },
+      "400": {
+        "description": "Bad request. Not expected, since the operation takes no input.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Not enforced by legacy LoadFlights; included for future authentication.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error, e.g. database connectivity or query failure.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/auth/login",
+    "method": "POST",
+    "operation_id": "loginUser(AirlineManagement_VBNetLegacy.Forms.LoginForm.LoginForm.BtnLogin_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 1,
+            "maxLength": 256,
+            "writeOnly": true
+          }
+        }
+      },
+      "example": {
+        "username": "jdoe",
+        "password": "P@ssw0rd123"
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Login successful. Returns the authenticated user's profile (without password).",
+        "content_type": "application/json",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "username": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "fullName": {
+              "type": "string"
+            },
+            "role": {
+              "type": "string"
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "username",
+            "email",
+            "fullName",
+            "role",
+            "createdAt"
+          ]
+        }
+      },
+      "400": {
+        "description": "Username or password missing or whitespace only. Message: 'Username and password are required.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Invalid username or password. Message: 'Invalid username or password.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error (e.g. database unavailable).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}/booking-summary",
+    "method": "GET",
+    "operation_id": "getFlightBookingSummary(AirlineManagement_VBNetLegacy.Forms.BookFlightForm.BookFlightForm.LoadFlight.0)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "description": "Unique identifier of the flight to book (legacy Flight.Id).",
+        "example": 101
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight booking summary retrieved successfully. The flight has at least one available seat.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "departureTime": {
+            "type": "string",
+            "description": "hh:mm, 12-hour clock as in legacy code"
+          },
+          "arrivalTime": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "displayText": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "departureDate": "2026-05-15",
+          "departureTime": "08:30",
+          "arrivalTime": "20:45",
+          "price": 499.99,
+          "availableSeats": 42,
+          "createdAt": "2026-01-10T09:15:00Z",
+          "displayText": "Flight: AM-101\nRoute: New York (JFK) \u2192 London (LHR)\nDeparture: 2026-05-15 at 08:30\nPrice: $499.99"
+        }
+      },
+      "400": {
+        "description": "flightId is not a valid integer.",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "BAD_REQUEST",
+          "message": "flightId must be a valid integer."
+        }
+      },
+      "404": {
+        "description": "Flight not found (legacy: 'Flight not found.').",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "FLIGHT_NOT_FOUND",
+          "message": "Flight not found."
+        }
+      },
+      "409": {
+        "description": "No available seats on the flight (legacy: 'No available seats on this flight.').",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "NO_AVAILABLE_SEATS",
+          "message": "No available seats on this flight."
+        }
+      },
+      "500": {
+        "description": "Internal server error, such as a database failure.",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "An unexpected error occurred while retrieving the flight."
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}",
+    "method": "DELETE",
+    "operation_id": "deleteBooking(AirlineManagement_VBNetLegacy.Forms.MyBookingsForm.MyBookingsForm.BtnDelete_Click.2.Object.EventArgs)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Booking identifier. Legacy source: Convert.ToInt32(dgvBookings.SelectedRows(0).Cells(\"Id\").Value) via GetSelectedBookingId()."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token identifying the caller. Replaces legacy SessionManager.CurrentUser."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "204": {
+        "description": "Booking deleted successfully. No response body. Legacy: 'Booking deleted successfully!' then list reload."
+      },
+      "400": {
+        "description": "Missing or invalid bookingId. Legacy: 'Please select a booking.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Missing or invalid bearer token. Legacy: SessionManager.IsAuthenticated() check ('Please login first.')",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Booking belongs to another user. Legacy: 'Access denied. You can only delete your own bookings.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "404": {
+        "description": "Booking not found. Legacy: 'Booking not found.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Delete failed and transaction rolled back. Legacy: 'An error occurred while deleting the booking: <message>'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}",
+    "method": "GET",
+    "operation_id": "getFlightById(AirlineManagement_VBNetLegacy.Forms.EditFlightForm.EditFlightForm.LoadFlight.1.Integer)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Unique identifier of the flight. Maps to the legacy flightId As Integer argument and the Flight.id column."
+      }
+    },
+    "query_params": {},
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer JWT. Assumed for the target stack; the legacy LoadFlight has no explicit auth check."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight found and returned successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "departureTime": {
+            "type": "string",
+            "format": "time"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "format": "time"
+          },
+          "price": {
+            "type": "number"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "departureDate": "2025-06-15T00:00:00",
+          "departureTime": "08:30:00",
+          "arrivalTime": "20:45:00",
+          "price": 499.99,
+          "availableSeats": 120,
+          "createdAt": "2025-01-10T09:15:00"
+        }
+      },
+      "400": {
+        "description": "Bad request. flightId is not a valid 32-bit integer.",
+        "example": {
+          "code": "BAD_REQUEST",
+          "message": "flightId must be a valid integer."
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Missing or invalid bearer token.",
+        "example": {
+          "code": "UNAUTHORIZED",
+          "message": "Authentication is required."
+        }
+      },
+      "403": {
+        "description": "Forbidden. The caller may not access this flight.",
+        "example": {
+          "code": "FORBIDDEN",
+          "message": "You do not have permission to view this flight."
+        }
+      },
+      "404": {
+        "description": "Flight not found. Corresponds to the legacy 'Flight not found.' branch.",
+        "example": {
+          "code": "NOT_FOUND",
+          "message": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error.",
+        "example": {
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/profile",
+    "method": "GET",
+    "operation_id": "getProfile(AirlineManagement_VBNetLegacy.Forms.ProfileForm.ProfileForm.BtnEdit_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token identifying the authenticated user (replaces SessionManager.CurrentUser)."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Profile loaded successfully",
+        "content_type": "application/json",
+        "schema": {
+          "username": {
+            "type": "string",
+            "required": true,
+            "readOnly": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "required": true
+          },
+          "fullName": {
+            "type": "string",
+            "required": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "required": true
+          }
+        },
+        "example": {
+          "username": "jdoe",
+          "email": "john.doe@example.com",
+          "fullName": "John Doe",
+          "createdAt": "2024-03-15T10:30:00Z"
+        }
+      },
+      "401": {
+        "description": "Not authenticated (legacy: 'Please login first.')",
+        "content_type": "application/json",
+        "example": {
+          "message": "Please login first."
+        }
+      },
+      "403": {
+        "description": "Forbidden. Token valid but access to this profile is not allowed."
+      },
+      "404": {
+        "description": "User not found (legacy: 'User not found.')",
+        "content_type": "application/json",
+        "example": {
+          "message": "User not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content_type": "application/json",
+        "example": {
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/master",
+    "method": "GET",
+    "operation_id": "listMasterBookings(AirlineManagement_VBNetLegacy.Forms.MasterBookingsForm.MasterBookingsForm.LoadBookings.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "List of booking rows for the master bookings grid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "bookingId",
+                  "user",
+                  "flightNumber",
+                  "route",
+                  "departureDate",
+                  "departureTime",
+                  "arrivalTime",
+                  "passengerName",
+                  "passengerEmail",
+                  "seatNumber",
+                  "price",
+                  "bookingDate"
+                ],
+                "properties": {
+                  "bookingId": {
+                    "type": "string",
+                    "example": "#101"
+                  },
+                  "user": {
+                    "type": "string",
+                    "example": "jdoe (John Doe)"
+                  },
+                  "flightNumber": {
+                    "type": "string",
+                    "example": "AI-202"
+                  },
+                  "route": {
+                    "type": "string",
+                    "example": "DEL \u2192 BOM"
+                  },
+                  "departureDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2026-05-01"
+                  },
+                  "departureTime": {
+                    "type": "string",
+                    "example": "08:30"
+                  },
+                  "arrivalTime": {
+                    "type": "string",
+                    "example": "10:45"
+                  },
+                  "passengerName": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "passengerEmail": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  },
+                  "seatNumber": {
+                    "type": "string",
+                    "example": "12A"
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 4500.0
+                  },
+                  "bookingDate": {
+                    "type": "string",
+                    "example": "2026-04-20 12:00:00"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Unauthorized (placeholder; legacy form performs no authentication)"
+      },
+      "403": {
+        "description": "Forbidden (placeholder; legacy form performs no authorization)"
+      },
+      "500": {
+        "description": "Internal server error (e.g. database failure or missing flight for a booking)"
+      }
+    }
+  },
+  {
+    "path": "/master-bookings",
+    "method": "GET",
+    "operation_id": "getMasterBookings(AirlineManagement_VBNetLegacy.Forms.MasterBookingsForm.MasterBookingsForm.BtnRefresh_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token (added for the migrated API; the legacy form has no authentication)",
+        "format": "JWT"
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Master bookings list retrieved successfully, ordered by booking date descending. Returns an empty array when there are no bookings.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/MasterBookingRow"
+          }
+        },
+        "example": [
+          {
+            "bookingId": "#1042",
+            "user": "jdoe (John Doe)",
+            "flightNumber": "AM-214",
+            "route": "JFK \u2192 LAX",
+            "departureDate": "2026-02-15",
+            "departureTime": "08:30",
+            "arrivalTime": "11:45",
+            "passengerName": "John Doe",
+            "passengerEmail": "john.doe@example.com",
+            "seatNumber": "12A",
+            "price": 349.99,
+            "bookingDate": "2026-01-18 14:22:05"
+          }
+        ]
+      },
+      "401": {
+        "description": "Unauthorized. Missing or invalid bearer token.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Forbidden. The user is not allowed to view master bookings.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error while loading bookings, flights or users.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}/edit",
+    "method": "GET",
+    "operation_id": "loadBooking(Forms.EditBookingForm.EditBookingForm.LoadBooking.1.Integer)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Unique identifier of the booking to load."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": false,
+        "description": "Optional Bearer token. Used only for the ownership check on bookings linked to a user."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Booking loaded successfully. Returns the editable booking fields plus a flight summary.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer"
+          },
+          "flightId": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "passengerName": {
+            "type": "string"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "seatNumber": {
+            "type": "string"
+          },
+          "flight": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "flightNumber": {
+                "type": "string"
+              },
+              "origin": {
+                "type": "string"
+              },
+              "destination": {
+                "type": "string"
+              },
+              "departureDate": {
+                "type": "string",
+                "format": "date"
+              },
+              "departureTime": {
+                "type": "string"
+              },
+              "arrivalTime": {
+                "type": "string"
+              },
+              "price": {
+                "type": "number"
+              },
+              "availableSeats": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "example": {
+          "id": 101,
+          "flightId": 5,
+          "userId": 12,
+          "passengerName": "John Doe",
+          "passengerEmail": "john@example.com",
+          "seatNumber": "12A",
+          "flight": {
+            "id": 5,
+            "flightNumber": "AM-205",
+            "origin": "NYC",
+            "destination": "LON",
+            "departureDate": "2026-05-10",
+            "departureTime": "08:30:00",
+            "arrivalTime": "20:15:00",
+            "price": 499.99,
+            "availableSeats": 42
+          }
+        }
+      },
+      "400": {
+        "description": "Invalid booking identifier.",
+        "content_type": "application/json"
+      },
+      "401": {
+        "description": "Invalid or expired bearer token.",
+        "content_type": "application/json"
+      },
+      "403": {
+        "description": "Access denied. Booking belongs to a different user.",
+        "content_type": "application/json"
+      },
+      "404": {
+        "description": "Booking not found.",
+        "content_type": "application/json"
+      },
+      "500": {
+        "description": "Unexpected server or database error.",
+        "content_type": "application/json"
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}",
+    "method": "GET",
+    "operation_id": "getBookingForEdit(AirlineManagement_VBNetLegacy.Forms.EditBookingForm.EditBookingForm.LoadBooking.1.Integer)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Unique identifier of the booking to load"
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": false,
+        "description": "Optional Bearer JWT. When supplied, the booking owner check is enforced."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Booking loaded successfully",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/BookingEditResponse"
+        },
+        "example": {
+          "id": 101,
+          "flightId": 12,
+          "userId": 7,
+          "passengerName": "Jane Doe",
+          "passengerEmail": "jane.doe@example.com",
+          "seatNumber": "12A",
+          "flight": {
+            "flightNumber": "AM245",
+            "origin": "JFK",
+            "destination": "LAX"
+          }
+        }
+      },
+      "400": {
+        "description": "Invalid bookingId (not a valid 32-bit integer)",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Supplied bearer token is invalid or expired",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Access denied: authenticated user does not own this booking (legacy: 'Access denied. You can only edit your own bookings.')",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "404": {
+        "description": "Booking not found (legacy: 'Booking not found.')",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Unexpected server error, e.g. the booking's flight does not exist",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}",
+    "method": "GET",
+    "operation_id": "getBookingById(AirlineManagement_VBNetLegacy.Forms.ViewBookingForm.ViewBookingForm.LoadBooking.1.Integer)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Booking identifier (legacy bookingId As Integer)."
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Booking and flight details retrieved successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "bookingId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "departureTime": {
+            "type": "string",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "example": "20:15"
+          },
+          "passengerName": {
+            "type": "string"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "seatNumber": {
+            "type": "string",
+            "description": "'N/A' when empty in legacy"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "bookingDate": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "bookingId": 101,
+          "userId": 7,
+          "flightNumber": "AM-204",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "route": "New York (JFK) \u2192 London (LHR)",
+          "departureDate": "2026-05-10",
+          "departureTime": "08:30",
+          "arrivalTime": "20:15",
+          "passengerName": "John Doe",
+          "passengerEmail": "john.doe@example.com",
+          "seatNumber": "12A",
+          "price": 499.99,
+          "bookingDate": "2026-04-01 14:25"
+        }
+      },
+      "400": {
+        "description": "Invalid bookingId (must be a 32-bit integer)."
+      },
+      "403": {
+        "description": "Access denied: booking belongs to a different authenticated user. Legacy message: 'Access denied. You can only view your own bookings.'"
+      },
+      "404": {
+        "description": "Booking not found. Legacy message: 'Booking not found.'"
+      },
+      "500": {
+        "description": "Internal server error (e.g. flight lookup or database failure)."
+      }
+    }
+  },
+  {
+    "path": "/flights/{id}",
+    "method": "DELETE",
+    "operation_id": "deleteFlight(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnDelete_Click.2.Object.EventArgs)",
+    "path_params": {
+      "id": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Numeric ID of the flight to delete. Maps to the Id column of the selected grid row (Convert.ToInt32)."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token for an authenticated admin session (replaces legacy SessionManager)."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "204": {
+        "description": "Flight deleted successfully. No content returned (legacy: 'Flight deleted successfully!')."
+      },
+      "400": {
+        "description": "Invalid flight ID, or no flight selected (legacy: 'Please select a flight.').",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "INVALID_FLIGHT_ID",
+          "message": "Please select a flight."
+        }
+      },
+      "401": {
+        "description": "No valid authenticated session (legacy: SessionManager.IsAuthenticated() is false).",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "UNAUTHORIZED",
+          "message": "Authentication is required."
+        }
+      },
+      "403": {
+        "description": "Authenticated user is not an admin (legacy: Delete button is hidden unless SessionManager.IsAdmin()).",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "FORBIDDEN",
+          "message": "Admin privileges are required."
+        }
+      },
+      "500": {
+        "description": "Database or other error while deleting (legacy: 'Error deleting flight: ' & ex.Message).",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "DELETE_FAILED",
+          "message": "Error deleting flight: 23503: update or delete on table \"Flight\" violates foreign key constraint"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}/edit",
+    "method": "GET",
+    "operation_id": "BtnEdit_Click(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnEdit_Click.2.Object.EventArgs)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Id of the flight selected in the flights grid (GetSelectedFlightId)"
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token for an authenticated administrator session (replaces legacy SessionManager.IsAdmin check)"
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight retrieved successfully and ready for editing.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "departureTime": {
+            "type": "string",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "example": "20:45"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "departureDate": "2025-06-15",
+          "departureTime": "08:30",
+          "arrivalTime": "20:45",
+          "price": 499.99,
+          "availableSeats": 120,
+          "createdAt": "2025-01-10T09:00:00Z"
+        }
+      },
+      "400": {
+        "description": "Invalid flightId (not a valid integer)",
+        "content_type": "application/json",
+        "example": {
+          "status": 400,
+          "error": "Bad Request",
+          "message": "flightId must be a valid integer."
+        }
+      },
+      "401": {
+        "description": "Unauthorized - no valid authenticated session",
+        "content_type": "application/json",
+        "example": {
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Authentication is required."
+        }
+      },
+      "403": {
+        "description": "Forbidden - user is not an administrator",
+        "content_type": "application/json",
+        "example": {
+          "status": 403,
+          "error": "Forbidden",
+          "message": "Administrator role is required to edit flights."
+        }
+      },
+      "404": {
+        "description": "Flight not found",
+        "content_type": "application/json",
+        "example": {
+          "status": 404,
+          "error": "Not Found",
+          "message": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content_type": "application/json",
+        "example": {
+          "status": 500,
+          "error": "Internal Server Error",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}",
+    "method": "PUT",
+    "operation_id": "updateFlight(AirlineManagement_VBNetLegacy.Forms.EditFlightForm.EditFlightForm.BtnUpdate_Click.2.Object.EventArgs)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Flight ID. Comes from the selectedFlightId constructor argument in the legacy form.",
+        "example": 101
+      }
+    },
+    "query_params": {},
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token. Assumption: the legacy app has no auth, so this is added for the modernized API."
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "flightNumber": {
+          "type": "string",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "origin": {
+          "type": "string",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "destination": {
+          "type": "string",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "departureDate": {
+          "type": "string",
+          "format": "date",
+          "required": true
+        },
+        "departureTime": {
+          "type": "string",
+          "required": true,
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+          "example": "08:30:00"
+        },
+        "arrivalTime": {
+          "type": "string",
+          "required": true,
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+          "example": "11:45:00"
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "required": true,
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "availableSeats": {
+          "type": "integer",
+          "format": "int32",
+          "required": true,
+          "minimum": 0
+        }
+      },
+      "example": {
+        "flightNumber": "AM-101",
+        "origin": "NYC",
+        "destination": "LAX",
+        "departureDate": "2025-06-15",
+        "departureTime": "08:30:00",
+        "arrivalTime": "11:45:00",
+        "price": 299.99,
+        "availableSeats": 150
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Flight updated successfully (legacy: 'Flight updated successfully!' message, then form closes).",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string",
+            "example": "Flight updated successfully!"
+          }
+        }
+      },
+      "400": {
+        "description": "Validation failed. Legacy: all validation messages shown in lblError, joined by line breaks.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "message": "Validation failed.",
+          "errors": [
+            "Flight number already exists. Please use a unique flight number.",
+            "Price must be greater than 0."
+          ]
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Not in legacy code; required for the modernized API.",
+        "content_type": "application/json"
+      },
+      "403": {
+        "description": "Forbidden. Not in legacy code; required for the modernized API.",
+        "content_type": "application/json"
+      },
+      "404": {
+        "description": "Flight not found. Legacy: LoadFlight shows 'Flight not found.' when GetById returns nothing.",
+        "content_type": "application/json"
+      },
+      "500": {
+        "description": "Internal server error. Legacy: lblError set to 'An error occurred: ' + exception message when the database update fails.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string",
+            "example": "An error occurred: Database connection failed."
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "/users/me/bookings",
+    "method": "GET",
+    "operation_id": "loadBookings(Forms.MyBookingsForm.MyBookingsForm.LoadBookings.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token identifying the logged-in user (replaces SessionManager.CurrentUser)."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "List of bookings for the authenticated user, each joined with its flight details. Empty array if none.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/MyBooking"
+          }
+        }
+      },
+      "401": {
+        "description": "Not authenticated (legacy: 'Please login first.')",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Forbidden",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}/bookings",
+    "method": "POST",
+    "operation_id": "createFlightBooking(AirlineManagement_VBNetLegacy.Forms.BookFlightForm.BookFlightForm.BtnBook_Click.2.Object.EventArgs)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "example": 101
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": false,
+        "description": "Optional bearer token identifying the logged-in user. Replaces SessionManager.CurrentUser."
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "passengerName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z\\s'-]+$"
+        },
+        "passengerEmail": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "maxLength": 255
+        },
+        "seatNumber": {
+          "type": "string",
+          "required": false,
+          "maxLength": 10,
+          "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$",
+          "nullable": true
+        }
+      },
+      "example": {
+        "passengerName": "Jane Doe",
+        "passengerEmail": "jane.doe@example.com",
+        "seatNumber": "12a"
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Booking created successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "message": "string",
+          "flightId": "integer",
+          "passengerName": "string",
+          "passengerEmail": "string",
+          "seatNumber": "string (nullable)"
+        },
+        "example": {
+          "message": "Booking successful!",
+          "flightId": 101,
+          "passengerName": "Jane Doe",
+          "passengerEmail": "jane.doe@example.com",
+          "seatNumber": "12A"
+        }
+      },
+      "400": {
+        "description": "Validation failed (messages joined with a space, as in the legacy lblError).",
+        "content_type": "application/json",
+        "schema": {
+          "error": "string"
+        }
+      },
+      "404": {
+        "description": "Flight not found.",
+        "content_type": "application/json",
+        "schema": {
+          "error": "string"
+        }
+      },
+      "409": {
+        "description": "No available seats on this flight.",
+        "content_type": "application/json",
+        "schema": {
+          "error": "string"
+        }
+      },
+      "500": {
+        "description": "Unexpected failure; transaction rolled back.",
+        "content_type": "application/json",
+        "schema": {
+          "error": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}",
+    "method": "PUT",
+    "operation_id": "updateBooking(Forms.EditBookingForm.EditBookingForm.BtnUpdate_Click.2.Object.EventArgs)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token (replaces SessionManager.CurrentUser)"
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "passengerName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z\\s'-]+$"
+        },
+        "passengerEmail": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        },
+        "seatNumber": {
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "maxLength": 10,
+          "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$"
+        }
+      },
+      "example": {
+        "passengerName": "Jane Doe",
+        "passengerEmail": "jane.doe@example.com",
+        "seatNumber": "12a"
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Booking updated successfully",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer"
+          },
+          "flightId": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "passengerName": {
+            "type": "string"
+          },
+          "passengerEmail": {
+            "type": "string"
+          },
+          "seatNumber": {
+            "type": "string"
+          },
+          "bookingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "400": {
+        "description": "Validation failed",
+        "content_type": "application/json",
+        "schema": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Authentication required"
+      },
+      "403": {
+        "description": "Booking belongs to a different user"
+      },
+      "404": {
+        "description": "Booking not found"
+      },
+      "500": {
+        "description": "Internal server error while persisting the update"
+      }
+    }
+  },
+  {
+    "path": "/flights",
+    "method": "POST",
+    "operation_id": "createFlight(AirlineManagement_VBNetLegacy.Forms.CreateFlightForm.CreateFlightForm.BtnCreate_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "$ref": "#/components/schemas/CreateFlightRequest"
+      },
+      "description": "Flight details from the Create Flight form. flightNumber, origin, destination, departureDate, departureTime, arrivalTime, price and availableSeats are all required.",
+      "example": {
+        "flightNumber": "AM-101",
+        "origin": "NYC",
+        "destination": "LAX",
+        "departureDate": "2026-06-15",
+        "departureTime": "08:30:00",
+        "arrivalTime": "11:45:00",
+        "price": 299.99,
+        "availableSeats": 180
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Flight created successfully. Returns the generated id and the persisted flight.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/CreateFlightResponse"
+        }
+      },
+      "400": {
+        "description": "Validation failed. Lists every validation error, matching the legacy lblError messages.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ValidationErrorResponse"
+        },
+        "example": {
+          "errors": [
+            "Flight number already exists. Please use a unique flight number.",
+            "Price must be greater than 0."
+          ]
+        }
+      },
+      "401": {
+        "description": "Unauthorized (assumed; not enforced by legacy handler).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Forbidden. Admin role required (assumed from SessionManager.IsAdmin / Admin menu).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error. Legacy 'An error occurred: <message>' path.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/me/profile",
+    "method": "PUT",
+    "operation_id": "updateUserProfile(AirlineManagement_VBNetLegacy.Forms.EditProfileForm.EditProfileForm.BtnUpdate_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token identifying the logged-in user. Replaces the legacy SessionManager.IsAuthenticated() check."
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "maxLength": 320,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        },
+        "fullName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "required": false,
+          "writeOnly": true,
+          "minLength": 6,
+          "nullable": true
+        }
+      },
+      "example": {
+        "email": "jane.doe@example.com",
+        "fullName": "Jane Doe",
+        "password": "newSecret123"
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Profile updated successfully (legacy: 'Profile updated successfully!' message, then form closes).",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "username": {
+            "type": "string",
+            "readOnly": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": 12,
+          "username": "jdoe",
+          "email": "jane.doe@example.com",
+          "fullName": "Jane Doe",
+          "role": "user",
+          "message": "Profile updated successfully!"
+        }
+      },
+      "400": {
+        "description": "Validation failed; no changes saved (legacy lblError with joined messages).",
+        "content_type": "application/json",
+        "schema": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        },
+        "example": {
+          "errors": [
+            "Invalid email format.",
+            "Full name must be between 2 and 255 characters."
+          ]
+        }
+      },
+      "401": {
+        "description": "Unauthorized - no valid session (legacy: 'Please login first.').",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "message": "Please login first."
+        }
+      },
+      "403": {
+        "description": "Forbidden - reserved; not used by legacy code."
+      },
+      "404": {
+        "description": "User not found (legacy: 'User not found.').",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "message": "User not found."
+        }
+      },
+      "500": {
+        "description": "Unexpected failure while saving (legacy: 'An error occurred: <message>').",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "message": "An error occurred: 23505: duplicate key value violates unique constraint"
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/my",
+    "method": "GET",
+    "operation_id": "getMyBookings(AirlineManagement_VBNetLegacy.Forms.MyBookingsForm.MyBookingsForm.BtnRefresh_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token identifying the authenticated user. Replaces the legacy SessionManager.IsAuthenticated() check.",
+        "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example"
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Bookings for the current user were retrieved successfully. Empty array when the user has no bookings.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "flightId",
+              "flightNumber",
+              "route",
+              "departureDate",
+              "departureTime",
+              "arrivalTime",
+              "passengerName",
+              "passengerEmail",
+              "seatNumber",
+              "price",
+              "bookingDate"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "flightId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "flightNumber": {
+                "type": "string"
+              },
+              "route": {
+                "type": "string",
+                "description": "Formatted as 'Origin \u2192 Destination'"
+              },
+              "departureDate": {
+                "type": "string",
+                "format": "date",
+                "description": "yyyy-MM-dd"
+              },
+              "departureTime": {
+                "type": "string",
+                "description": "hh:mm"
+              },
+              "arrivalTime": {
+                "type": "string",
+                "description": "hh:mm"
+              },
+              "passengerName": {
+                "type": "string"
+              },
+              "passengerEmail": {
+                "type": "string",
+                "format": "email"
+              },
+              "seatNumber": {
+                "type": "string",
+                "description": "'N/A' when not assigned"
+              },
+              "price": {
+                "type": "number",
+                "format": "decimal"
+              },
+              "bookingDate": {
+                "type": "string",
+                "format": "date-time",
+                "description": "yyyy-MM-dd HH:mm"
+              }
+            }
+          }
+        },
+        "example": [
+          {
+            "id": 101,
+            "flightId": 12,
+            "flightNumber": "AM-204",
+            "route": "New York (JFK) \u2192 London (LHR)",
+            "departureDate": "2025-07-15",
+            "departureTime": "09:30",
+            "arrivalTime": "17:45",
+            "passengerName": "John Doe",
+            "passengerEmail": "john@example.com",
+            "seatNumber": "14A",
+            "price": 349.99,
+            "bookingDate": "2025-06-01 14:22"
+          }
+        ]
+      },
+      "401": {
+        "description": "Not authenticated. Legacy equivalent: 'Please login first.' when no current user is set.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "string",
+              "example": "Unauthorized"
+            },
+            "message": {
+              "type": "string",
+              "example": "Please login first."
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Unexpected server error. In legacy code this occurs when a booking references a flight that no longer exists (FlightRepository.GetById returns Nothing and is dereferenced without a null check).",
+        "content_type": "application/json",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "string",
+              "example": "Internal Server Error"
+            },
+            "message": {
+              "type": "string",
+              "example": "An unexpected error occurred while loading bookings."
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}",
+    "method": "DELETE",
+    "operation_id": "deleteBooking(AirlineManagement_VBNetLegacy.Forms.MyBookingsForm.MyBookingsForm.BtnDelete_Click.2.Object.EventArgs)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Booking identifier. Legacy source: Convert.ToInt32(dgvBookings.SelectedRows(0).Cells(\"Id\").Value) via GetSelectedBookingId()."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token identifying the caller. Replaces legacy SessionManager.CurrentUser."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "204": {
+        "description": "Booking deleted successfully. No response body. Legacy: 'Booking deleted successfully!' then list reload."
+      },
+      "400": {
+        "description": "Missing or invalid bookingId. Legacy: 'Please select a booking.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Missing or invalid bearer token. Legacy: SessionManager.IsAuthenticated() check ('Please login first.')",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Booking belongs to another user. Legacy: 'Access denied. You can only delete your own bookings.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "404": {
+        "description": "Booking not found. Legacy: 'Booking not found.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/profile",
+    "method": "GET",
+    "operation_id": "getProfile(Forms.EditProfileForm.EditProfileForm.LoadProfile.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token for the authenticated session. Replaces the legacy SessionManager.CurrentUser check.",
+        "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example"
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "The authenticated user's profile was loaded successfully. Maps to txtEmail and txtFullName populated from UserRepository.GetById. The password is never returned.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "example": "customer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": 1,
+          "username": "jdoe",
+          "email": "john.doe@example.com",
+          "fullName": "John Doe",
+          "role": "customer",
+          "createdAt": "2025-01-15T09:30:00Z"
+        }
+      },
+      "401": {
+        "description": "No valid authenticated session. Legacy: 'Please login first.' when SessionManager.IsAuthenticated() is false (CurrentUser is Nothing).",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "NOT_AUTHENTICATED",
+          "message": "Please login first."
+        }
+      },
+      "404": {
+        "description": "The authenticated user no longer exists. Legacy: 'User not found.' when UserRepository.GetById returns Nothing.",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "USER_NOT_FOUND",
+          "message": "User not found."
+        }
+      },
+      "500": {
+        "description": "Unexpected server error, such as a database failure while reading the user.",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights",
+    "method": "GET",
+    "operation_id": "getFlights(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.LoadFlights.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "A list of flights ordered by departure date and departure time ascending. An empty array is returned when no flights exist.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Flight"
+          }
+        },
+        "example": [
+          {
+            "id": 1,
+            "flightNumber": "AM101",
+            "origin": "New York (JFK)",
+            "destination": "London (LHR)",
+            "departureDate": "2025-06-15",
+            "departureTime": "08:30",
+            "arrivalTime": "20:45",
+            "price": 549.99,
+            "availableSeats": 120
+          }
+        ]
+      },
+      "400": {
+        "description": "Bad request. Not expected, since the operation takes no input.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Not enforced by legacy LoadFlights; included for future authentication.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error, e.g. database connectivity or query failure.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/master-bookings",
+    "method": "GET",
+    "operation_id": "getMasterBookings(AirlineManagement_VBNetLegacy.Forms.MasterBookingsForm.MasterBookingsForm.BtnRefresh_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token (added for the migrated API; the legacy form has no authentication)",
+        "format": "JWT"
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Master bookings list retrieved successfully, ordered by booking date descending. Returns an empty array when there are no bookings.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/MasterBookingRow"
+          }
+        },
+        "example": [
+          {
+            "bookingId": "#1042",
+            "user": "jdoe (John Doe)",
+            "flightNumber": "AM-214",
+            "route": "JFK \u2192 LAX",
+            "departureDate": "2026-02-15",
+            "departureTime": "08:30",
+            "arrivalTime": "11:45",
+            "passengerName": "John Doe",
+            "passengerEmail": "john.doe@example.com",
+            "seatNumber": "12A",
+            "price": 349.99,
+            "bookingDate": "2026-01-18 14:22:05"
+          }
+        ]
+      },
+      "401": {
+        "description": "Unauthorized. Missing or invalid bearer token.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Forbidden. The user is not allowed to view master bookings.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error while loading bookings, flights or users.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/my-bookings/refresh",
+    "method": "GET",
+    "operation_id": "refreshMyBookings(Forms.MyBookingsForm.MyBookingsForm.BtnRefresh_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer access token of the logged-in user. Replaces legacy SessionManager.CurrentUser."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Bookings for the authenticated user refreshed successfully. Returns an empty array when the user has no bookings. Ordered by booking date descending.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "flightId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "flightNumber": {
+                "type": "string"
+              },
+              "route": {
+                "type": "string"
+              },
+              "departureDate": {
+                "type": "string",
+                "format": "date"
+              },
+              "departureTime": {
+                "type": "string"
+              },
+              "arrivalTime": {
+                "type": "string"
+              },
+              "passengerName": {
+                "type": "string"
+              },
+              "passengerEmail": {
+                "type": "string",
+                "format": "email"
+              },
+              "seatNumber": {
+                "type": "string"
+              },
+              "price": {
+                "type": "number",
+                "format": "decimal"
+              },
+              "bookingDate": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "flightId",
+              "flightNumber",
+              "route",
+              "departureDate",
+              "departureTime",
+              "arrivalTime",
+              "passengerName",
+              "passengerEmail",
+              "seatNumber",
+              "price",
+              "bookingDate"
+            ]
+          }
+        }
+      },
+      "401": {
+        "description": "Not authenticated. Legacy behavior: shows 'Please login first.' and closes the form when no user session exists.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "500": {
+        "description": "Internal server error while loading bookings or flight details.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}/edit",
+    "method": "GET",
+    "operation_id": "getEditBookingForm(Forms.MyBookingsForm.MyBookingsForm.BtnEdit_Click.2.Object.EventArgs)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "example": 101,
+        "description": "Identifier of the booking selected in the My Bookings list (legacy GetSelectedBookingId, 'Id' column of the selected row)."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "example": "Bearer <token>",
+        "description": "Bearer token for the logged-in user. Replaces the legacy SessionManager.IsAuthenticated() check."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Booking loaded for editing (legacy EditBookingForm.LoadBooking).",
+        "content_type": "application/json",
+        "schema": {
+          "bookingId": {
+            "type": "integer"
+          },
+          "flightId": {
+            "type": "integer"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "passengerName": {
+            "type": "string"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "seatNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "example": {
+          "bookingId": 101,
+          "flightId": 12,
+          "flightNumber": "AM-245",
+          "origin": "JFK",
+          "destination": "LHR",
+          "passengerName": "John Doe",
+          "passengerEmail": "john.doe@example.com",
+          "seatNumber": "12A"
+        }
+      },
+      "400": {
+        "description": "Bad request: invalid bookingId or no booking selected (legacy: 'Please select a booking.')."
+      },
+      "401": {
+        "description": "Unauthorized: user not logged in (legacy: 'Please login first.')."
+      },
+      "403": {
+        "description": "Forbidden: booking belongs to another user (legacy: 'Access denied. You can only edit your own bookings.')."
+      },
+      "404": {
+        "description": "Booking not found (legacy: 'Booking not found.')."
+      },
+      "500": {
+        "description": "Internal server error."
+      }
+    }
+  },
+  {
+    "path": "/customers",
+    "method": "GET",
+    "operation_id": "getCustomers(AirlineManagement_VBNetLegacy.Forms.CustomersForm.CustomersForm.BtnRefresh_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Customers retrieved successfully",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Customer"
+          }
+        }
+      },
+      "401": {
+        "description": "Unauthorized. The request is missing a valid bearer token.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error while reading users from the database",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/customers",
+    "method": "GET",
+    "operation_id": "getCustomers(Forms.CustomersForm.CustomersForm.LoadCustomers.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "List of customers (registered users) retrieved successfully, ordered by creation date descending (newest first). Returns an empty array when no users exist. Mirrors the legacy LoadCustomers grid: ID, Username, Email, Full Name, Role (admin -> Admin, anything else -> User), Member Since (yyyy-MM-dd HH:mm:ss). The password is never returned.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "username",
+              "email",
+              "fullName",
+              "role",
+              "createdAt"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32",
+                "readOnly": true,
+                "example": 3
+              },
+              "username": {
+                "type": "string",
+                "example": "jane_admin"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "example": "jane@example.com"
+              },
+              "fullName": {
+                "type": "string",
+                "example": "Jane Doe"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "Admin",
+                  "User"
+                ],
+                "example": "Admin"
+              },
+              "createdAt": {
+                "type": "string",
+                "example": "2026-03-15 10:45:30"
+              }
+            }
+          }
+        },
+        "example": [
+          {
+            "id": 3,
+            "username": "jane_admin",
+            "email": "jane@example.com",
+            "fullName": "Jane Doe",
+            "role": "Admin",
+            "createdAt": "2026-03-15 10:45:30"
+          },
+          {
+            "id": 2,
+            "username": "john_doe",
+            "email": "john@example.com",
+            "fullName": "John Doe",
+            "role": "User",
+            "createdAt": "2026-02-01 08:12:05"
+          }
+        ]
+      },
+      "500": {
+        "description": "Internal server error. The customer list could not be retrieved from the database.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "status",
+            "error",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "integer",
+              "format": "int32",
+              "example": 500
+            },
+            "error": {
+              "type": "string",
+              "example": "Internal Server Error"
+            },
+            "message": {
+              "type": "string",
+              "example": "Failed to retrieve customers."
+            }
+          }
+        },
+        "example": {
+          "status": 500,
+          "error": "Internal Server Error",
+          "message": "Failed to retrieve customers."
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights",
+    "method": "POST",
+    "operation_id": "createFlight(AirlineManagement_VBNetLegacy.Forms.CreateFlightForm.CreateFlightForm.BtnCreate_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "$ref": "#/components/schemas/CreateFlightRequest"
+      },
+      "description": "Flight details from the Create Flight form. flightNumber, origin, destination, departureDate, departureTime, arrivalTime, price and availableSeats are all required.",
+      "example": {
+        "flightNumber": "AM-101",
+        "origin": "NYC",
+        "destination": "LAX",
+        "departureDate": "2026-06-15",
+        "departureTime": "08:30:00",
+        "arrivalTime": "11:45:00",
+        "price": 299.99,
+        "availableSeats": 180
+      }
+    },
+    "responses": {
+      "201": {
+        "content_type": "application/json",
+        "description": "Flight created successfully. Returns the generated id and the persisted flight.",
+        "schema": {
+          "$ref": "#/components/schemas/CreateFlightResponse"
+        }
+      },
+      "400": {
+        "content_type": "application/json",
+        "description": "Validation failed. Lists every validation error, matching the legacy lblError messages.",
+        "example": {
+          "errors": [
+            "Flight number already exists. Please use a unique flight number.",
+            "Price must be greater than 0."
+          ]
+        },
+        "schema": {
+          "$ref": "#/components/schemas/ValidationErrorResponse"
+        }
+      },
+      "401": {
+        "content_type": "application/json",
+        "description": "Unauthorized (assumed; not enforced by legacy handler).",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "content_type": "application/json",
+        "description": "Forbidden. Admin role required (assumed from SessionManager.IsAdmin / Admin menu).",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "content_type": "application/json",
+        "description": "Internal server error. Legacy 'An error occurred: <message>' path.",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/auth/register",
+    "method": "POST",
+    "operation_id": "registerUser(Forms.RegisterForm.RegisterForm.BtnRegister_Click.2.Object.EventArgs)",
+    "path_params": {},
+    "query_params": {},
+    "header_params": {},
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "username": {
+          "type": "string",
+          "required": true,
+          "minLength": 3,
+          "maxLength": 50,
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        },
+        "fullName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "required": true,
+          "minLength": 6,
+          "writeOnly": true
+        }
+      },
+      "example": {
+        "username": "john_doe",
+        "email": "john@example.com",
+        "fullName": "John Doe",
+        "password": "secret123"
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Registration successful. The user was created with role 'user'.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": 42,
+          "message": "Registration successful! Please login."
+        }
+      },
+      "400": {
+        "description": "Validation failed, or the username or email already exists.",
+        "content_type": "application/json",
+        "schema": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "errors": [
+            "Username already exists."
+          ]
+        }
+      },
+      "500": {
+        "description": "An unexpected error occurred while creating the user.",
+        "content_type": "application/json",
+        "schema": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "errors": [
+            "An error occurred: <exception message>"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}/booking-summary",
+    "method": "GET",
+    "operation_id": "getFlightBookingSummary(AirlineManagement_VBNetLegacy.Forms.BookFlightForm.BookFlightForm.LoadFlight.0)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "description": "Unique identifier of the flight to book (legacy Flight.Id).",
+        "example": 101
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight booking summary retrieved successfully. The flight has at least one available seat.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "departureTime": {
+            "type": "string",
+            "description": "hh:mm, 12-hour clock as in legacy code"
+          },
+          "arrivalTime": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "displayText": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "departureDate": "2026-05-15",
+          "departureTime": "08:30",
+          "arrivalTime": "20:45",
+          "price": 499.99,
+          "availableSeats": 42,
+          "createdAt": "2026-01-10T09:15:00Z",
+          "displayText": "Flight: AM-101\nRoute: New York (JFK) \u2192 London (LHR)\nDeparture: 2026-05-15 at 08:30\nPrice: $499.99"
+        }
+      },
+      "400": {
+        "description": "flightId is not a valid integer.",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "BAD_REQUEST",
+          "message": "flightId must be a valid integer."
+        }
+      },
+      "404": {
+        "description": "Flight not found (legacy: 'Flight not found.').",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "FLIGHT_NOT_FOUND",
+          "message": "Flight not found."
+        }
+      },
+      "409": {
+        "description": "No available seats on the flight (legacy: 'No available seats on this flight.').",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "NO_AVAILABLE_SEATS",
+          "message": "No available seats on this flight."
+        }
+      },
+      "500": {
+        "description": "Internal server error, such as a database failure.",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "An unexpected error occurred while retrieving the flight."
+        }
+      }
+    }
+  },
+  {
+    "path": "/auth/login",
+    "method": "POST",
+    "operation_id": "loginUser(Forms.LoginForm.LoginForm.BtnLogin_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": null,
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 1,
+            "maxLength": 256,
+            "writeOnly": true
+          }
+        }
+      },
+      "example": {
+        "username": "jdoe",
+        "password": "P@ssw0rd123"
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Login successful. Returns the authenticated user's profile (without password).",
+        "content_type": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "id",
+            "username",
+            "email",
+            "fullName",
+            "role",
+            "createdAt"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "username": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "fullName": {
+              "type": "string"
+            },
+            "role": {
+              "type": "string"
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "example": {
+          "id": 1,
+          "username": "jdoe",
+          "email": "jdoe@example.com",
+          "fullName": "John Doe",
+          "role": "customer",
+          "createdAt": "2025-01-15T10:30:00Z"
+        }
+      },
+      "400": {
+        "description": "Username or password missing or whitespace only. Message: 'Username and password are required.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Invalid username or password. Message: 'Invalid username or password.'",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error (e.g. database unavailable).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights",
+    "method": "GET",
+    "operation_id": "getFlights(Forms.FlightsForm.FlightsForm.BtnRefresh_Click.2.Object.EventArgs)",
+    "path_params": {},
+    "query_params": {},
+    "header_params": {},
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flights retrieved successfully. Returns an empty array when no flights exist. Legacy source: FlightRepository.GetAll ordered by departure_date and departure_time ascending.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Flight"
+          }
+        },
+        "example": [
+          {
+            "id": 1,
+            "flightNumber": "AM101",
+            "origin": "New York (JFK)",
+            "destination": "London (LHR)",
+            "departureDate": "2025-07-15",
+            "departureTime": "08:30",
+            "arrivalTime": "20:45",
+            "price": 549.99,
+            "availableSeats": 120
+          }
+        ]
+      },
+      "401": {
+        "description": "Unauthorized. Not present in the legacy code (no auth check exists); carried over from the existing contract.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Forbidden. Not present in the legacy code (no authorization check exists); carried over from the existing contract.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error. The flight data could not be retrieved from the database.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}/edit",
+    "method": "GET",
+    "operation_id": "BtnEdit_Click(Forms.FlightsForm.FlightsForm.BtnEdit_Click.2.Object.EventArgs)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Id of the flight selected in the flights grid (legacy GetSelectedFlightId, column 'Id')."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token for an authenticated administrator session. Replaces the legacy SessionManager.IsAdmin() check."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight retrieved successfully and ready for editing.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "example": "20:45"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "minimum": 0
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        },
+        "example": {
+          "id": 12,
+          "flightNumber": "AM-1024",
+          "origin": "NYC",
+          "destination": "LHR",
+          "departureDate": "2025-07-15",
+          "departureTime": "08:30",
+          "arrivalTime": "20:45",
+          "price": 499.99,
+          "availableSeats": 120,
+          "createdAt": "2025-01-10T09:00:00Z"
+        }
+      },
+      "400": {
+        "description": "No flight selected, or flightId is not a valid positive integer. Legacy message: 'Please select a flight.'",
+        "content_type": "application/json",
+        "example": {
+          "status": 400,
+          "title": "Bad Request",
+          "detail": "Please select a flight."
+        }
+      },
+      "401": {
+        "description": "Missing or invalid Bearer token.",
+        "content_type": "application/json",
+        "example": {
+          "status": 401,
+          "title": "Unauthorized",
+          "detail": "Authentication is required."
+        }
+      },
+      "403": {
+        "description": "Authenticated user does not have the admin role (legacy SessionManager.IsAdmin() returned false).",
+        "content_type": "application/json",
+        "example": {
+          "status": 403,
+          "title": "Forbidden",
+          "detail": "Administrator role is required."
+        }
+      },
+      "404": {
+        "description": "Flight not found. Legacy message: 'Flight not found.'",
+        "content_type": "application/json",
+        "example": {
+          "status": 404,
+          "title": "Not Found",
+          "detail": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error while loading the flight.",
+        "content_type": "application/json",
+        "example": {
+          "status": 500,
+          "title": "Internal Server Error",
+          "detail": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/bookings/{bookingId}",
+    "method": "GET",
+    "operation_id": "getBookingById(Forms.ViewBookingForm.ViewBookingForm.LoadBooking.1.Integer)",
+    "path_params": {
+      "bookingId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Booking identifier (legacy bookingId As Integer)."
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Booking and flight details retrieved successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "bookingId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "departureTime": {
+            "type": "string",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "example": "20:15"
+          },
+          "passengerName": {
+            "type": "string"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "seatNumber": {
+            "type": "string",
+            "description": "'N/A' when empty in legacy"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "bookingDate": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "bookingId": 101,
+          "userId": 7,
+          "flightNumber": "AM-204",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "route": "New York (JFK) \u2192 London (LHR)",
+          "departureDate": "2026-05-10",
+          "departureTime": "08:30",
+          "arrivalTime": "20:15",
+          "passengerName": "John Doe",
+          "passengerEmail": "john.doe@example.com",
+          "seatNumber": "12A",
+          "price": 499.99,
+          "bookingDate": "2026-04-01 14:25"
+        }
+      },
+      "400": {
+        "description": "Invalid bookingId (must be a 32-bit integer)."
+      },
+      "403": {
+        "description": "Access denied: booking belongs to a different authenticated user. Legacy message: 'Access denied. You can only view your own bookings.'"
+      },
+      "404": {
+        "description": "Booking not found. Legacy message: 'Booking not found.'"
+      },
+      "500": {
+        "description": "Internal server error (flight lookup or database failure)."
+      }
+    }
+  },
+  {
+    "path": "/bookings",
+    "method": "GET",
+    "operation_id": "loadBookings(Forms.MasterBookingsForm.MasterBookingsForm.LoadBookings.0)",
+    "path_params": null,
+    "query_params": {},
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Bookings retrieved successfully. Returns an empty array when no bookings exist.",
+        "content_type": "application/json",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/BookingGridRow"
+          }
+        },
+        "example": [
+          {
+            "id": "#1",
+            "user": "jdoe (John Doe)",
+            "flightNumber": "AM-101",
+            "route": "New York \u2192 London",
+            "departureDate": "2026-05-10",
+            "departureTime": "08:30",
+            "arrivalTime": "20:15",
+            "passengerName": "John Doe",
+            "passengerEmail": "john.doe@example.com",
+            "seatNumber": "12A",
+            "price": 450.0,
+            "bookingDate": "2026-04-18 14:22:05"
+          }
+        ]
+      },
+      "401": {
+        "description": "Unauthorized. Reserved for the target API's authentication layer; the legacy form has no auth check.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Forbidden. Reserved for the target API's authorization layer; the legacy form has no role check.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "500": {
+        "description": "Internal server error. Database failure, or a booking whose flight does not exist (legacy code dereferences the flight without a null check).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}",
+    "method": "GET",
+    "operation_id": "getFlightById(Forms.EditFlightForm.EditFlightForm.LoadFlight.1.Integer)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Unique identifier of the flight (legacy flightId As Integer argument, maps to Flight.id)."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer JWT. Assumed for the target stack; the legacy LoadFlight has no explicit auth check."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight found and returned successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/Flight"
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "departureDate": "2025-06-15T00:00:00",
+          "departureTime": "08:30:00",
+          "arrivalTime": "20:45:00",
+          "price": 499.99,
+          "availableSeats": 120,
+          "createdAt": "2025-01-10T09:15:00"
+        }
+      },
+      "400": {
+        "description": "Bad request. flightId is not a valid 32-bit integer.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Missing or invalid bearer token.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "403": {
+        "description": "Forbidden. The caller may not access this flight.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "404": {
+        "description": "Flight not found. Legacy: 'Flight not found.' message, then the form closes.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "FLIGHT_NOT_FOUND",
+          "message": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error (data-access failure in FlightRepository.GetById).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  },
+  {
+    "path": "/users/profile",
+    "method": "GET",
+    "operation_id": "getUserProfile(Forms.ProfileForm.ProfileForm.LoadProfile.0)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token of the authenticated user (format: 'Bearer <token>')"
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "User profile retrieved successfully",
+        "content_type": "application/json",
+        "schema": {
+          "username": {
+            "type": "string",
+            "required": true,
+            "example": "john_doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "required": true,
+            "example": "john@example.com"
+          },
+          "fullName": {
+            "type": "string",
+            "required": true,
+            "example": "John Doe"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Legacy display format yyyy-MM-dd HH:mm:ss",
+            "required": true,
+            "example": "2025-01-15 10:30:00"
+          }
+        },
+        "example": {
+          "username": "john_doe",
+          "email": "john@example.com",
+          "fullName": "John Doe",
+          "createdAt": "2025-01-15 10:30:00"
+        }
+      },
+      "400": {
+        "description": "Bad request"
+      },
+      "401": {
+        "description": "Unauthorized. No authenticated user session (legacy: 'Please login first.')",
+        "schema": {
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Please login first."
+        }
+      },
+      "403": {
+        "description": "Forbidden"
+      },
+      "404": {
+        "description": "User not found (legacy: 'User not found.')",
+        "schema": {
+          "status": 404,
+          "error": "Not Found",
+          "message": "User not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error"
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}",
+    "method": "GET",
+    "operation_id": "getFlightById(Forms.FlightsForm.FlightsForm.BtnView_Click.2.Object.EventArgs)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Unique identifier of the flight (legacy Flight.Id), taken from the selected row's Id cell in the flights grid."
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight details retrieved successfully.",
+        "content_type": "application/json",
+        "schema": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "flightNumber": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "yyyy-MM-dd"
+          },
+          "departureTime": {
+            "type": "string",
+            "description": "HH:mm"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "description": "HH:mm"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "NYC",
+          "destination": "LAX",
+          "departureDate": "2026-05-15",
+          "departureTime": "08:30",
+          "arrivalTime": "11:45",
+          "price": 299.99,
+          "availableSeats": 42,
+          "createdAt": "2026-01-10T09:00:00Z"
+        }
+      },
+      "400": {
+        "description": "Invalid flight ID. Legacy equivalent: no flight selected ('Please select a flight.').",
+        "content_type": "application/json",
+        "example": {
+          "error": "Bad Request",
+          "message": "Please select a flight."
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Missing or invalid bearer token.",
+        "content_type": "application/json",
+        "example": {
+          "error": "Unauthorized",
+          "message": "Authentication is required."
+        }
+      },
+      "403": {
+        "description": "Forbidden.",
+        "content_type": "application/json",
+        "example": {
+          "error": "Forbidden",
+          "message": "You do not have permission to view this flight."
+        }
+      },
+      "404": {
+        "description": "Flight not found. Legacy equivalent: FlightRepository.GetById returned no record ('Flight not found.').",
+        "content_type": "application/json",
+        "example": {
+          "error": "Not Found",
+          "message": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error.",
+        "content_type": "application/json",
+        "example": {
+          "error": "Internal Server Error",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}",
+    "method": "GET",
+    "operation_id": "getFlightById(Forms.ViewFlightForm.ViewFlightForm.LoadFlight.1.Integer)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Unique numeric identifier of the flight (legacy flightId Integer argument of ViewFlightForm.LoadFlight, passed to FlightRepository.GetById)."
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight found and returned. Mirrors the legacy label content (flight number, route, dates, times, price, available seats).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/Flight"
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "departureDate": "2025-06-15",
+          "departureTime": "08:30:00",
+          "arrivalTime": "20:45:00",
+          "price": 499.99,
+          "availableSeats": 42,
+          "createdAt": "2025-01-10T09:00:00Z"
+        }
+      },
+      "400": {
+        "description": "Bad request. flightId is not a valid 32-bit integer.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "BAD_REQUEST",
+          "message": "flightId must be a valid integer."
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Not enforced by the legacy code; reserved for the modernized gateway if authentication is added."
+      },
+      "403": {
+        "description": "Forbidden. Not enforced by the legacy code; reserved for future authorization."
+      },
+      "404": {
+        "description": "Flight not found. Legacy: FlightRepository.GetById returned Nothing and the form showed 'Flight not found.' and closed.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "FLIGHT_NOT_FOUND",
+          "message": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error. Unexpected database or data-access failure in FlightRepository.GetById.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{id}",
+    "method": "DELETE",
+    "operation_id": "deleteFlight(Forms.FlightsForm.FlightsForm.BtnDelete_Click.2.Object.EventArgs)",
+    "path_params": {
+      "id": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Numeric ID of the flight to delete. Maps to the Id column of the selected grid row (Convert.ToInt32)."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer JWT for an authenticated admin session. Replaces the legacy SessionManager check."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "204": {
+        "description": "Flight deleted successfully. No content is returned (legacy message: 'Flight deleted successfully!')."
+      },
+      "400": {
+        "description": "Invalid flight ID, or no flight was selected (legacy message: 'Please select a flight.').",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "INVALID_FLIGHT_ID",
+          "message": "Please select a flight."
+        }
+      },
+      "401": {
+        "description": "Missing or invalid Bearer token (legacy equivalent: SessionManager.IsAuthenticated() is false).",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "UNAUTHORIZED",
+          "message": "Authentication is required."
+        }
+      },
+      "403": {
+        "description": "Authenticated user is not an administrator (legacy equivalent: Delete button only created when SessionManager.IsAdmin() is true).",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "FORBIDDEN",
+          "message": "Admin privileges are required."
+        }
+      },
+      "404": {
+        "description": "No flight exists with the given ID. Not in legacy code (legacy DELETE silently succeeds for a missing ID); added for the target API.",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "FLIGHT_NOT_FOUND",
+          "message": "Flight not found."
+        }
+      },
+      "500": {
+        "description": "Database or other unexpected error while deleting (legacy: 'Error deleting flight: ' & ex.Message). Includes FK violations when bookings still reference the flight.",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "DELETE_FAILED",
+          "message": "Error deleting flight: 23503: update or delete on table \"Flight\" violates foreign key constraint"
+        }
+      }
+    }
+  },
+  {
+    "path": "/profile",
+    "method": "GET",
+    "operation_id": "getProfile(AirlineManagement_VBNetLegacy.Forms.ProfileForm.ProfileForm.BtnEdit_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token identifying the authenticated user (replaces SessionManager.CurrentUser)."
+      }
+    },
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Profile loaded successfully",
+        "content_type": "application/json",
+        "schema": {
+          "username": {
+            "type": "string",
+            "required": true,
+            "readOnly": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "required": true
+          },
+          "fullName": {
+            "type": "string",
+            "required": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "required": true
+          }
+        },
+        "example": {
+          "username": "jdoe",
+          "email": "john.doe@example.com",
+          "fullName": "John Doe",
+          "createdAt": "2024-03-15T10:30:00Z"
+        }
+      },
+      "401": {
+        "description": "Not authenticated (legacy: 'Please login first.')",
+        "content_type": "application/json",
+        "example": {
+          "message": "Please login first."
+        }
+      },
+      "403": {
+        "description": "Forbidden. Token valid but access to this profile is not allowed."
+      },
+      "404": {
+        "description": "User not found (legacy: 'User not found.')",
+        "content_type": "application/json",
+        "example": {
+          "message": "User not found."
+        }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content_type": "application/json",
+        "example": {
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}",
+    "method": "PUT",
+    "operation_id": "updateFlight(Forms.EditFlightForm.EditFlightForm.BtnUpdate_Click.2.Object.EventArgs)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Flight ID. Legacy source: the selectedFlightId constructor argument of EditFlightForm.",
+        "example": 101
+      }
+    },
+    "query_params": {},
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token. Assumption: not present in the legacy app; added for the modernized API.",
+        "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.signature"
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "flightNumber": {
+          "type": "string",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Trimmed. Must be unique unless unchanged from the stored value."
+        },
+        "origin": {
+          "type": "string",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Trimmed. Required."
+        },
+        "destination": {
+          "type": "string",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Trimmed. Required."
+        },
+        "departureDate": {
+          "type": "string",
+          "format": "date",
+          "required": true,
+          "description": "Date part only (legacy dtpDepartureDate.Value.Date)."
+        },
+        "departureTime": {
+          "type": "string",
+          "required": true,
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+          "description": "Time of day, HH:mm:ss (legacy TimeSpan)."
+        },
+        "arrivalTime": {
+          "type": "string",
+          "required": true,
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+          "description": "Time of day, HH:mm:ss (legacy TimeSpan)."
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "required": true,
+          "minimum": 0,
+          "exclusiveMinimum": true,
+          "description": "Must be greater than 0 (legacy Decimal)."
+        },
+        "availableSeats": {
+          "type": "integer",
+          "format": "int32",
+          "required": true,
+          "minimum": 0,
+          "description": "Cannot be negative (legacy Integer)."
+        }
+      },
+      "example": {
+        "flightNumber": "AM-101",
+        "origin": "NYC",
+        "destination": "LAX",
+        "departureDate": "2025-06-15",
+        "departureTime": "08:30:00",
+        "arrivalTime": "11:45:00",
+        "price": 299.99,
+        "availableSeats": 150
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Flight updated successfully (legacy: 'Flight updated successfully!' message box, then form closes).",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string",
+            "example": "Flight updated successfully!"
+          }
+        }
+      },
+      "400": {
+        "description": "Validation failed. Legacy: all messages joined by line breaks in lblError.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "message": "Validation failed.",
+          "errors": [
+            "Flight number already exists. Please use a unique flight number.",
+            "Price must be greater than 0."
+          ]
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Not in legacy code; required for the modernized API."
+      },
+      "403": {
+        "description": "Forbidden. Not in legacy code; required for the modernized API."
+      },
+      "404": {
+        "description": "Flight not found. Legacy: 'Flight not found.' when GetById returns nothing.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string",
+            "example": "Flight not found."
+          }
+        }
+      },
+      "500": {
+        "description": "Internal server error. Legacy: 'An error occurred: ' plus exception message when the update fails.",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string",
+            "example": "An error occurred: Database connection failed."
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "/profile",
+    "method": "PUT",
+    "operation_id": "updateProfile(Forms.EditProfileForm.EditProfileForm.BtnUpdate_Click.2.Object.EventArgs)",
+    "path_params": null,
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": true,
+        "description": "Bearer token identifying the authenticated user. Replaces the legacy SessionManager.CurrentUser check."
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+          "description": "Trimmed before validation."
+        },
+        "fullName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255,
+          "description": "Trimmed before validation."
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "required": false,
+          "nullable": true,
+          "writeOnly": true,
+          "minLength": 6,
+          "description": "Optional. Ignored when blank or whitespace-only. Stored as uppercase SHA-1 hex."
+        }
+      },
+      "example": {
+        "email": "jane.doe@example.com",
+        "fullName": "Jane Doe",
+        "password": "newSecret123"
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Profile updated successfully. Legacy message: 'Profile updated successfully!'",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "message": "Profile updated successfully!"
+        }
+      },
+      "400": {
+        "description": "Validation failed. All messages returned together.",
+        "content_type": "application/json",
+        "schema": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "errors": [
+            "Invalid email format.",
+            "Full name must be between 2 and 255 characters.",
+            "Password must be at least 6 characters."
+          ]
+        }
+      },
+      "401": {
+        "description": "Unauthorized. No authenticated session (legacy: 'Please login first.').",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "NOT_AUTHENTICATED",
+          "message": "Please login first."
+        }
+      },
+      "500": {
+        "description": "Internal server error. Database update failed (legacy: 'An error occurred: <message>').",
+        "content_type": "application/json",
+        "schema": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "PROFILE_UPDATE_FAILED",
+          "message": "An error occurred: database connection failed"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}/bookings",
+    "method": "POST",
+    "operation_id": "createFlightBooking(Forms.BookFlightForm.BookFlightForm.BtnBook_Click.2.Object.EventArgs)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "ID of the flight to book. Legacy: flightId field set by the BookFlightForm constructor."
+      }
+    },
+    "query_params": null,
+    "header_params": {
+      "Authorization": {
+        "type": "string",
+        "required": false,
+        "description": "Optional bearer token identifying the logged-in user. Replaces SessionManager.IsAuthenticated() and SessionManager.CurrentUser. When omitted, the booking is stored with a null user ID."
+      }
+    },
+    "request_body": {
+      "required": true,
+      "content_type": "application/json",
+      "schema": {
+        "passengerName": {
+          "type": "string",
+          "required": true,
+          "minLength": 2,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z\\s'-]+$"
+        },
+        "passengerEmail": {
+          "type": "string",
+          "format": "email",
+          "required": true,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        },
+        "seatNumber": {
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "maxLength": 10,
+          "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$"
+        }
+      },
+      "example": {
+        "passengerName": "John Doe",
+        "passengerEmail": "john.doe@example.com",
+        "seatNumber": "12A"
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Booking created successfully (legacy message: 'Booking successful!').",
+        "content_type": "application/json",
+        "schema": {
+          "message": {
+            "type": "string"
+          },
+          "flightId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "example": {
+          "message": "Booking successful!",
+          "flightId": 101
+        }
+      },
+      "400": {
+        "description": "Validation failure. Legacy error messages are joined by a single space.",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "Passenger name must be between 2 and 255 characters. Invalid email format."
+        }
+      },
+      "401": {
+        "description": "Returned only when a supplied bearer token is malformed or expired. Legacy code has no authentication check.",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "Invalid or expired authentication token."
+        }
+      },
+      "404": {
+        "description": "Flight not found (legacy: 'Flight not found.').",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "Flight not found."
+        }
+      },
+      "409": {
+        "description": "No seats remaining on the flight (legacy: 'No available seats on this flight.').",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "No available seats on this flight."
+        }
+      },
+      "500": {
+        "description": "Unexpected database or transaction error (legacy: 'An error occurred while creating the booking: ...').",
+        "content_type": "application/json",
+        "schema": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "An error occurred while creating the booking: database unavailable"
+        }
+      }
+    }
+  },
+  {
+    "path": "/flights/{flightId}/book",
+    "method": "GET",
+    "operation_id": "openBookFlightForm(Forms.FlightsForm.FlightsForm.BtnBook_Click.2.Object.EventArgs)",
+    "path_params": {
+      "flightId": {
+        "type": "integer",
+        "format": "int32",
+        "required": true,
+        "minimum": 1,
+        "description": "Unique numeric identifier of the selected flight (legacy grid column 'Id', obtained via GetSelectedFlightId())."
+      }
+    },
+    "query_params": null,
+    "header_params": null,
+    "request_body": null,
+    "responses": {
+      "200": {
+        "description": "Flight found and has at least one available seat. Booking dialog can be opened for this flight.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/FlightBookingDialog"
+        },
+        "example": {
+          "id": 101,
+          "flightNumber": "AM-101",
+          "origin": "New York (JFK)",
+          "destination": "London (LHR)",
+          "departureDate": "2025-06-15",
+          "departureTime": "08:30",
+          "price": 499.99,
+          "priceFormatted": "$499.99",
+          "availableSeats": 42
+        }
+      },
+      "400": {
+        "description": "Invalid flightId (not a positive 32-bit integer). Legacy code has no explicit check; this is an API-level validation.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      },
+      "401": {
+        "description": "Unauthorized. Legacy handler has no authentication check; reserved for gateway auth."
+      },
+      "403": {
+        "description": "Forbidden. Legacy handler has no authorization check; reserved for future RBAC."
+      },
+      "404": {
+        "description": "Flight not found (legacy: 'Flight not found.', form closed). Also used when no flight is selected in the grid (legacy: 'Please select a flight.').",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "FLIGHT_NOT_FOUND",
+          "message": "Flight not found."
+        }
+      },
+      "409": {
+        "description": "No available seats (legacy: 'No available seats on this flight.', form closed). HTTP 409 is an assumed mapping.",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        },
+        "example": {
+          "code": "NO_AVAILABLE_SEATS",
+          "message": "No available seats on this flight."
+        }
+      },
+      "500": {
+        "description": "Internal server error (data-access failure in FlightRepository.GetById).",
+        "content_type": "application/json",
+        "schema": {
+          "$ref": "#/components/schemas/ErrorResponse"
+        }
+      }
+    }
+  }
+]

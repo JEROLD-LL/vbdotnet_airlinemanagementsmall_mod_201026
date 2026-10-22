@@ -1,0 +1,11 @@
+2026-10-22 13:57:35.720 +00:00 [INF] Logging initialized. Log file: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/logs/vbdotnetastgen-3be91fbe-7fb4-4b25-9ef1-570c99ef31f5-20261022-135735.log
+2026-10-22 13:57:35.772 +00:00 [INF] VB.NET Parser version 1.0.0.0
+2026-10-22 13:57:35.772 +00:00 [INF] Scanning VB.NET project at: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code
+2026-10-22 13:57:35.773 +00:00 [INF] Output will be written to: /tmp/tmpmizybbt8
+2026-10-22 13:57:35.773 +00:00 [INF] Using project ID: 3be91fbe-7fb4-4b25-9ef1-570c99ef31f5
+2026-10-22 13:57:35.796 +00:00 [INF] Found 26 VB files under /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/legacy_code
+2026-10-22 13:57:37.202 +00:00 [INF] Extraction complete: 26 processed, 0 skipped, 0 failed, 0 parse diagnostics, 25 classes, 0 interfaces, 0 enums, 0 packages across 26 files
+2026-10-22 13:57:37.410 +00:00 [INF] ASG written to: /tmp/tmpmizybbt8/vbdotnetastgen-linux.json
+2026-10-22 13:57:37.614 +00:00 [INF] Graph data written to: /tmp/tmpmizybbt8/graph_data.json (153 nodes, 281 edges)
+2026-10-22 13:57:37.615 +00:00 [INF] Parser run completed successfully. Log file: /home/jerold/workspacevm/main/vbdotnet/airlinemanagem_664c72/AirlineManagement_664c72/logs/vbdotnetastgen-3be91fbe-7fb4-4b25-9ef1-570c99ef31f5-20261022-135735.log
+2026-10-22 13:57:37.615 +00:00 [INF] Shutting down logger

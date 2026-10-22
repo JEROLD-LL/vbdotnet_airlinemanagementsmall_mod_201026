@@ -1,0 +1,307 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Flights",
+    "description": "OpenAPI definition migrated from the legacy VB.NET WinForms **EditFlightForm** (`BtnUpdate_Click`). Replaces the update-flight workflow with a REST endpoint.\n\n**Legacy behaviour preserved:**\n- All fields are trimmed and validated before saving.\n- `flightNumber` must be unique, but only when it has changed from the stored value.\n- `price` must be greater than 0.\n- `availableSeats` must not be negative.\n- On success the entire flight record is replaced.\n- On failure all validation messages are returned together.",
+    "termsOfService": "https://example.com/terms",
+    "contact": {
+      "name": "Airline Management Team",
+      "email": "support@example.com"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Legacy source: AirlineManagement_VBNetLegacy / Forms / EditFlightForm.vb",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "servers": [
+    {
+      "url": "https://{host}:{port}/api",
+      "description": "Airline Management API server",
+      "variables": {
+        "host": {
+          "default": "localhost",
+          "description": "API host name"
+        },
+        "port": {
+          "enum": ["5000", "7000", "443"],
+          "default": "5000",
+          "description": "API port"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Flight management operations",
+      "externalDocs": {
+        "description": "Legacy EditFlightForm source",
+        "url": "https://example.com/docs/airline-management/flights"
+      }
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}": {
+      "summary": "Single flight resource",
+      "description": "Operations on a single flight identified by its ID.",
+      "put": {
+        "tags": ["Flights"],
+        "summary": "Update an existing flight",
+        "description": "Replaces the editable fields of an existing flight. Mirrors legacy `EditFlightForm.BtnUpdate_Click`.\n\n**Validation rules (from legacy code):**\n- `flightNumber`, `origin`, `destination` are required (whitespace-only is rejected).\n- `flightNumber` must not already exist for another flight (checked only when the value differs from the stored flight number).\n- `price` must be greater than 0.\n- `availableSeats` must not be negative.\n\nAll validation errors are collected and returned together with HTTP 400.",
+        "operationId": "updateFlight(AirlineManagement_VBNetLegacy.Forms.EditFlightForm.EditFlightForm.BtnUpdate_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "Unique identifier of the flight to update. In the legacy form this is the `selectedFlightId` passed to the constructor.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Full set of editable flight fields. Maps to the legacy form textboxes and date/time pickers.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFlightRequest"
+              },
+              "example": {
+                "flightNumber": "AM-101",
+                "origin": "NYC",
+                "destination": "LAX",
+                "departureDate": "2025-06-15",
+                "departureTime": "08:30:00",
+                "arrivalTime": "11:45:00",
+                "price": 299.99,
+                "availableSeats": 150
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flight updated successfully. Legacy equivalent: MessageBox 'Flight updated successfully!' followed by closing the form.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateFlightResponse"
+                },
+                "example": {
+                  "message": "Flight updated successfully!"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed. Legacy equivalent: validation messages shown in `lblError`, joined by line breaks. Examples: 'Flight number is required.', 'Flight number already exists. Please use a unique flight number.', 'Origin is required.', 'Destination is required.', 'Valid price is required.', 'Price must be greater than 0.', 'Valid available seats is required.', 'Available seats cannot be negative.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Validation failed.",
+                  "errors": [
+                    "Flight number already exists. Please use a unique flight number.",
+                    "Price must be greater than 0."
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The legacy form has no authentication check; this is required for the modernized API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Authentication is required.",
+                  "errors": []
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user is not allowed to modify flights. The legacy form has no role check; this is required for the modernized API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "You do not have permission to update flights.",
+                  "errors": []
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Flight not found. Legacy equivalent: `LoadFlight` shows 'Flight not found.' when `GetById` returns nothing. The legacy update itself does not check existence, so this is required for the modernized API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Flight not found.",
+                  "errors": []
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Legacy equivalent: `lblError` set to 'An error occurred: ' followed by the exception message when the database update fails.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "An error occurred: Database connection failed.",
+                  "errors": []
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateFlightRequest": {
+        "type": "object",
+        "description": "Editable fields of a flight. Corresponds to the legacy `Flight` model fields set by the form (Id is taken from the path).",
+        "required": [
+          "flightNumber",
+          "origin",
+          "destination",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "price",
+          "availableSeats"
+        ],
+        "properties": {
+          "flightNumber": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "description": "Unique flight number. Trimmed before validation. Must be unique when changed.",
+            "example": "AM-101"
+          },
+          "origin": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Departure airport or city. Trimmed before validation.",
+            "example": "NYC"
+          },
+          "destination": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Arrival airport or city. Trimmed before validation.",
+            "example": "LAX"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date (legacy `DateTime`, time portion discarded).",
+            "example": "2025-06-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+            "description": "Departure time of day in HH:mm:ss (legacy `TimeSpan`).",
+            "example": "08:30:00"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+            "description": "Arrival time of day in HH:mm:ss (legacy `TimeSpan`).",
+            "example": "11:45:00"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "description": "Ticket price. Must be greater than 0 (legacy `ValidatePrice`).",
+            "example": 299.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "description": "Number of available seats. Cannot be negative (legacy `ValidateAvailableSeats`).",
+            "example": 150
+          }
+        }
+      },
+      "UpdateFlightResponse": {
+        "type": "object",
+        "description": "Success response. Legacy code only displays a success message and closes the form.",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Success message.",
+            "example": "Flight updated successfully!"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Error response. `errors` holds the individual validation messages (legacy `List(Of String)`).",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Summary of the error.",
+            "example": "Validation failed."
+          },
+          "errors": {
+            "type": "array",
+            "description": "Individual validation or error messages.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Price must be greater than 0."]
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token. The legacy application has no authentication check, so this scheme is an assumption for the modernized API."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

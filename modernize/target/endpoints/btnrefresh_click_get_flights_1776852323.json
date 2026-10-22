@@ -1,0 +1,229 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "API contract migrated from the AirlineManagement VB.NET WinForms legacy application (AirlineManagement_VBNetLegacy). This document covers the flight listing operation triggered by the Refresh button on the Available Flights form.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Target .NET 9 API host"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Flight listing and management operations"
+    }
+  ],
+  "paths": {
+    "/flights": {
+      "get": {
+        "tags": ["Flights"],
+        "summary": "List all flights",
+        "description": "Retrieves all flights ordered by departure date and departure time ascending. Migrated from the legacy BtnRefresh_Click handler in FlightsForm, which calls LoadFlights() and then FlightRepository.GetAll(). The legacy grid displays the id as a hidden column; it is included here so that the client can reference individual flights.",
+        "operationId": "getFlights(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnRefresh_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flights retrieved successfully. Returns an empty array when no flights exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Flight"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "flightNumber": "AM101",
+                    "origin": "New York (JFK)",
+                    "destination": "London (LHR)",
+                    "departureDate": "2025-07-15",
+                    "departureTime": "08:30",
+                    "arrivalTime": "20:45",
+                    "price": 549.99,
+                    "availableSeats": 120
+                  },
+                  {
+                    "id": 2,
+                    "flightNumber": "AM202",
+                    "origin": "London (LHR)",
+                    "destination": "Paris (CDG)",
+                    "departureDate": "2025-07-16",
+                    "departureTime": "10:15",
+                    "arrivalTime": "12:30",
+                    "price": 129.5,
+                    "availableSeats": 45
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The request is missing a valid bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 401,
+                  "title": "Unauthorized",
+                  "detail": "Authentication is required to access this resource."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user is not permitted to view flights.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 403,
+                  "title": "Forbidden",
+                  "detail": "You do not have permission to view flights."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The flight data could not be retrieved from the database.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "title": "Internal Server Error",
+                  "detail": "An unexpected error occurred while retrieving flights."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Flight": {
+        "type": "object",
+        "required": [
+          "id",
+          "flightNumber",
+          "origin",
+          "destination",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "price",
+          "availableSeats"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique flight identifier (legacy column Id, hidden in grid).",
+            "readOnly": true,
+            "example": 1
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number (legacy FlightNumber).",
+            "example": "AM101"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure location (legacy Origin).",
+            "example": "New York (JFK)"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival location (legacy Destination).",
+            "example": "London (LHR)"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date, formatted as yyyy-MM-dd in the legacy grid.",
+            "example": "2025-07-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Departure time of day, formatted as HH:mm (legacy TimeSpan formatted as hh:mm).",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Arrival time of day, formatted as HH:mm (legacy TimeSpan formatted as hh:mm).",
+            "example": "20:45"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Ticket price (legacy Decimal, displayed with currency format).",
+            "example": 549.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "description": "Number of seats still available (legacy AvailableSeats).",
+            "example": 120
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["status", "title", "detail"],
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 500
+          },
+          "title": {
+            "type": "string",
+            "example": "Internal Server Error"
+          },
+          "detail": {
+            "type": "string",
+            "example": "An unexpected error occurred."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token issued after login. Replaces the legacy SessionManager check."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

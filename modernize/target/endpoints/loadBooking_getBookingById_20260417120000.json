@@ -1,0 +1,266 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Migrated API contract derived from the legacy AirlineManagement VB.NET WinForms application. This document describes the booking detail retrieval operation originally implemented by `ViewBookingForm.LoadBooking(bookingId As Integer)`.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/ViewBookingForm.vb (LoadBooking)",
+    "url": "https://example.com/docs/legacy/ViewBookingForm"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Default API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for managing and viewing flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/{bookingId}": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Get booking details by ID",
+        "description": "Retrieves a single booking together with its associated flight details. Mirrors legacy `ViewBookingForm.LoadBooking(bookingId As Integer)`.\n\n**Legacy behavior:**\n1. Loads the booking by ID (`BookingRepository.GetById`). If not found, responds with 404 (`Booking not found.`).\n2. If the caller is authenticated and the booking has a `UserId` that differs from the current user's ID, responds with 403 (`Access denied. You can only view your own bookings.`). Bookings with no `UserId` (guest bookings) are viewable by any caller.\n3. Loads the flight (`FlightRepository.GetById`) and builds the details view. `SeatNumber` is returned as `N/A` when empty. `Price` is formatted as currency and `BookingDate` as `yyyy-MM-dd HH:mm`.\n\n**Authentication:** Optional. Anonymous callers can view guest bookings. Authenticated callers are restricted to their own bookings when the booking has a `userId`.",
+        "operationId": "getBookingById(Forms.ViewBookingForm.ViewBookingForm.LoadBooking.1.Integer)",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "description": "Booking identifier (legacy `bookingId As Integer`).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": 101
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking and flight details retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingDetails"
+                },
+                "example": {
+                  "bookingId": 101,
+                  "userId": 7,
+                  "flightNumber": "AM-204",
+                  "origin": "New York (JFK)",
+                  "destination": "London (LHR)",
+                  "route": "New York (JFK) → London (LHR)",
+                  "departureDate": "2026-05-10",
+                  "departureTime": "08:30",
+                  "arrivalTime": "20:15",
+                  "passengerName": "John Doe",
+                  "passengerEmail": "john.doe@example.com",
+                  "seatNumber": "12A",
+                  "price": 499.99,
+                  "bookingDate": "2026-04-01 14:25"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid bookingId. The value must be a 32-bit integer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INVALID_BOOKING_ID",
+                  "message": "bookingId must be a 32-bit integer."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied. The booking belongs to a different authenticated user. Legacy message: 'Access denied. You can only view your own bookings.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "ACCESS_DENIED",
+                  "message": "Access denied. You can only view your own bookings."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Booking not found. Legacy message: 'Booking not found.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "BOOKING_NOT_FOUND",
+                  "message": "Booking not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Occurs on a database failure or when the booking's flight cannot be loaded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred while retrieving the booking."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BookingDetails": {
+        "type": "object",
+        "description": "Booking details combined with flight information. Derived from the legacy `lblDetails` text output.",
+        "required": [
+          "bookingId",
+          "flightNumber",
+          "origin",
+          "destination",
+          "route",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "passengerName",
+          "passengerEmail",
+          "seatNumber",
+          "price",
+          "bookingDate"
+        ],
+        "properties": {
+          "bookingId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Booking identifier (legacy `Booking.Id`)."
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "Owner user ID (legacy `Booking.UserId`). Null for guest bookings."
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number (legacy `Flight.FlightNumber`)."
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure location (legacy `Flight.Origin`)."
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival location (legacy `Flight.Destination`)."
+          },
+          "route": {
+            "type": "string",
+            "description": "Combined route, formatted as `origin → destination`."
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date (legacy format `yyyy-MM-dd`)."
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Departure time in `HH:mm` (legacy format `hh\\:mm`).",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Arrival time in `HH:mm` (legacy format `hh\\:mm`).",
+            "example": "20:15"
+          },
+          "passengerName": {
+            "type": "string",
+            "description": "Passenger name (legacy `Booking.PassengerName`)."
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Passenger email (legacy `Booking.PassengerEmail`)."
+          },
+          "seatNumber": {
+            "type": "string",
+            "description": "Assigned seat. Returned as `N/A` when no seat is assigned (legacy behavior)."
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "description": "Flight price (legacy `Flight.Price`, a decimal formatted as currency)."
+          },
+          "bookingDate": {
+            "type": "string",
+            "description": "Booking timestamp in `yyyy-MM-dd HH:mm` format (legacy format).",
+            "example": "2026-04-01 14:25"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Optional. Send a valid bearer token to identify the caller. Required only to enforce ownership checks on bookings that have a userId."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {}
+  ]
+}

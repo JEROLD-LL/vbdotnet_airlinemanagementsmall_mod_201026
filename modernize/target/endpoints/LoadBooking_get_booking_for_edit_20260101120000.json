@@ -1,0 +1,275 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Modernized API migrated from the AirlineManagement VB.NET WinForms application. This document covers the booking-edit lookup operation originally implemented by `EditBookingForm.LoadBooking(bookingId As Integer)`.\n\n**Qualified legacy name:** `AirlineManagement_VBNetLegacy.Forms.EditBookingForm.EditBookingForm.LoadBooking.1.Integer`",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference and migration notes",
+    "url": "https://example.com/docs/airline-management-migration"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for viewing and managing flight bookings",
+      "externalDocs": {
+        "description": "Booking domain documentation",
+        "url": "https://example.com/docs/bookings"
+      }
+    }
+  ],
+  "paths": {
+    "/bookings/{bookingId}": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Get a booking for editing",
+        "description": "Retrieves a booking and its associated flight summary so it can be edited.\n\nLegacy behavior (`EditBookingForm.LoadBooking`):\n1. Loads the booking by id. If it does not exist, the legacy form shows an error and closes. This maps to **404**.\n2. If the caller is authenticated and the booking has a `userId`, that `userId` must equal the caller's id. Otherwise the legacy form shows 'Access denied' and closes. This maps to **403**.\n3. Otherwise, loads the flight referenced by `flightId` and returns the booking fields together with the flight number, origin and destination.\n\nAuthentication is optional, matching the legacy code. When no token is supplied the ownership check is skipped, as it was when `SessionManager.IsAuthenticated()` returned false.",
+        "operationId": "getBookingForEdit(AirlineManagement_VBNetLegacy.Forms.EditBookingForm.EditBookingForm.LoadBooking.1.Integer)",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "description": "Unique identifier of the booking to load",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            },
+            "example": 101
+          }
+        ],
+        "security": [
+          {},
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking loaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingEditResponse"
+                },
+                "example": {
+                  "id": 101,
+                  "flightId": 12,
+                  "userId": 7,
+                  "passengerName": "Jane Doe",
+                  "passengerEmail": "jane.doe@example.com",
+                  "seatNumber": "12A",
+                  "flight": {
+                    "flightNumber": "AM245",
+                    "origin": "JFK",
+                    "destination": "LAX"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid bookingId (not a valid 32-bit integer)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "bookingId must be a valid integer."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A bearer token was supplied but is invalid or expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "The supplied authentication token is invalid or has expired."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied. The authenticated user is not the owner of this booking (legacy: 'You can only edit your own bookings.')",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied. You can only edit your own bookings."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Booking not found (legacy: 'Booking not found.')",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Booking not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error, for example when the flight referenced by the booking does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred while loading the booking."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BookingEditResponse": {
+        "type": "object",
+        "description": "Booking fields used by the edit form, plus a summary of the referenced flight",
+        "required": [
+          "id",
+          "flightId",
+          "passengerName",
+          "passengerEmail",
+          "seatNumber",
+          "flight"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Booking identifier",
+            "readOnly": true,
+            "example": 101
+          },
+          "flightId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Identifier of the booked flight",
+            "example": 12
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "Identifier of the user who owns the booking. Null when the booking was made without a user account.",
+            "example": 7
+          },
+          "passengerName": {
+            "type": "string",
+            "description": "Full name of the passenger",
+            "example": "Jane Doe"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the passenger",
+            "example": "jane.doe@example.com"
+          },
+          "seatNumber": {
+            "type": "string",
+            "description": "Assigned seat number. Empty string when no seat is assigned.",
+            "example": "12A"
+          },
+          "flight": {
+            "$ref": "#/components/schemas/FlightSummary"
+          }
+        }
+      },
+      "FlightSummary": {
+        "type": "object",
+        "description": "Summary of the flight the booking refers to",
+        "required": [
+          "flightNumber",
+          "origin",
+          "destination"
+        ],
+        "properties": {
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number",
+            "example": "AM245"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Origin airport code or city",
+            "example": "JFK"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Destination airport code or city",
+            "example": "LAX"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error payload",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code",
+            "example": "NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message",
+            "example": "Booking not found."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Optional. Send a JWT in the Authorization header to enable the ownership check."
+      }
+    }
+  }
+}

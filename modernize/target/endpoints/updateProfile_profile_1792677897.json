@@ -1,0 +1,209 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Profile",
+    "description": "Endpoint migrated from the legacy VB.NET WinForms `EditProfileForm.BtnUpdate_Click` handler. Updates the authenticated user's email, full name, and optionally the password.\n\n**Legacy qualified name:** `Forms.EditProfileForm.EditProfileForm.BtnUpdate_Click.2.Object.EventArgs`",
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/EditProfileForm.vb (BtnUpdate_Click), Services/ValidationHelper.vb, Repositories UserRepository.Update / UpdatePassword",
+    "url": "https://localhost/docs/legacy/EditProfileForm"
+  },
+  "servers": [
+    {
+      "url": "https://api.airlinemanagement.local/api/v1",
+      "description": "Default server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Profile",
+      "description": "Operations for the currently authenticated user's profile"
+    }
+  ],
+  "paths": {
+    "/profile": {
+      "put": {
+        "tags": ["Profile"],
+        "summary": "Update the current user's profile",
+        "description": "Replaces the authenticated user's email and full name, and optionally sets a new password.\n\nValidation rules (from `ValidationHelper`):\n- `email` is required (trimmed), must match `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$`.\n- `fullName` is required (trimmed), length must be between 2 and 255 characters.\n- `password` is optional. If it is blank or whitespace-only it is ignored. Otherwise it must be at least 6 characters.\n\nAll validation errors are collected and returned together. The user ID is not taken from the request. It is taken from the authenticated session. The password is stored as an uppercase hex SHA-1 hash, matching the legacy `UserRepository.HashPassword`.",
+        "operationId": "updateProfile(Forms.EditProfileForm.EditProfileForm.BtnUpdate_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer token identifying the authenticated user. Replaces the legacy `SessionManager.CurrentUser` check.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Profile fields to update. `email` and `fullName` are always applied. `password` is applied only when provided and non-blank.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              },
+              "example": {
+                "email": "jane.doe@example.com",
+                "fullName": "Jane Doe",
+                "password": "newSecret123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully. Legacy message: 'Profile updated successfully!'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateProfileResponse"
+                },
+                "example": {
+                  "message": "Profile updated successfully!"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed. Returned when email, full name, or password does not satisfy the rules. All messages are returned together.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "errors": [
+                    "Invalid email format.",
+                    "Full name must be between 2 and 255 characters.",
+                    "Password must be at least 6 characters."
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. No authenticated session (legacy: 'Please login first.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "NOT_AUTHENTICATED",
+                  "message": "Please login first."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Database update failed (legacy: 'An error occurred: <message>').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "PROFILE_UPDATE_FAILED",
+                  "message": "An error occurred: database connection failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Replaces the legacy in-process SessionManager authentication"
+      }
+    },
+    "schemas": {
+      "UpdateProfileRequest": {
+        "type": "object",
+        "required": ["email", "fullName"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "New email address. Trimmed before validation. Must match the legacy email regex.",
+            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            "example": "jane.doe@example.com"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "New full name. Trimmed before validation. Must be 2 to 255 characters.",
+            "minLength": 2,
+            "maxLength": 255,
+            "example": "Jane Doe"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true,
+            "description": "Optional new password. Ignored when blank or whitespace-only. Otherwise must be at least 6 characters. Stored as an uppercase SHA-1 hex hash.",
+            "minLength": 6,
+            "nullable": true,
+            "example": "newSecret123"
+          }
+        }
+      },
+      "UpdateProfileResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Profile updated successfully!"
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "required": ["errors"],
+        "properties": {
+          "errors": {
+            "type": "array",
+            "description": "All validation messages collected during the request.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Invalid email format.",
+              "Full name must be between 2 and 255 characters."
+            ]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PROFILE_UPDATE_FAILED"
+          },
+          "message": {
+            "type": "string",
+            "example": "An error occurred: database connection failed"
+          }
+        }
+      }
+    }
+  }
+}

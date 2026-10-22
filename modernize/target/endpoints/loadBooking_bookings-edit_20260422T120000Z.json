@@ -1,0 +1,297 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "API contract migrated from the legacy VB.NET AirlineManagement application. This endpoint is derived from the LoadBooking routine of Forms/EditBookingForm.vb.",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/EditBookingForm.vb (LoadBooking)",
+    "url": "https://example.com/docs/legacy-airlinemanagement"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Primary API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for viewing and managing flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/{bookingId}/edit": {
+      "summary": "Load a booking for editing",
+      "description": "Returns the editable booking details and associated flight summary for a single booking.",
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Load booking for edit",
+        "description": "Retrieves a booking by its identifier together with the summary of its flight, as displayed by the legacy EditBookingForm.LoadBooking routine.\n\nBusiness rules (from legacy code):\n- If no booking exists for the given ID, the request fails with 404 (legacy: 'Booking not found.' then the form closes).\n- If a user session is authenticated and the booking is linked to a user (`userId` not null) that differs from the current user, access is denied with 403 (legacy: 'Access denied. You can only edit your own bookings.').\n- Bookings without a `userId` (guest bookings) are accessible without ownership restriction.\n- Authentication is optional for this read operation, matching the legacy session check which only applies when a session exists.",
+        "operationId": "loadBooking(Forms.EditBookingForm.EditBookingForm.LoadBooking.1.Integer)",
+        "security": [
+          {},
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "description": "Unique identifier of the booking to load.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking loaded successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "flightId",
+                    "passengerName",
+                    "passengerEmail",
+                    "seatNumber",
+                    "flight"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Booking identifier.",
+                      "example": 101
+                    },
+                    "flightId": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Identifier of the booked flight.",
+                      "example": 5
+                    },
+                    "userId": {
+                      "type": "integer",
+                      "format": "int32",
+                      "nullable": true,
+                      "description": "Identifier of the user who owns the booking. Null for guest bookings.",
+                      "example": 12
+                    },
+                    "passengerName": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 255,
+                      "description": "Passenger full name.",
+                      "example": "John Doe"
+                    },
+                    "passengerEmail": {
+                      "type": "string",
+                      "format": "email",
+                      "maxLength": 255,
+                      "description": "Passenger email address.",
+                      "example": "john@example.com"
+                    },
+                    "seatNumber": {
+                      "type": "string",
+                      "maxLength": 10,
+                      "description": "Assigned seat number. Empty string when no seat is assigned.",
+                      "example": "12A"
+                    },
+                    "flight": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "flightNumber",
+                        "origin",
+                        "destination"
+                      ],
+                      "description": "Summary of the flight associated with the booking.",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "format": "int32",
+                          "example": 5
+                        },
+                        "flightNumber": {
+                          "type": "string",
+                          "example": "AM-205"
+                        },
+                        "origin": {
+                          "type": "string",
+                          "example": "NYC"
+                        },
+                        "destination": {
+                          "type": "string",
+                          "example": "LON"
+                        },
+                        "departureDate": {
+                          "type": "string",
+                          "format": "date",
+                          "example": "2026-05-10"
+                        },
+                        "departureTime": {
+                          "type": "string",
+                          "description": "Departure time of day in HH:mm:ss format.",
+                          "example": "08:30:00"
+                        },
+                        "arrivalTime": {
+                          "type": "string",
+                          "description": "Arrival time of day in HH:mm:ss format.",
+                          "example": "20:15:00"
+                        },
+                        "price": {
+                          "type": "number",
+                          "format": "double",
+                          "example": 499.99
+                        },
+                        "availableSeats": {
+                          "type": "integer",
+                          "format": "int32",
+                          "example": 42
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "id": 101,
+                  "flightId": 5,
+                  "userId": 12,
+                  "passengerName": "John Doe",
+                  "passengerEmail": "john@example.com",
+                  "seatNumber": "12A",
+                  "flight": {
+                    "id": 5,
+                    "flightNumber": "AM-205",
+                    "origin": "NYC",
+                    "destination": "LON",
+                    "departureDate": "2026-05-10",
+                    "departureTime": "08:30:00",
+                    "arrivalTime": "20:15:00",
+                    "price": 499.99,
+                    "availableSeats": 42
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid booking identifier (not a valid 32-bit integer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "bookingId must be a valid integer."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication token is invalid or expired. Only returned when a bearer token is supplied but cannot be validated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Authentication token is invalid or expired."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied. The booking belongs to a different user than the authenticated user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied. You can only edit your own bookings."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Booking not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Booking not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server or database error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Booking not found."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Optional bearer token identifying the current user. Used for the ownership check on bookings linked to a user."
+      }
+    }
+  }
+}

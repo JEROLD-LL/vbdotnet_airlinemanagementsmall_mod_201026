@@ -1,0 +1,151 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Flights",
+    "description": "Endpoint migrated from the legacy VB.NET FlightsForm delete action (BtnDelete_Click). Deletes a flight by its numeric ID. Only administrators can see the delete action in the legacy UI, so this endpoint requires an authenticated admin session.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference",
+    "url": "https://example.com/docs/airlinemanagement-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Operations for managing airline flights"
+    }
+  ],
+  "paths": {
+    "/flights/{id}": {
+      "delete": {
+        "tags": [
+          "Flights"
+        ],
+        "summary": "Delete a flight by ID",
+        "description": "Deletes the flight with the given ID. Migrated from the legacy BtnDelete_Click handler in FlightsForm. The legacy flow was: (1) get the selected flight ID from the grid (GetSelectedFlightId); (2) if no flight is selected, show 'Please select a flight.' (this maps to 400 Bad Request); (3) call FlightRepository.Delete(id), which runs 'DELETE FROM Flight WHERE id = @id'; (4) on success, reload the flight list. The legacy code does not check whether a row existed, so deleting a non-existent ID also succeeds (204). Any database exception is reported as an error (500).",
+"operationId": "deleteFlight(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnDelete_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Numeric ID of the flight to delete. Maps to the 'Id' column (Convert.ToInt32) of the selected row in the legacy grid.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            },
+            "example": 101
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Flight deleted successfully. No content is returned (legacy: 'Flight deleted successfully!' message)."
+          },
+          "400": {
+            "description": "Invalid flight ID (not a valid integer, or no flight selected in the legacy flow).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INVALID_FLIGHT_ID",
+                  "message": "Please select a flight."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. No valid authenticated session (legacy: SessionManager.IsAuthenticated() is false).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Authentication is required."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user is not an admin (legacy: SessionManager.IsAdmin() is false, so the Delete button is hidden).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Admin privileges are required."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. A database or other exception occurred while deleting the flight (legacy: 'Error deleting flight: ' & ex.Message).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "DELETE_FAILED",
+                  "message": "Error deleting flight: 23503: update or delete on table \"Flight\" violates foreign key constraint"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token for an authenticated admin session. Replaces the legacy SessionManager in-memory session."
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "DELETE_FAILED"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Error deleting flight."
+          }
+        }
+      }
+    }
+  }
+}

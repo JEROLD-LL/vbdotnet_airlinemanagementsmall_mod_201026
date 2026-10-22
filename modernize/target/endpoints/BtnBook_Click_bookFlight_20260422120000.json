@@ -1,0 +1,277 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Migrated API for the AirlineManagement VB.NET legacy application. This endpoint is derived from the legacy FlightsForm.BtnBook_Click handler, which selects a flight and opens the BookFlightForm, and from BookingService.CreateBooking, which performs the actual booking.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/FlightsForm.vb (BtnBook_Click), Forms/BookFlightForm.vb, Services/BookingService.vb",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Default API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Flight booking operations"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}/bookings": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Book a seat on a selected flight",
+        "description": "Creates a booking for the selected flight. Corresponds to the legacy FlightsForm.BtnBook_Click flow: the flight must be selected (flightId is required), the flight must exist and have at least one available seat, and the passenger details are validated before the booking is created. The authenticated user's ID is attached to the booking when a session is active; otherwise the booking is anonymous. On success the legacy UI showed 'Booking successful!' and closed the dialog. Legacy 'No Selection' warning maps to a 400 response when flightId is missing or invalid.",
+        "operationId": "AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnBook_Click.2.Object.EventArgs",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "ID of the selected flight (legacy grid column 'Id'). Must reference an existing flight with available seats.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Passenger details entered in the Book Flight dialog. passengerName and passengerEmail are required (trimmed by the legacy form). seatNumber is optional.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "passengerName",
+                  "passengerEmail"
+                ],
+                "properties": {
+                  "passengerName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z\\s'-]+$",
+                    "description": "Full name of the passenger. Letters, spaces, apostrophes and hyphens only.",
+                    "example": "John Doe"
+                  },
+                  "passengerEmail": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "description": "Contact email address of the passenger.",
+                    "example": "john.doe@example.com"
+                  },
+                  "seatNumber": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$",
+                    "nullable": true,
+                    "description": "Optional preferred seat number (for example 12A). Leave empty to skip seat selection.",
+                    "example": "12A"
+                  }
+                }
+              },
+              "example": {
+                "passengerName": "John Doe",
+                "passengerEmail": "john.doe@example.com",
+                "seatNumber": "12A"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created successfully. Legacy equivalent: 'Booking successful!' message followed by closing the Book Flight dialog.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message",
+                    "flightId"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Booking successful!"
+                    },
+                    "flightId": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 101
+                    },
+                    "userId": {
+                      "type": "integer",
+                      "format": "int32",
+                      "nullable": true,
+                      "description": "ID of the logged-in user, or null when no session is active.",
+                      "example": 7
+                    },
+                    "passengerName": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "passengerEmail": {
+                      "type": "string",
+                      "format": "email",
+                      "example": "john.doe@example.com"
+                    },
+                    "seatNumber": {
+                      "type": "string",
+                      "nullable": true,
+                      "example": "12A"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Booking successful!",
+                  "flightId": 101,
+                  "userId": 7,
+                  "passengerName": "John Doe",
+                  "passengerEmail": "john.doe@example.com",
+                  "seatNumber": "12A"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure. Legacy error messages from BookingService.CreateBooking are returned in the 'error' field. Includes missing or invalid flight selection ('Please select a flight.' in legacy), invalid passenger name/email/seat, and flight with no available seats ('No available seats on this flight.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Passenger name is required."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Returned only when an invalid or expired bearer token is supplied. Anonymous bookings are allowed in the legacy application when no session is active.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Invalid or expired token."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Not used by the legacy booking flow; reserved for role-based restrictions in the target stack.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Access denied."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Flight not found. Legacy equivalent: 'Flight not found.' returned by BookingService.CreateBooking and BookFlightForm.LoadFlight.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Flight not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Legacy equivalent: 'An error occurred while creating the booking: ...' returned by BookingService.CreateBooking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "An error occurred while creating the booking."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Optional. Supply a bearer token to attach the booking to the authenticated user (replaces legacy SessionManager.CurrentUser)."
+      }
+    }
+  }
+}

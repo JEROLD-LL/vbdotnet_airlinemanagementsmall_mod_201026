@@ -1,0 +1,166 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Migrated from the legacy VB.NET WinForms application (AirlineManagement_VBNetLegacy). This endpoint replaces the `MyBookingsForm.BtnDelete_Click` handler, which confirms with the user and then calls `BookingService.DeleteBooking(bookingId, SessionManager.CurrentUser.Id)`.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference",
+    "url": "https://example.com/docs/legacy/MyBookingsForm"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for managing flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/{bookingId}": {
+      "delete": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Delete a booking",
+        "description": "Deletes the booking identified by `bookingId` and restores one seat on the associated flight. Migrated from the legacy `MyBookingsForm.BtnDelete_Click` handler and `BookingService.DeleteBooking`.\n\nBehaviour carried over from the legacy code:\n- The caller must be authenticated. The legacy code checked `SessionManager.IsAuthenticated()`; here this is a bearer token.\n- The booking must exist. Otherwise the legacy service returned `Booking not found.`, which maps to 404.\n- Ownership is enforced. If the booking has a `UserId` that differs from the caller's user id, the legacy service returned `Access denied. You can only delete your own bookings.`, which maps to 403. Bookings with no `UserId` are not blocked by this check.\n- The delete and seat increment run in one database transaction. On any failure the transaction is rolled back and the endpoint returns 500.\n- The legacy UI confirmed the action with a Yes/No dialog. That confirmation is client-side and is not part of this API.",
+        "operationId": "deleteBooking(AirlineManagement_VBNetLegacy.Forms.MyBookingsForm.MyBookingsForm.BtnDelete_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "description": "Numeric identifier of the booking to delete. Legacy source: `Convert.ToInt32(dgvBookings.SelectedRows(0).Cells(\"Id\").Value)` from `GetSelectedBookingId()`.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Booking deleted successfully. The legacy UI showed 'Booking deleted successfully!' and reloaded the list. No response body is returned."
+          },
+          "400": {
+            "description": "Invalid request. The `bookingId` is missing, not an integer, or not a positive number. The legacy UI showed 'Please select a booking.' when no row was selected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INVALID_BOOKING_ID",
+                  "message": "Please select a booking."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The bearer token is missing or invalid. Corresponds to the legacy `SessionManager.IsAuthenticated()` check.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Please login first."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The booking belongs to a different user. Corresponds to the legacy message 'Access denied. You can only delete your own bookings.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied. You can only delete your own bookings."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Booking not found. Corresponds to the legacy message 'Booking not found.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "BOOKING_NOT_FOUND",
+                  "message": "Booking not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The delete failed and the transaction was rolled back. Corresponds to the legacy message 'An error occurred while deleting the booking: <details>'.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "DELETE_FAILED",
+                  "message": "An error occurred while deleting the booking: connection timeout"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Replaces the legacy in-process `SessionManager.CurrentUser`. The token identifies the calling user, whose `Id` is compared with the booking's `UserId`."
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error payload. The `message` field carries the legacy MessageBox text.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "BOOKING_NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Booking not found."
+          }
+        }
+      }
+    }
+  }
+}

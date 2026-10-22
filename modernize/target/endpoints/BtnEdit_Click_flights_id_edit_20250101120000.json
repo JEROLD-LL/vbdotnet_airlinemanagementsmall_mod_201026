@@ -1,0 +1,277 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Flights",
+    "description": "Endpoint migrated from the legacy VB.NET WinForms `FlightsForm.BtnEdit_Click` handler. Retrieves a single flight so it can be edited by an administrator. Source: `GetSelectedFlightId` (selected row ID) -> `EditFlightForm(flightId)` -> `FlightRepository.GetById`.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference: Forms/FlightsForm.vb (BtnEdit_Click), Forms/EditFlightForm.vb (LoadFlight), Repositories/FlightRepository.vb (GetById)",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Flight management operations"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}/edit": {
+      "get": {
+        "tags": [
+          "Flights"
+        ],
+        "summary": "Get a flight for editing",
+        "description": "Retrieves the flight identified by `flightId` so that an administrator can edit it. Mirrors the legacy behaviour of `BtnEdit_Click`: the flight is loaded via `FlightRepository.GetById` and populated into `EditFlightForm`. The legacy Edit action is available only to users with the `admin` role (`SessionManager.IsAdmin()`). If the flight does not exist, the legacy form displays 'Flight not found.' and closes; this is represented as a 404 response.",
+        "operationId": "BtnEdit_Click(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.BtnEdit_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "Unique identifier of the flight to edit. Corresponds to the `Id` column of the selected row in the flights grid (`GetSelectedFlightId`).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            },
+            "example": 101
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flight retrieved successfully and ready for editing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlightEditResponse"
+                },
+                "example": {
+                  "id": 101,
+                  "flightNumber": "AM-101",
+                  "origin": "New York (JFK)",
+                  "destination": "London (LHR)",
+                  "departureDate": "2025-06-15",
+                  "departureTime": "08:30",
+                  "arrivalTime": "20:45",
+                  "price": 499.99,
+                  "availableSeats": 120,
+                  "createdAt": "2025-01-10T09:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The `flightId` path parameter is not a valid integer (the legacy code converts the selected grid value with `Convert.ToInt32`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 400,
+                  "error": "Bad Request",
+                  "message": "flightId must be a valid integer."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. No valid authenticated session (legacy `SessionManager.IsAuthenticated()` is false).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 401,
+                  "error": "Unauthorized",
+                  "message": "Authentication is required."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have the `admin` role (legacy `SessionManager.IsAdmin()` is false, in which case the Edit action is not shown).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 403,
+                  "error": "Forbidden",
+                  "message": "Administrator role is required to edit flights."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. No flight exists with the given `flightId` (legacy `FlightRepository.GetById` returns Nothing and the form shows 'Flight not found.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "error": "Not Found",
+                  "message": "Flight not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Unexpected failure while loading the flight (legacy database or runtime error).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "error": "Internal Server Error",
+                  "message": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FlightEditResponse": {
+        "type": "object",
+        "description": "Flight data used to populate the edit form. Maps to the legacy `Flight` model.",
+        "required": [
+          "id",
+          "flightNumber",
+          "origin",
+          "destination",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "price",
+          "availableSeats"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Flight identifier (legacy `Flight.Id`).",
+            "example": 101
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number (legacy `Flight.FlightNumber`).",
+            "example": "AM-101"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure location (legacy `Flight.Origin`).",
+            "example": "New York (JFK)"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival location (legacy `Flight.Destination`).",
+            "example": "London (LHR)"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date (legacy `Flight.DepartureDate`, formatted as yyyy-MM-dd).",
+            "example": "2025-06-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Departure time of day in HH:mm (legacy `Flight.DepartureTime`, a TimeSpan).",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Arrival time of day in HH:mm (legacy `Flight.ArrivalTime`, a TimeSpan).",
+            "example": "20:45"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Ticket price (legacy `Flight.Price`, a Decimal).",
+            "example": 499.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "description": "Number of seats still available (legacy `Flight.AvailableSeats`).",
+            "example": 120
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Timestamp when the flight record was created (legacy `Flight.CreatedAt`). Not displayed by the edit form but returned by `FlightRepository.GetById`.",
+            "example": "2025-01-10T09:00:00Z"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error payload.",
+        "required": [
+          "status",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 404
+          },
+          "error": {
+            "type": "string",
+            "example": "Not Found"
+          },
+          "message": {
+            "type": "string",
+            "example": "Flight not found."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Authenticated administrator session token. Replaces the legacy in-memory `SessionManager` login state."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

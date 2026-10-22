@@ -1,0 +1,266 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Master Bookings",
+    "description": "OpenAPI definition migrated from the legacy VB.NET WinForms `MasterBookingsForm`. The endpoint reproduces the behaviour of `BtnRefresh_Click`, which calls `LoadBookings()` to load every booking and enrich each row with flight and user details for the Master Bookings grid.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/MasterBookingsForm.vb (BtnRefresh_Click, LoadBookings)",
+    "url": "https://example.com/docs/legacy/MasterBookingsForm"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Default API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for managing and viewing flight bookings"
+    }
+  ],
+  "paths": {
+    "/master-bookings": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Refresh the master bookings list",
+        "description": "Retrieves all bookings (ordered by booking date, newest first) and enriches each booking with its flight and, when present, its user. Mirrors the legacy `BtnRefresh_Click` -> `LoadBookings()` flow that rebuilds the Master Bookings grid. Each row contains a formatted booking ID, a user display value (`Guest` for bookings without a user, otherwise `username (fullName)`), the flight route, departure/arrival times, passenger details, seat number (`N/A` when empty), price and booking date. No request parameters are required.",
+        "operationId": "getMasterBookings(AirlineManagement_VBNetLegacy.Forms.MasterBookingsForm.MasterBookingsForm.BtnRefresh_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Master bookings list retrieved successfully. The array is ordered by booking date descending. An empty array is returned when no bookings exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MasterBookingRow"
+                  }
+                },
+                "example": [
+                  {
+                    "bookingId": "#1042",
+                    "user": "jdoe (John Doe)",
+                    "flightNumber": "AM-214",
+                    "route": "JFK → LAX",
+                    "departureDate": "2026-02-15",
+                    "departureTime": "08:30",
+                    "arrivalTime": "11:45",
+                    "passengerName": "John Doe",
+                    "passengerEmail": "john.doe@example.com",
+                    "seatNumber": "12A",
+                    "price": 349.99,
+                    "bookingDate": "2026-01-18 14:22:05"
+                  },
+                  {
+                    "bookingId": "#1041",
+                    "user": "Guest",
+                    "flightNumber": "AM-108",
+                    "route": "ORD → MIA",
+                    "departureDate": "2026-02-20",
+                    "departureTime": "17:10",
+                    "arrivalTime": "21:05",
+                    "passengerName": "Mary Smith",
+                    "passengerEmail": "mary.smith@example.com",
+                    "seatNumber": "N/A",
+                    "price": 199.5,
+                    "bookingDate": "2026-01-17 09:03:41"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The request does not include a valid bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Authentication is required to access this resource."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user is not allowed to view master bookings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "You do not have permission to view master bookings."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Returned when the bookings, flight or user data cannot be loaded (for example, a database failure or a booking that references a missing flight).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred while loading bookings."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MasterBookingRow": {
+        "type": "object",
+        "description": "One row of the Master Bookings grid, built by LoadBookings().",
+        "required": [
+          "bookingId",
+          "user",
+          "flightNumber",
+          "route",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "passengerName",
+          "passengerEmail",
+          "seatNumber",
+          "price",
+          "bookingDate"
+        ],
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "description": "Booking identifier prefixed with '#' (legacy: \"#\" & booking.Id).",
+            "example": "#1042",
+            "readOnly": true
+          },
+          "user": {
+            "type": "string",
+            "description": "'Guest' when the booking has no user; otherwise 'username (fullName)'.",
+            "example": "jdoe (John Doe)",
+            "readOnly": true
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number of the booked flight.",
+            "example": "AM-214",
+            "readOnly": true
+          },
+          "route": {
+            "type": "string",
+            "description": "Origin and destination of the flight, formatted as 'Origin → Destination'.",
+            "example": "JFK → LAX",
+            "readOnly": true
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Flight departure date (legacy format yyyy-MM-dd).",
+            "example": "2026-02-15",
+            "readOnly": true
+          },
+          "departureTime": {
+            "type": "string",
+            "description": "Flight departure time (legacy format hh:mm).",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "example": "08:30",
+            "readOnly": true
+          },
+          "arrivalTime": {
+            "type": "string",
+            "description": "Flight arrival time (legacy format hh:mm).",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "example": "11:45",
+            "readOnly": true
+          },
+          "passengerName": {
+            "type": "string",
+            "description": "Passenger full name stored on the booking.",
+            "example": "John Doe",
+            "readOnly": true
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Passenger email stored on the booking.",
+            "example": "john.doe@example.com",
+            "readOnly": true
+          },
+          "seatNumber": {
+            "type": "string",
+            "description": "Assigned seat number, or 'N/A' when no seat is assigned.",
+            "example": "12A",
+            "readOnly": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "description": "Flight price as a decimal. Currency formatting ('C') is a presentation concern of the legacy grid.",
+            "example": 349.99,
+            "readOnly": true
+          },
+          "bookingDate": {
+            "type": "string",
+            "description": "Booking creation timestamp (legacy format yyyy-MM-dd HH:mm:ss).",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+            "example": "2026-01-18 14:22:05",
+            "readOnly": true
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "UNAUTHORIZED"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Authentication is required to access this resource."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token required by the target system. The legacy form has no authentication; this is added for the migrated API."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

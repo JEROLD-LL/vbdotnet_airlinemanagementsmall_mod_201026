@@ -1,0 +1,191 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "API contract generated from the legacy VB.NET AirlineManagement application. Each endpoint file documents one migrated operation.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference for the migrated operation",
+    "url": "https://example.com/docs/airlinemanagement-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Profile",
+      "description": "Operations for the authenticated user's profile"
+    }
+  ],
+  "paths": {
+    "/profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Get the authenticated user's profile",
+        "description": "Returns the profile of the currently authenticated user (email and full name, plus account metadata). Migrated from the legacy `EditProfileForm.LoadProfile()` method, which checks `SessionManager.IsAuthenticated()`, loads the user with `UserRepository.GetById(SessionManager.CurrentUser.Id)`, and populates the email and full name fields. The password is never returned.",
+        "operationId": "getProfile(AirlineManagement_VBNetLegacy.Forms.EditProfileForm.EditProfileForm.LoadProfile.0)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The authenticated user's profile was loaded successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                },
+                "example": {
+                  "id": 1,
+                  "username": "jdoe",
+                  "email": "john.doe@example.com",
+                  "fullName": "John Doe",
+                  "role": "customer",
+                  "createdAt": "2025-01-15T09:30:00Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request has no valid authentication. Legacy equivalent: 'Please login first.' (SessionManager.IsAuthenticated() returned false).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "NOT_AUTHENTICATED",
+                  "message": "Please login first."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The authenticated user no longer exists. Legacy equivalent: 'User not found.' (UserRepository.GetById returned Nothing).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "USER_NOT_FOUND",
+                  "message": "User not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected server error occurred while loading the profile (for example, a database failure).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Authenticated session token. Replaces the legacy in-memory SessionManager.CurrentUser."
+      }
+    },
+    "schemas": {
+      "UserProfile": {
+        "type": "object",
+        "description": "Profile data of the authenticated user. Mirrors the User model without the password field.",
+        "required": [
+          "id",
+          "username",
+          "email",
+          "fullName",
+          "role",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique user identifier.",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "description": "Login username.",
+            "example": "jdoe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address.",
+            "example": "john.doe@example.com"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "User's full name.",
+            "example": "John Doe"
+          },
+          "role": {
+            "type": "string",
+            "description": "User role (for example 'admin' or 'customer').",
+            "example": "customer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Account creation timestamp.",
+            "example": "2025-01-15T09:30:00Z"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error payload.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "NOT_AUTHENTICATED"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Please login first."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - My Bookings Edit",
+    "description": "Migrated from the legacy VB.NET WinForms handler `MyBookingsForm.BtnEdit_Click`. The handler reads the booking selected in the My Bookings grid, opens the Edit Booking dialog for it, and reloads the list afterwards. This endpoint returns the booking data that the legacy `EditBookingForm.LoadBooking` displays. Access is limited to the logged-in user's own bookings.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference: Forms/MyBookingsForm.vb (BtnEdit_Click), Forms/EditBookingForm.vb (LoadBooking)",
+    "url": "https://example.com/docs/airline-management/my-bookings"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for managing customer flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/{bookingId}/edit": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Get booking details for editing",
+        "description": "Loads a booking owned by the authenticated user so it can be edited. Mirrors the legacy flow: `BtnEdit_Click` takes the 'Id' of the selected row (`GetSelectedBookingId`), and `EditBookingForm.LoadBooking` fetches the booking and its flight. If the booking does not exist, the legacy code showed 'Booking not found.'. If the booking belongs to another user, it showed 'Access denied. You can only edit your own bookings.'. Bookings with no owner (`UserId` null) are not blocked by the ownership check, matching the legacy `booking.UserId.HasValue` condition.",
+        "operationId": "getEditBookingForm(Forms.MyBookingsForm.MyBookingsForm.BtnEdit_Click.2.Object.EventArgs)",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "description": "Identifier of the booking selected in the My Bookings list. Legacy source: the 'Id' column of the selected row, read by `GetSelectedBookingId`.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            },
+            "example": 101
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking loaded for editing. Legacy: `EditBookingForm.LoadBooking` populated the passenger fields and flight info.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "bookingId",
+                    "flightId",
+                    "flightNumber",
+                    "origin",
+                    "destination",
+                    "passengerName",
+                    "passengerEmail"
+                  ],
+                  "properties": {
+                    "bookingId": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 101
+                    },
+                    "flightId": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 12
+                    },
+                    "flightNumber": {
+                      "type": "string",
+                      "example": "AM-245"
+                    },
+                    "origin": {
+                      "type": "string",
+                      "example": "JFK"
+                    },
+                    "destination": {
+                      "type": "string",
+                      "example": "LHR"
+                    },
+                    "passengerName": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "passengerEmail": {
+                      "type": "string",
+                      "format": "email",
+                      "example": "john.doe@example.com"
+                    },
+                    "seatNumber": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Optional seat number. Legacy: an empty value is stored as an empty string.",
+                      "example": "12A"
+                    }
+                  }
+                },
+                "example": {
+                  "bookingId": 101,
+                  "flightId": 12,
+                  "flightNumber": "AM-245",
+                  "origin": "JFK",
+                  "destination": "LHR",
+                  "passengerName": "John Doe",
+                  "passengerEmail": "john.doe@example.com",
+                  "seatNumber": "12A"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The bookingId is not a valid integer, or no booking was selected (legacy: 'Please select a booking.' warning).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Please select a booking."
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Please select a booking."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The user is not logged in (legacy: 'Please login first.' and the form closed).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Please login first."
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Please login first."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The booking belongs to a different user (legacy: 'Access denied. You can only edit your own bookings.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Access denied. You can only edit your own bookings."
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Access denied. You can only edit your own bookings."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Booking not found (legacy: 'Booking not found.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Booking not found."
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Booking not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "An unexpected error occurred."
+                    }
+                  }
+                },
+                "example": {
+                  "error": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token for the logged-in user. Replaces the legacy SessionManager.IsAuthenticated() check."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

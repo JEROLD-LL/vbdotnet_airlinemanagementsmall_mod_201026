@@ -1,0 +1,200 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management System API",
+    "description": "API contract migrated from the legacy VB.NET WinForms application (AirlineManagement_VBNetLegacy). This document currently describes the user self-registration endpoint extracted from `RegisterForm.BtnRegister_Click`.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/RegisterForm.vb (BtnRegister_Click)",
+    "url": "https://example.com/legacy/AirlineManagement_VBNetLegacy/Forms/RegisterForm.vb"
+  },
+  "servers": [
+    {
+      "url": "https://{environment}.airlinemanagement.example.com/api/v1",
+      "description": "Target .NET 9 API server",
+      "variables": {
+        "environment": {
+          "enum": ["dev", "staging", "prod"],
+          "default": "dev",
+          "description": "Deployment environment"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User registration and login operations"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "summary": "Register a new user account",
+      "description": "Registers a new user with the default role `user`.",
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "description": "Validates the supplied username, email, full name and password, checks that the username and email are not already in use, hashes the password and creates a new user with role `user` and the current server time as `createdAt`.\n\n**Validation rules (applied in this order; all messages are returned together):**\n- `username`: required after trimming; 3 to 50 characters; only letters, digits and underscores (`^[a-zA-Z0-9_]+$`).\n- `username` uniqueness: checked only when no earlier validation errors exist.\n- `email`: required after trimming; must match `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$`.\n- `email` uniqueness: checked only when no earlier validation errors exist.\n- `fullName`: required after trimming; 2 to 255 characters.\n- `password`: required (whitespace-only is rejected); at least 6 characters. Not trimmed.\n\n**Security note:** the password is stored as an uppercase, unsalted SHA-1 hex digest to remain functionally equivalent to the legacy `HashPassword` implementation. This is a known weak algorithm and should be replaced in the target stack.",
+        "operationId": "registerUser(AirlineManagement_VBNetLegacy.Forms.RegisterForm.RegisterForm.BtnRegister_Click.2.Object.EventArgs)",
+        "requestBody": {
+          "description": "User registration details. Username, email and full name are trimmed before validation; password is used as provided.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterUserRequest"
+              },
+              "example": {
+                "username": "john_doe",
+                "email": "john@example.com",
+                "fullName": "John Doe",
+                "password": "secret123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful. The user was created with role `user`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterUserResponse"
+                },
+                "example": {
+                  "id": 42,
+                  "message": "Registration successful! Please login."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or username/email already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "validationErrors": {
+                    "summary": "Multiple validation errors",
+                    "value": {
+                      "errors": [
+                        "Username must be between 3 and 50 characters.",
+                        "Invalid email format.",
+                        "Full name is required.",
+                        "Password must be at least 6 characters."
+                      ]
+                    }
+                  },
+                  "duplicateUsername": {
+                    "summary": "Username already exists",
+                    "value": {
+                      "errors": ["Username already exists."]
+                    }
+                  },
+                  "duplicateEmail": {
+                    "summary": "Email already exists",
+                    "value": {
+                      "errors": ["Email already exists."]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred while creating the user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "errors": ["An error occurred: <exception message>"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RegisterUserRequest": {
+        "type": "object",
+        "required": ["username", "email", "fullName", "password"],
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50,
+            "pattern": "^[a-zA-Z0-9_]+$",
+            "description": "Unique username. Letters, digits and underscores only. Trimmed before validation.",
+            "example": "john_doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            "description": "Unique email address. Trimmed before validation.",
+            "example": "john@example.com"
+          },
+          "fullName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 255,
+            "description": "Full name of the user. Trimmed before validation.",
+            "example": "John Doe"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 6,
+            "writeOnly": true,
+            "description": "Plain-text password (minimum 6 characters). Not trimmed. Never returned in responses.",
+            "example": "secret123"
+          }
+        }
+      },
+      "RegisterUserResponse": {
+        "type": "object",
+        "required": ["id", "message"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true,
+            "description": "Database identifier of the newly created user (value returned by UserRepository.Create).",
+            "example": 42
+          },
+          "message": {
+            "type": "string",
+            "description": "Success message equivalent to the legacy confirmation dialog.",
+            "example": "Registration successful! Please login."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["errors"],
+        "properties": {
+          "errors": {
+            "type": "array",
+            "description": "List of error messages. Equivalent to the legacy lblError text, split into individual messages.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Username already exists."]
+          }
+        }
+      }
+    }
+  }
+}

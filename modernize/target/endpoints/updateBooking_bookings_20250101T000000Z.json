@@ -1,0 +1,263 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Bookings",
+    "description": "Endpoint migrated from the VB.NET EditBookingForm.BtnUpdate_Click handler. Updates a booking's passenger name, passenger email and optional seat number after validation. Persistence mirrors BookingRepository.Update.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference",
+    "url": "https://example.com/docs/airline-management-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for managing flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/{bookingId}": {
+      "put": {
+        "tags": ["Bookings"],
+        "summary": "Update a booking's passenger details and seat",
+        "description": "Replaces the passenger name, passenger email and seat number of an existing booking. Validation mirrors the legacy form: passengerName is required, 2-255 characters, letters/spaces/hyphens/apostrophes only; passengerEmail is required, valid email format, max 255 characters; seatNumber is optional, max 10 characters, format like '12A' or '123AB' (case-insensitive) and is stored in upper case. An empty seatNumber clears the seat (stored as NULL). The caller may only update bookings it owns.",
+        "operationId": "updateBooking(Forms.EditBookingForm.EditBookingForm.BtnUpdate_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "description": "Unique identifier of the booking to update",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            },
+            "example": 101
+          }
+        ],
+        "requestBody": {
+          "description": "Updated passenger details for the booking",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBookingRequest"
+              },
+              "example": {
+                "passengerName": "Jane Doe",
+                "passengerEmail": "jane.doe@example.com",
+                "seatNumber": "12a"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Booking updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                },
+                "example": {
+                  "id": 101,
+                  "flightId": 12,
+                  "userId": 7,
+                  "passengerName": "Jane Doe",
+                  "passengerEmail": "jane.doe@example.com",
+                  "seatNumber": "12A",
+                  "bookingDate": "2025-01-01T10:15:30Z",
+                  "message": "Booking updated successfully!"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed. Errors are returned as a list of messages, mirroring the legacy lblError text.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "errors": [
+                    "Passenger name must be between 2 and 255 characters.",
+                    "Invalid email format."
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or token is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "errors": ["Authentication is required."]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied. The booking belongs to a different user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "errors": ["Access denied. You can only edit your own bookings."]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Booking not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "errors": ["Booking not found."]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error while persisting the update",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "errors": ["An error occurred: database update failed."]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateBookingRequest": {
+        "type": "object",
+        "required": ["passengerName", "passengerEmail"],
+        "properties": {
+          "passengerName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z\\s'-]+$",
+            "description": "Passenger full name. Letters, spaces, hyphens and apostrophes only.",
+            "example": "Jane Doe"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            "description": "Passenger contact email address",
+            "example": "jane.doe@example.com"
+          },
+          "seatNumber": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 10,
+            "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$",
+            "description": "Optional seat number such as '12A' or '123AB'. Stored in upper case. Empty or null clears the seat.",
+            "example": "12A"
+          }
+        }
+      },
+      "BookingResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true,
+            "example": 101
+          },
+          "flightId": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true,
+            "example": 12
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "readOnly": true,
+            "example": 7
+          },
+          "passengerName": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "example": "jane.doe@example.com"
+          },
+          "seatNumber": {
+            "type": "string",
+            "example": "12A"
+          },
+          "bookingDate": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "example": "2025-01-01T10:15:30Z"
+          },
+          "message": {
+            "type": "string",
+            "example": "Booking updated successfully!"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Booking not found."]
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token identifying the authenticated user (replaces SessionManager.CurrentUser)"
+      }
+    }
+  }
+}

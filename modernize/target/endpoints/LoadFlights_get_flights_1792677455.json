@@ -1,0 +1,198 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "API contract migrated from the VB.NET AirlineManagement_VBNetLegacy application. This endpoint replaces the LoadFlights routine in FlightsForm, which loads every flight from FlightRepository.GetAll() and displays it in the Available Flights grid.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference: Forms/FlightsForm.vb (LoadFlights) and Repositories/FlightRepository.vb (GetAll)",
+    "url": "https://example.com/docs/airline-management-legacy"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Flight schedule and availability operations"
+    }
+  ],
+  "paths": {
+    "/flights": {
+      "get": {
+        "tags": [
+          "Flights"
+        ],
+        "summary": "List all flights",
+        "description": "Returns every flight in the system, ordered by departure date and then departure time (both ascending). This mirrors the legacy LoadFlights behaviour, which calls FlightRepository.GetAll() and populates the Available Flights grid. The legacy code applies no filtering, pagination, or authentication to this operation.",
+        "operationId": "getFlights(AirlineManagement_VBNetLegacy.Forms.FlightsForm.FlightsForm.LoadFlights.0)",
+        "responses": {
+          "200": {
+            "description": "A list of flights ordered by departure date and departure time ascending. An empty array is returned when no flights exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Flight"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "flightNumber": "AM101",
+                    "origin": "New York (JFK)",
+                    "destination": "London (LHR)",
+                    "departureDate": "2025-06-15",
+                    "departureTime": "08:30",
+                    "arrivalTime": "20:45",
+                    "price": 549.99,
+                    "availableSeats": 120
+                  },
+                  {
+                    "id": 2,
+                    "flightNumber": "AM202",
+                    "origin": "London (LHR)",
+                    "destination": "Paris (CDG)",
+                    "departureDate": "2025-06-16",
+                    "departureTime": "10:15",
+                    "arrivalTime": "12:30",
+                    "price": 129.5,
+                    "availableSeats": 45
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Not expected for this operation because it takes no input parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Not enforced by the legacy LoadFlights routine. Included for forward compatibility when the API introduces authentication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error, for example a database connectivity or query failure. The legacy code would surface this as an unhandled exception.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Flight": {
+        "type": "object",
+        "description": "A scheduled flight. Maps to the legacy Flight model and the Flight table columns read by FlightRepository.GetAll().",
+        "required": [
+          "id",
+          "flightNumber",
+          "origin",
+          "destination",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "price",
+          "availableSeats"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique flight identifier (legacy Flight.Id, read from column id)",
+            "example": 1
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number (legacy Flight.FlightNumber)",
+            "example": "AM101"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure city or airport (legacy Flight.Origin)",
+            "example": "New York (JFK)"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival city or airport (legacy Flight.Destination)",
+            "example": "London (LHR)"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date, formatted as yyyy-MM-dd in the legacy grid (legacy Flight.DepartureDate)",
+            "example": "2025-06-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Departure time of day, formatted as HH:mm (legacy Flight.DepartureTime, TimeSpan formatted as hh\\:mm)",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Arrival time of day, formatted as HH:mm (legacy Flight.ArrivalTime, TimeSpan formatted as hh\\:mm)",
+            "example": "20:45"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Ticket price. Legacy type is Decimal and the grid displays it with currency format (C). Serialized as a JSON number.",
+            "example": 549.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "description": "Number of seats still available for booking (legacy Flight.AvailableSeats)",
+            "example": 120
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Generic error payload",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message",
+            "example": "An unexpected error occurred while loading flights."
+          }
+        }
+      }
+    }
+  },
+  "security": []
+}

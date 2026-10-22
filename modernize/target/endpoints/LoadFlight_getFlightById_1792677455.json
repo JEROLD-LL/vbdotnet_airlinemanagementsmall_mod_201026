@@ -1,0 +1,264 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Migrated API contract for the Airline Management system (source: AirlineManagement_VBNetLegacy). Supports Markdown (CommonMark).",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference for this endpoint",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Operations for managing and viewing flights"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}": {
+      "get": {
+        "tags": [
+          "Flights"
+        ],
+        "summary": "Get flight details by ID",
+        "description": "Retrieves a single flight by its unique identifier. Migrated from the legacy `LoadFlight(flightId As Integer)` method in `EditFlightForm`, which calls `FlightRepository.GetById` and populates the form fields (flight number, origin, destination, departure date, departure and arrival times, price, and available seats). If no flight exists for the given ID, the API returns 404, which corresponds to the legacy 'Flight not found.' error branch.",
+        "operationId": "getFlightById(AirlineManagement_VBNetLegacy.Forms.EditFlightForm.EditFlightForm.LoadFlight.1.Integer)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "Unique identifier of the flight. Maps to the legacy `flightId As Integer` argument and the `id` column of the `Flight` table.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flight found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flight"
+                },
+                "example": {
+                  "id": 101,
+                  "flightNumber": "AM-101",
+                  "origin": "New York (JFK)",
+                  "destination": "London (LHR)",
+                  "departureDate": "2025-06-15T00:00:00",
+                  "departureTime": "08:30:00",
+                  "arrivalTime": "20:45:00",
+                  "price": 499.99,
+                  "availableSeats": 120,
+                  "createdAt": "2025-01-10T09:15:00"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The flightId is not a valid 32-bit integer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "flightId must be a valid integer."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Authentication is required."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user is not allowed to access this flight.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "You do not have permission to view this flight."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Flight not found. Corresponds to the legacy 'Flight not found.' error branch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Flight not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Flight": {
+        "type": "object",
+        "description": "Flight record. Mirrors the legacy `Flight` model class.",
+        "required": [
+          "id",
+          "flightNumber",
+          "origin",
+          "destination",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "price",
+          "availableSeats",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true,
+            "description": "Unique flight identifier.",
+            "example": 101
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number.",
+            "example": "AM-101"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure location.",
+            "example": "New York (JFK)"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival location.",
+            "example": "London (LHR)"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date of departure. Legacy type is DateTime.",
+            "example": "2025-06-15T00:00:00"
+          },
+          "departureTime": {
+            "type": "string",
+            "format": "time",
+            "description": "Time of departure of day. Legacy type is TimeSpan, serialized as HH:mm:ss.",
+            "example": "08:30:00"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "format": "time",
+            "description": "Time of arrival of day. Legacy type is TimeSpan, serialized as HH:mm:ss.",
+            "example": "20:45:00"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "minimum": 0,
+            "description": "Ticket price. Legacy type is Decimal.",
+            "example": 499.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "description": "Number of seats still available.",
+            "example": 120
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Timestamp when the flight record was created.",
+            "example": "2025-01-10T09:15:00"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error response body.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Flight not found."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT bearer token. Assumed for the target stack; the legacy LoadFlight method has no explicit auth check."
+      }
+    }
+  }
+}

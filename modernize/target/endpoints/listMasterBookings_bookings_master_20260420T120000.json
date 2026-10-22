@@ -1,0 +1,209 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "API contract generated from the legacy VB.NET AirlineManagement application for migration to .NET 9 / React.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: MasterBookingsForm.LoadBookings",
+    "url": "https://example.com/docs/airline-management-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Target .NET 9 API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations on flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/master": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "List all bookings for master view",
+        "description": "Returns every booking (ordered by booking date, newest first) joined with its flight and, when present, the associated user. Mirrors the legacy MasterBookingsForm.LoadBookings grid. For each booking the flight is looked up by FlightId; the user display is 'Guest' when the booking has no UserId or the user is not found, otherwise 'Username (FullName)'. Dates and times are formatted as in the legacy grid. Price is returned as a number; currency formatting is a presentation concern.",
+        "operationId": "listMasterBookings(AirlineManagement_VBNetLegacy.Forms.MasterBookingsForm.MasterBookingsForm.LoadBookings.0)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of booking rows for the master bookings grid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "bookingId",
+                      "user",
+                      "flightNumber",
+                      "route",
+                      "departureDate",
+                      "departureTime",
+                      "arrivalTime",
+                      "passengerName",
+                      "passengerEmail",
+                      "seatNumber",
+                      "price",
+                      "bookingDate"
+                    ],
+                    "properties": {
+                      "bookingId": {
+                        "type": "string",
+                        "description": "Booking identifier prefixed with '#' (legacy: \"#\" & booking.Id)",
+                        "example": "#101"
+                      },
+                      "user": {
+                        "type": "string",
+                        "description": "'Guest' or 'Username (FullName)'",
+                        "example": "jdoe (John Doe)"
+                      },
+                      "flightNumber": {
+                        "type": "string",
+                        "example": "AI-202"
+                      },
+                      "route": {
+                        "type": "string",
+                        "description": "Origin and destination joined by ' → '",
+                        "example": "DEL → BOM"
+                      },
+                      "departureDate": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Flight departure date formatted yyyy-MM-dd",
+                        "example": "2026-05-01"
+                      },
+                      "departureTime": {
+                        "type": "string",
+                        "description": "Flight departure time formatted HH:mm",
+                        "example": "08:30"
+                      },
+                      "arrivalTime": {
+                        "type": "string",
+                        "description": "Flight arrival time formatted HH:mm",
+                        "example": "10:45"
+                      },
+                      "passengerName": {
+                        "type": "string",
+                        "example": "John Doe"
+                      },
+                      "passengerEmail": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john.doe@example.com"
+                      },
+                      "seatNumber": {
+                        "type": "string",
+                        "description": "Seat number, or 'N/A' when empty",
+                        "example": "12A"
+                      },
+                      "price": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Flight price (legacy decimal, displayed with currency format)",
+                        "example": 4500.00
+                      },
+                      "bookingDate": {
+                        "type": "string",
+                        "description": "Booking timestamp formatted yyyy-MM-dd HH:mm:ss",
+                        "example": "2026-04-20 12:00:00"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "bookingId": "#101",
+                    "user": "jdoe (John Doe)",
+                    "flightNumber": "AI-202",
+                    "route": "DEL → BOM",
+                    "departureDate": "2026-05-01",
+                    "departureTime": "08:30",
+                    "arrivalTime": "10:45",
+                    "passengerName": "John Doe",
+                    "passengerEmail": "john.doe@example.com",
+                    "seatNumber": "12A",
+                    "price": 4500.00,
+                    "bookingDate": "2026-04-20 12:00:00"
+                  },
+                  {
+                    "bookingId": "#102",
+                    "user": "Guest",
+                    "flightNumber": "AI-310",
+                    "route": "BLR → HYD",
+                    "departureDate": "2026-05-03",
+                    "departureTime": "17:15",
+                    "arrivalTime": "18:20",
+                    "passengerName": "Asha Rao",
+                    "passengerEmail": "asha.rao@example.com",
+                    "seatNumber": "N/A",
+                    "price": 3200.50,
+                    "bookingDate": "2026-04-19 09:45:10"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The legacy form performs no authentication; included as a placeholder for the target API security model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The legacy form performs no authorization; included as a placeholder for the target API security model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error, e.g. database failure or a booking whose flight no longer exists (legacy code would throw a NullReferenceException).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "An unexpected error occurred."
+          }
+        }
+      }
+    }
+  },
+  "security": []
+}

@@ -1,0 +1,175 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Registration",
+    "description": "OpenAPI definition migrated from the legacy VB.NET RegisterForm.BtnRegister_Click handler. Covers self-service user registration with username, email, full name and password validation, duplicate checks, and password hashing.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/RegisterForm.vb (BtnRegister_Click)",
+    "url": "https://example.com/docs/legacy/RegisterForm"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Default server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication and account registration operations"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register a new user",
+        "description": "Creates a new user account with role 'user'. The request is validated in this order: username format and length, username uniqueness, email format, email uniqueness, full name length, and password length. If any validation fails, no account is created and all error messages are returned. The password is hashed with SHA-1 (uppercase hexadecimal) before storage. No authentication is required.",
+        "externalDocs": {
+          "description": "Legacy source: Forms/RegisterForm.vb (BtnRegister_Click)",
+          "url": "https://example.com/docs/legacy/RegisterForm"
+        },
+        "operationId": "registerUser(Forms.RegisterForm.RegisterForm.BtnRegister_Click.2.Object.EventArgs)",
+        "requestBody": {
+          "description": "User registration details. String values are trimmed of leading and trailing whitespace before validation (password is not trimmed).",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "email",
+                  "fullName",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 50,
+                    "pattern": "^[a-zA-Z0-9_]+$",
+                    "description": "Unique username. Letters, numbers and underscores only.",
+                    "example": "john_doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "description": "Unique email address.",
+                    "example": "john@example.com"
+                  },
+                  "fullName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 255,
+                    "description": "Full name of the user.",
+                    "example": "John Doe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 6,
+                    "writeOnly": true,
+                    "description": "Plain-text password. Must be at least 6 characters. Stored as a SHA-1 hash.",
+                    "example": "secret123"
+                  }
+                }
+              },
+              "example": {
+                "username": "john_doe",
+                "email": "john@example.com",
+                "fullName": "John Doe",
+                "password": "secret123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful. The user was created with role 'user'.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "readOnly": true,
+                      "description": "Identifier of the newly created user."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Success message."
+                    }
+                  }
+                },
+                "example": {
+                  "id": 42,
+                  "message": "Registration successful! Please login."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed, or the username or email already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "List of validation or duplicate-check error messages."
+                    }
+                  }
+                },
+                "example": {
+                  "errors": [
+                    "Username already exists."
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred while creating the user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Error message prefixed with 'An error occurred: '."
+                    }
+                  }
+                },
+                "example": {
+                  "errors": [
+                    "An error occurred: <exception message>"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

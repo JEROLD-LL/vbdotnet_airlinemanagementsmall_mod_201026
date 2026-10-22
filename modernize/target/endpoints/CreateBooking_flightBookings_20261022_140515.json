@@ -1,0 +1,225 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Migrated endpoint from the legacy VB.NET BookFlightForm. Creates a booking for a flight with passenger details and an optional seat number.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/BookFlightForm.vb (BtnBook_Click) and Services/BookingService.vb (CreateBooking)",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Flight booking operations"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}/bookings": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Create a flight booking",
+        "description": "Creates a booking for the given flight. Ports legacy `BookFlightForm.BtnBook_Click` and `BookingService.CreateBooking`.\n\nValidation rules (from legacy):\n- `passengerName` is required, 2 to 255 characters, letters/spaces/hyphens/apostrophes only.\n- `passengerEmail` is required, valid email format, max 255 characters.\n- `seatNumber` is optional, max 10 characters, format `^[0-9]{1,3}[A-Z]{1,2}$` (case-insensitive). Stored in uppercase.\n\nThe operation runs in a database transaction: the flight row is locked, seat availability is re-checked, the booking is inserted, and the flight's available seats are decremented. If any step fails, the transaction is rolled back.\n\nAuthentication is optional. When a valid Bearer token is supplied, the booking is linked to that user (legacy `SessionManager.CurrentUser.Id`). Otherwise `userId` is stored as null.",
+        "operationId": "createFlightBooking(Forms.BookFlightForm.BookFlightForm.BtnBook_Click.2.Object.EventArgs)",
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "ID of the flight to book (legacy `flightId` field set by the form constructor).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            },
+            "example": 101
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Optional bearer token identifying the logged-in user. Replaces `SessionManager.IsAuthenticated()` / `SessionManager.CurrentUser`. If omitted, the booking is stored with a null user ID.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.signature"
+          }
+        ],
+        "requestBody": {
+          "description": "Passenger details for the booking. Mirrors the legacy text boxes `txtPassengerName`, `txtPassengerEmail`, and `txtSeatNumber` (each trimmed before validation).",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "passengerName",
+                  "passengerEmail"
+                ],
+                "properties": {
+                  "passengerName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z\\s'-]+$",
+                    "description": "Passenger full name. Letters, spaces, hyphens, and apostrophes only.",
+                    "example": "John Doe"
+                  },
+                  "passengerEmail": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "description": "Passenger contact email address.",
+                    "example": "john.doe@example.com"
+                  },
+                  "seatNumber": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 10,
+                    "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$",
+                    "description": "Optional seat number such as `12A` or `123AB`. Stored in uppercase. Omit or send an empty string for no seat assignment.",
+                    "example": "12A"
+                  }
+                }
+              },
+              "example": {
+                "passengerName": "John Doe",
+                "passengerEmail": "john.doe@example.com",
+                "seatNumber": "12A"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created successfully (legacy message: 'Booking successful!').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Booking successful!"
+                    },
+                    "flightId": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 101
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Booking successful!",
+                  "flightId": 101
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure. Legacy error messages are returned joined by a single space.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Passenger name must be between 2 and 255 characters. Invalid email format."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not used by the legacy logic. Bookings are allowed without authentication. Returned only if a supplied Bearer token is malformed or expired.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid or expired authentication token."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Flight not found (legacy: 'Flight not found.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Flight not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No seats remaining on the flight (legacy: 'No available seats on this flight.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "No available seats on this flight."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected database or transaction error (legacy: 'An error occurred while creating the booking: ...').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "An error occurred while creating the booking: database unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {},
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Optional. Identifies the logged-in user for the booking."
+      }
+    }
+  }
+}

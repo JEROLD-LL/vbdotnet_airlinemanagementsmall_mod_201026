@@ -1,0 +1,276 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Bookings",
+    "description": "Endpoint migrated from the legacy VB.NET ViewBookingForm.LoadBooking method. Returns a booking together with its flight details. Anonymous access is allowed; when a bearer token is supplied, the booking must belong to the authenticated user.",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/ViewBookingForm.vb (LoadBooking), Repositories/BookingRepository.vb (GetById), Repositories/FlightRepository.vb (GetById), Services/SessionManager.vb (IsAuthenticated)",
+    "url": "https://example.com/docs/legacy-view-booking"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for viewing and managing flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/{bookingId}": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Get booking details by ID",
+        "description": "Retrieves a booking and its associated flight details. Mirrors the legacy LoadBooking logic: returns 404 when the booking does not exist; when a user is authenticated and the booking is linked to a different user, access is denied with 403. Bookings with no associated user (UserId is null) are viewable by any caller, including anonymous callers.\n\nLegacy display fields (Booking ID, Flight Number, Route, Departure Date, Departure Time, Arrival Time, Passenger Name, Passenger Email, Seat Number, Price, Booking Date) are returned as structured properties.",
+        "operationId": "getBookingById(AirlineManagement_VBNetLegacy.Forms.ViewBookingForm.ViewBookingForm.LoadBooking.1.Integer)",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "description": "Unique identifier of the booking (legacy parameter bookingId As Integer).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            },
+            "example": 101
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking and flight details retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingDetails"
+                },
+                "example": {
+                  "bookingId": 101,
+                  "userId": 7,
+                  "flightNumber": "AM-204",
+                  "origin": "New York (JFK)",
+                  "destination": "London (LHR)",
+                  "route": "New York (JFK) → London (LHR)",
+                  "departureDate": "2026-05-10",
+                  "departureTime": "08:30",
+                  "arrivalTime": "20:15",
+                  "passengerName": "John Doe",
+                  "passengerEmail": "john.doe@example.com",
+                  "seatNumber": "12A",
+                  "price": 499.99,
+                  "bookingDate": "2026-04-01 14:25"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid bookingId. The path value must be a valid 32-bit integer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "bookingId must be a valid integer."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied. The booking belongs to a different user than the authenticated caller. Legacy message: 'Access denied. You can only view your own bookings.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied. You can only view your own bookings."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Booking not found. Legacy message: 'Booking not found.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Booking not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error, for example when the booking's flight cannot be loaded or a database error occurs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BookingDetails": {
+        "type": "object",
+        "description": "Booking together with its flight details.",
+        "required": [
+          "bookingId",
+          "flightNumber",
+          "origin",
+          "destination",
+          "route",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "passengerName",
+          "passengerEmail",
+          "seatNumber",
+          "price",
+          "bookingDate"
+        ],
+        "properties": {
+          "bookingId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Booking identifier (legacy Booking.Id).",
+            "example": 101
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "Owning user identifier (legacy Booking.UserId). Null for bookings made without a user account.",
+            "example": 7
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number (legacy Flight.FlightNumber).",
+            "example": "AM-204"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure city or airport (legacy Flight.Origin).",
+            "example": "New York (JFK)"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival city or airport (legacy Flight.Destination).",
+            "example": "London (LHR)"
+          },
+          "route": {
+            "type": "string",
+            "description": "Formatted route in the form 'Origin → Destination' (legacy Route line).",
+            "example": "New York (JFK) → London (LHR)"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date, formatted yyyy-MM-dd (legacy Flight.DepartureDate).",
+            "example": "2026-05-10"
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Departure time, formatted hh:mm (legacy Flight.DepartureTime).",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Arrival time, formatted hh:mm (legacy Flight.ArrivalTime).",
+            "example": "20:15"
+          },
+          "passengerName": {
+            "type": "string",
+            "description": "Passenger full name (legacy Booking.PassengerName).",
+            "example": "John Doe"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Passenger email address (legacy Booking.PassengerEmail).",
+            "example": "john.doe@example.com"
+          },
+          "seatNumber": {
+            "type": "string",
+            "description": "Assigned seat number. Returned as 'N/A' when the legacy seat value is empty or null.",
+            "example": "12A"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "description": "Flight price (legacy Flight.Price, decimal). Legacy display used currency formatting ('C').",
+            "example": 499.99
+          },
+          "bookingDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Booking creation timestamp, formatted yyyy-MM-dd HH:mm in legacy (legacy Booking.BookingDate).",
+            "example": "2026-04-01 14:25"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Booking not found."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Optional. Required only to enforce booking ownership. Replaces legacy SessionManager.CurrentUser."
+      }
+    }
+  }
+}

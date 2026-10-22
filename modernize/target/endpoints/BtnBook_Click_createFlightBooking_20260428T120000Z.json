@@ -1,0 +1,223 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Migrated API for the AirlineManagement system (source: AirlineManagement_VBNetLegacy). This endpoint replaces the WinForms `BookFlightForm.BtnBook_Click` event handler and the `BookingService.CreateBooking` routine it calls.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference",
+    "url": "https://example.com/docs/airlinemanagement-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for creating and managing flight bookings"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}/bookings": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Book a seat on a flight",
+        "description": "Creates a booking for the given flight. Migrated from the legacy `BookFlightForm.BtnBook_Click(sender, e)` handler, which trims the passenger name, email and seat number, reads the current user ID from `SessionManager` (or null when no user is logged in), and calls `BookingService.CreateBooking(flightId, userId, passengerName, passengerEmail, seatNumber)`.\n\n**Validation (same rules as `BookingService.CreateBooking`):**\n- `passengerName` is required, 2 to 255 characters, letters, spaces, hyphens and apostrophes only.\n- `passengerEmail` is required, must match the email pattern, and be 255 characters or less.\n- `seatNumber` is optional. When supplied it must be 10 characters or less and match `^[0-9]{1,3}[A-Z]{1,2}$` (case-insensitive). It is stored in upper case.\n\n**Business rules:**\n- The flight row is locked inside a database transaction. If the flight does not exist, the booking is rejected with 404.\n- If the flight has no available seats, the booking is rejected with 409.\n- On success the booking is inserted and the flight's available seat count is decremented in the same transaction.\n- An unexpected database failure rolls back the transaction and returns 500.\n\n**Authentication:** The legacy code does not require a logged-in user. When a valid bearer token is supplied, the booking is linked to that user. Otherwise the booking is stored without a user ID.",
+        "operationId": "createFlightBooking(AirlineManagement_VBNetLegacy.Forms.BookFlightForm.BookFlightForm.BtnBook_Click.2.Object.EventArgs)",
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "Unique numeric identifier of the flight to book (maps to the legacy `flightId As Integer` field of `BookFlightForm`).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": 101
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Optional bearer token identifying the logged-in user. Replaces `SessionManager.CurrentUser`. When omitted, the booking is created without a user ID, as the legacy code does for anonymous sessions.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiJ9.signature"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Passenger details for the booking. Field names map to the legacy `txtPassengerName`, `txtPassengerEmail` and `txtSeatNumber` text boxes.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingRequest"
+              },
+              "example": {
+                "passengerName": "Jane Doe",
+                "passengerEmail": "jane.doe@example.com",
+                "seatNumber": "12a"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created successfully. Replaces the legacy 'Booking successful!' message box and form close.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingCreatedResponse"
+                },
+                "example": {
+                  "message": "Booking successful!",
+                  "flightId": 101,
+                  "passengerName": "Jane Doe",
+                  "passengerEmail": "jane.doe@example.com",
+                  "seatNumber": "12A"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed. The legacy code joins all validation messages with a space and shows them in `lblError`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Passenger name must be between 2 and 255 characters. Invalid email format."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Flight not found. Legacy message: 'Flight not found.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Flight not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The flight has no available seats. Legacy message: 'No available seats on this flight.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "No available seats on this flight."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure while creating the booking. The transaction is rolled back. Legacy message: 'An error occurred while creating the booking: ' followed by the exception message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "An error occurred while creating the booking: connection timeout"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateBookingRequest": {
+        "type": "object",
+        "required": ["passengerName", "passengerEmail"],
+        "properties": {
+          "passengerName": {
+            "type": "string",
+            "description": "Full name of the passenger. Trimmed before validation. Legacy: `txtPassengerName`.",
+            "minLength": 2,
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z\\s'-]+$",
+            "example": "Jane Doe"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Passenger email address. Trimmed before validation. Legacy: `txtPassengerEmail`.",
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            "example": "jane.doe@example.com"
+          },
+          "seatNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional seat number such as '12A' or '123AB'. Trimmed, validated case-insensitively, then stored in upper case. Omit or send an empty string for no seat. Legacy: `txtSeatNumber`.",
+            "maxLength": 10,
+            "pattern": "^[0-9]{1,3}[A-Za-z]{1,2}$",
+            "example": "12A"
+          }
+        }
+      },
+      "BookingCreatedResponse": {
+        "type": "object",
+        "required": ["message", "flightId", "passengerName", "passengerEmail"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Booking successful!"
+          },
+          "flightId": {
+            "type": "integer",
+            "format": "int32",
+            "example": 101
+          },
+          "passengerName": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "example": "jane.doe@example.com"
+          },
+          "seatNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "Seat number stored in upper case, or null when none was requested.",
+            "example": "12A"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message taken from the legacy `BookingService` error strings.",
+            "example": "Flight not found."
+          }
+        }
+      }
+    }
+  }
+}

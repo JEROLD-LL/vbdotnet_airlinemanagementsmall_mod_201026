@@ -1,0 +1,267 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "OpenAPI definition generated from the legacy VB.NET WinForms application `AirlineManagement_VBNetLegacy`. This document describes the endpoint migrated from `EditProfileForm.BtnUpdate_Click`, which updates the logged-in user's profile (email, full name and optionally password).\n\n**Legacy behaviour preserved:**\n- Email, full name and password are validated with the same rules as `ValidationHelper`.\n- Password is optional; when blank, the existing password is kept.\n- Passwords are stored as uppercase hexadecimal SHA-1 digests of the UTF-8 bytes, as in `UserRepository.HashPassword`.\n- The user is identified by the authenticated session (`SessionManager.CurrentUser`), not by a request parameter.",
+    "termsOfService": "https://example.com/airlinemanagement/terms",
+    "contact": {
+      "name": "Airline Management Team",
+      "url": "https://example.com/airlinemanagement/contact",
+      "email": "support@example.com"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/airlinemanagement/license"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/EditProfileForm.vb (BtnUpdate_Click), Services/ValidationHelper.vb, Repositories/UserRepository.vb",
+    "url": "https://example.com/airlinemanagement/docs"
+  },
+  "servers": [
+    {
+      "url": "https://{environment}.airlinemanagement.example.com/api/v1",
+      "description": "Airline Management API server",
+      "variables": {
+        "environment": {
+          "enum": ["prod", "staging", "dev"],
+          "default": "prod",
+          "description": "Deployment environment"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User account operations",
+      "externalDocs": {
+        "description": "Legacy source: Forms/EditProfileForm.vb",
+        "url": "https://example.com/airlinemanagement/docs/users"
+      }
+    }
+  ],
+  "paths": {
+    "/users/me/profile": {
+      "summary": "Current user's profile",
+      "description": "Represents the profile of the authenticated user.",
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update the current user's profile",
+        "description": "Replaces the authenticated user's email and full name and, when a password is supplied, replaces the password.\n\nMirrors legacy `EditProfileForm.BtnUpdate_Click`:\n1. `email` and `fullName` are trimmed, then validated (`ValidateEmail`, `ValidateFullName`).\n2. If `password` is not blank, it is validated (`ValidatePassword`).\n3. If any validation fails, the request is rejected with HTTP 400 and all messages are returned.\n4. Otherwise the user row is updated (`UserRepository.Update`). If a password was supplied, it is stored as `UserRepository.HashPassword(password)` via `UserRepository.UpdatePassword`.\n5. The session user's email and full name are refreshed.\n6. Any unexpected failure returns HTTP 500 with the message `An error occurred: <message>`.",
+        "operationId": "updateUserProfile(AirlineManagement_VBNetLegacy.Forms.EditProfileForm.EditProfileForm.BtnUpdate_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer token identifying the logged-in user. Replaces the legacy `SessionManager.IsAuthenticated()` check.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Profile values to save. `email` and `fullName` are always applied; `password` is applied only when it is not blank.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "fullName"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 320,
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "description": "New email address. Trimmed before validation. Must match the legacy email pattern (`ValidateEmail`).",
+                    "example": "jane.doe@example.com"
+                  },
+                  "fullName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 255,
+                    "description": "New full name. Trimmed before validation. Must be 2 to 255 characters (`ValidateFullName`).",
+                    "example": "Jane Doe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "writeOnly": true,
+                    "minLength": 6,
+                    "nullable": true,
+                    "description": "Optional new password. When null, empty or whitespace only, the existing password is kept. When provided, must be at least 6 characters (`ValidatePassword`). Stored as an uppercase SHA-1 hex digest.",
+                    "example": "newSecret123"
+                  }
+                }
+              },
+              "example": {
+                "email": "jane.doe@example.com",
+                "fullName": "Jane Doe",
+                "password": "newSecret123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully. Corresponds to the legacy success message `Profile updated successfully!` followed by closing the form.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "username", "email", "fullName", "role"],
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "readOnly": true,
+                      "description": "User identifier."
+                    },
+                    "username": {
+                      "type": "string",
+                      "readOnly": true,
+                      "description": "Login name (not editable through this endpoint)."
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email",
+                      "description": "Updated email address."
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "description": "Updated full name."
+                    },
+                    "role": {
+                      "type": "string",
+                      "readOnly": true,
+                      "description": "User role, for example `admin` or a regular user role."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable confirmation message.",
+                      "example": "Profile updated successfully!"
+                    }
+                  }
+                },
+                "example": {
+                  "id": 12,
+                  "username": "jdoe",
+                  "email": "jane.doe@example.com",
+                  "fullName": "Jane Doe",
+                  "role": "user",
+                  "message": "Profile updated successfully!"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed. Corresponds to the legacy `lblError.Text = String.Join(vbCrLf, errors)` path. No changes are saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["errors"],
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Validation messages, in the legacy order: email, full name, password."
+                    }
+                  }
+                },
+                "example": {
+                  "errors": [
+                    "Invalid email format.",
+                    "Full name must be between 2 and 255 characters."
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The request has no valid session. Corresponds to the legacy `Please login first.` check.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["message"],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Please login first."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Not used by the legacy code; reserved for token-scope violations in the modern stack."
+          },
+          "404": {
+            "description": "User not found. Corresponds to the legacy `User not found.` error when the logged-in user no longer exists in the database.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["message"],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User not found."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure while saving. Corresponds to the legacy `An error occurred: <message>` text.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["message"],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error text. The legacy format is `An error occurred: <exception message>`.",
+                      "example": "An error occurred: 23505: duplicate key value violates unique constraint"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Authenticated session token. Replaces the legacy in-memory `SessionManager.CurrentUser`."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

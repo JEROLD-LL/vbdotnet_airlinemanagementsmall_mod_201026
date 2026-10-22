@@ -1,0 +1,234 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "API contract migrated from the AirlineManagement VB.NET WinForms application. Endpoint derived from MyBookingsForm.LoadBookings.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference",
+    "url": "https://example.com/docs/airline-management-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations on customer flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/my-bookings": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Get bookings of the authenticated user",
+        "description": "Returns all flight bookings belonging to the currently authenticated user, ordered by booking date descending. Each item is enriched with flight details (flight number, route, departure and arrival times, and flight price). Migrated from MyBookingsForm.LoadBookings, which requires an authenticated session (SessionManager.IsAuthenticated) and loads data via BookingRepository.GetByUserId and FlightRepository.GetById.",
+        "operationId": "getMyBookings(AirlineManagement_VBNetLegacy.Forms.MyBookingsForm.MyBookingsForm.LoadBookings.0)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer access token of the logged-in user. Replaces the legacy in-memory SessionManager.CurrentUser.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bookings for the authenticated user. An empty array is returned when the user has no bookings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MyBookingItem"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 101,
+                    "flightId": 12,
+                    "flightNumber": "AM-204",
+                    "route": "New York (JFK) → London (LHR)",
+                    "departureDate": "2026-03-15",
+                    "departureTime": "08:30",
+                    "arrivalTime": "20:45",
+                    "passengerName": "John Doe",
+                    "passengerEmail": "john@example.com",
+                    "seatNumber": "12A",
+                    "price": 549.99,
+                    "bookingDate": "2026-02-01 14:22"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The user is not authenticated (legacy equivalent: 'Please login first.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Please login first."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error while loading bookings or flight details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred while loading bookings."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token issued at login"
+      }
+    },
+    "schemas": {
+      "MyBookingItem": {
+        "type": "object",
+        "description": "One row of the My Bookings grid, mirroring the legacy DataGridView columns.",
+        "required": [
+          "id",
+          "flightId",
+          "flightNumber",
+          "route",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "passengerName",
+          "passengerEmail",
+          "seatNumber",
+          "price",
+          "bookingDate"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Booking identifier (legacy column 'Id', hidden in grid)",
+            "example": 101
+          },
+          "flightId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Flight identifier (legacy column 'FlightId', hidden in grid)",
+            "example": 12
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number from the Flight record",
+            "example": "AM-204"
+          },
+          "route": {
+            "type": "string",
+            "description": "Origin and destination, formatted as 'Origin → Destination'",
+            "example": "New York (JFK) → London (LHR)"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date, formatted yyyy-MM-dd",
+            "example": "2026-03-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Departure time, formatted hh:mm",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Arrival time, formatted hh:mm",
+            "example": "20:45"
+          },
+          "passengerName": {
+            "type": "string",
+            "description": "Passenger name stored on the booking",
+            "example": "John Doe"
+          },
+          "passengerEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Passenger email stored on the booking",
+            "example": "john@example.com"
+          },
+          "seatNumber": {
+            "type": "string",
+            "description": "Seat number; 'N/A' when the booking has no seat assigned",
+            "example": "12A"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "description": "Flight price (legacy decimal, displayed with currency format)",
+            "example": 549.99
+          },
+          "bookingDate": {
+            "type": "string",
+            "description": "Booking date, formatted yyyy-MM-dd HH:mm",
+            "example": "2026-02-01 14:22"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code",
+            "example": "UNAUTHORIZED"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message",
+            "example": "Please login first."
+          }
+        }
+      }
+    }
+  }
+}

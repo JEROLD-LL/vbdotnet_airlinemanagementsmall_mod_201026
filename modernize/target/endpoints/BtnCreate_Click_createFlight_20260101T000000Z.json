@@ -1,0 +1,334 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Flights",
+    "description": "OpenAPI contract migrated from the legacy VB.NET WinForms handler `CreateFlightForm.BtnCreate_Click` (qualified name: `AirlineManagement_VBNetLegacy.Forms.CreateFlightForm.CreateFlightForm.BtnCreate_Click.2.Object.EventArgs`). The endpoint validates flight input (flight number uniqueness, origin, destination, price > 0, available seats >= 0) and persists a new flight record.",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy VB.NET source for CreateFlightForm",
+    "url": "https://example.com/docs/legacy/CreateFlightForm"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/{basePath}",
+      "description": "Airline Management API server",
+      "variables": {
+        "basePath": {
+          "enum": [
+            "v1"
+          ],
+          "default": "v1",
+          "description": "API base path version"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Flight management operations"
+    }
+  ],
+  "paths": {
+    "/flights": {
+      "summary": "Flight collection",
+      "description": "Operations on the flight collection",
+      "post": {
+        "tags": [
+          "Flights"
+        ],
+        "summary": "Create a new flight",
+        "description": "Creates a new flight after validating the input. Mirrors the legacy `BtnCreate_Click` handler: all validation errors are collected and returned together. Flight number must be unique (checked via `FlightRepository.FlightNumberExists`). Price must be greater than 0 and available seats must not be negative (`ValidationHelper`). On success the flight is inserted via `FlightRepository.Create` and the generated id is returned. `createdAt` is set server-side to the current time, as in the legacy code (`DateTime.Now`).\n\n**Authentication:** Not enforced by the legacy handler; the 401/403 responses reflect an assumed admin-only policy (see summary).",
+        "operationId": "createFlight(AirlineManagement_VBNetLegacy.Forms.CreateFlightForm.CreateFlightForm.BtnCreate_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Flight details entered in the Create Flight form. All fields marked required in the legacy form (*) are required here.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFlightRequest"
+              },
+              "example": {
+                "flightNumber": "AM-101",
+                "origin": "NYC",
+                "destination": "LAX",
+                "departureDate": "2026-06-15",
+                "departureTime": "08:30:00",
+                "arrivalTime": "11:45:00",
+                "price": 299.99,
+                "availableSeats": 180
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Flight created successfully. Returns the generated id together with the persisted flight details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateFlightResponse"
+                },
+                "example": {
+                  "id": 1,
+                  "flightNumber": "AM-101",
+                  "origin": "NYC",
+                  "destination": "LAX",
+                  "departureDate": "2026-06-15",
+                  "departureTime": "08:30:00",
+                  "arrivalTime": "11:45:00",
+                  "price": 299.99,
+                  "availableSeats": 180,
+                  "createdAt": "2026-01-01T10:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed. Contains every validation error found in the request, mirroring the legacy `lblError` message list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "errors": [
+                    "Flight number already exists. Please use a unique flight number.",
+                    "Price must be greater than 0."
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid bearer token (assumed; not enforced by the legacy handler).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Unauthorized",
+                  "message": "Authentication is required."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user is not an admin (assumed from the legacy `SessionManager.IsAdmin` check; the form is reachable only from the Admin menu in MainForm).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Forbidden",
+                  "message": "Admin role is required to create flights."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Corresponds to the legacy `Catch ex As Exception` path that sets `An error occurred: <message>`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Internal Server Error",
+                  "message": "An error occurred: Database connection failed."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateFlightRequest": {
+        "type": "object",
+        "required": [
+          "flightNumber",
+          "origin",
+          "destination",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "price",
+          "availableSeats"
+        ],
+        "properties": {
+          "flightNumber": {
+            "type": "string",
+            "description": "Unique flight number. Trimmed before use. Must not be blank and must not already exist.",
+            "example": "AM-101"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure location. Trimmed before use. Must not be blank.",
+            "example": "NYC"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival location. Trimmed before use. Must not be blank.",
+            "example": "LAX"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date (time portion discarded, as in legacy `dtpDepartureDate.Value.Date`).",
+            "example": "2026-06-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "description": "Departure time of day in HH:mm:ss (legacy TimeSpan, `dtpDepartureTime.Value.TimeOfDay`).",
+            "example": "08:30:00"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "description": "Arrival time of day in HH:mm:ss (legacy TimeSpan, `dtpArrivalTime.Value.TimeOfDay`).",
+            "example": "11:45:00"
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Ticket price. Must be a valid decimal number and greater than 0.",
+            "example": 299.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "description": "Number of available seats. Must be a valid integer and not negative.",
+            "example": 180
+          }
+        }
+      },
+      "CreateFlightResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "flightNumber",
+          "origin",
+          "destination",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "price",
+          "availableSeats",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true,
+            "description": "Database id returned by `FlightRepository.Create` (RETURNING id).",
+            "example": 1
+          },
+          "flightNumber": {
+            "type": "string",
+            "example": "AM-101"
+          },
+          "origin": {
+            "type": "string",
+            "example": "NYC"
+          },
+          "destination": {
+            "type": "string",
+            "example": "LAX"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-06-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "example": "08:30:00"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "example": "11:45:00"
+          },
+          "price": {
+            "type": "number",
+            "example": 299.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "example": 180
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Server-side creation timestamp (legacy `DateTime.Now`).",
+            "example": "2026-01-01T10:00:00Z"
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "required": [
+          "errors"
+        ],
+        "properties": {
+          "errors": {
+            "type": "array",
+            "description": "List of validation messages, same wording as the legacy handler.",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error",
+          "message"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Internal Server Error"
+          },
+          "message": {
+            "type": "string",
+            "example": "An error occurred: Database connection failed."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Assumed bearer token authentication. The legacy app uses SessionManager (in-memory login session); no token scheme exists in the source."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

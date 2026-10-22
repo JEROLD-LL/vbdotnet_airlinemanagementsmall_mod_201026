@@ -1,0 +1,191 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Authentication",
+    "description": "OpenAPI definition migrated from the legacy VB.NET WinForms LoginForm `BtnLogin_Click` handler. Validates user credentials against the stored SHA-1 password hash and establishes a session for the authenticated user.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/LoginForm.vb (BtnLogin_Click), Repositories/UserRepository.vb, Services/SessionManager.vb",
+    "url": "https://example.com/docs/airline-management-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Primary API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and session operations"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Authenticate a user with username and password",
+        "description": "Migrated from legacy `BtnLogin_Click`.\n\nBehaviour:\n1. The `username` is trimmed of leading and trailing whitespace.\n2. If `username` or `password` is blank/whitespace, the request is rejected with 400 and the message `Username and password are required.`\n3. The user is looked up by username (`UserRepository.GetByUsername`).\n4. The supplied password is hashed with SHA-1 (UTF-8 bytes, uppercase hexadecimal) and compared case-insensitively with the stored hash (`UserRepository.VerifyPassword`).\n5. If the user does not exist or the password does not match, the request is rejected with 401 and the message `Invalid username or password.`\n6. On success, the user becomes the current session user (`SessionManager.Login`, which sets `CurrentUser` and `LastActivity`). The user profile is returned; the password hash is never returned.\n\nNo authentication is required to call this endpoint.",
+        "operationId": "loginUser(AirlineManagement_VBNetLegacy.Forms.LoginForm.LoginForm.BtnLogin_Click.2.Object.EventArgs)",
+        "requestBody": {
+          "description": "Login credentials",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Username of the account. Leading and trailing whitespace is trimmed before lookup.",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "example": "jdoe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "Plain-text password. Hashed with SHA-1 before comparison with the stored hash.",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "writeOnly": true,
+                    "example": "P@ssw0rd123"
+                  }
+                }
+              },
+              "example": {
+                "username": "jdoe",
+                "password": "P@ssw0rd123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful. Returns the authenticated user's profile (without password).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 1
+                    },
+                    "username": {
+                      "type": "string",
+                      "example": "jdoe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email",
+                      "example": "jdoe@example.com"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "Customer"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-01-15T10:30:00Z"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "email",
+                    "fullName",
+                    "role",
+                    "createdAt"
+                  ]
+                },
+                "example": {
+                  "id": 1,
+                  "username": "jdoe",
+                  "email": "jdoe@example.com",
+                  "fullName": "John Doe",
+                  "role": "Customer",
+                  "createdAt": "2025-01-15T10:30:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure: username or password is missing or whitespace only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Username and password are required."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid username or password. Returned when no user matches the username or the password hash does not match.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Invalid username or password."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (e.g. database unavailable).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message",
+            "example": "Invalid username or password."
+          }
+        }
+      }
+    }
+  },
+  "security": []
+}

@@ -1,0 +1,242 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "API contract migrated from the VB.NET AirlineManagement legacy application. Covers the flight booking summary that the legacy BookFlightForm.LoadFlight displays before a booking is made.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: BookFlightForm.LoadFlight and FlightRepository.GetById",
+    "url": "https://example.com/docs/airline-management-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Default API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Flight lookup and availability operations"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}/booking-summary": {
+      "get": {
+        "tags": [
+          "Flights"
+        ],
+        "summary": "Get flight booking summary",
+        "description": "Returns the flight details shown on the Book Flight screen (flight number, route, departure date and time, and price). Mirrors the legacy BookFlightForm.LoadFlight behaviour: returns 404 when the flight does not exist and 409 when the flight has no available seats.",
+        "operationId": "getFlightBookingSummary(AirlineManagement_VBNetLegacy.Forms.BookFlightForm.BookFlightForm.LoadFlight.0)",
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "Unique identifier of the flight to book (legacy Flight.Id).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": 101
+            },
+            "example": 101
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flight booking summary retrieved successfully. The flight has at least one available seat.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlightBookingSummary"
+                },
+                "example": {
+                  "id": 101,
+                  "flightNumber": "AM-101",
+                  "origin": "New York (JFK)",
+                  "destination": "London (LHR)",
+                  "departureDate": "2026-05-15",
+                  "departureTime": "08:30",
+                  "arrivalTime": "20:45",
+                  "price": 499.99,
+                  "availableSeats": 42,
+                  "createdAt": "2026-01-10T09:15:00Z",
+                  "displayText": "Flight: AM-101\nRoute: New York (JFK) → London (LHR)\nDeparture: 2026-05-15 at 08:30\nPrice: $499.99"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The flightId path parameter is not a valid integer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "flightId must be a valid integer."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Flight not found. Legacy message: 'Flight not found.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FLIGHT_NOT_FOUND",
+                  "message": "Flight not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Flight has no available seats. Legacy message: 'No available seats on this flight.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "NO_AVAILABLE_SEATS",
+                  "message": "No available seats on this flight."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (for example, database connectivity or query failure).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred while retrieving the flight."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FlightBookingSummary": {
+        "type": "object",
+        "description": "Flight details as loaded by the legacy Flight model and rendered on the Book Flight screen.",
+        "required": [
+          "id",
+          "flightNumber",
+          "origin",
+          "destination",
+          "departureDate",
+          "departureTime",
+          "arrivalTime",
+          "price",
+          "availableSeats",
+          "createdAt",
+          "displayText"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Flight identifier (legacy Flight.Id).",
+            "example": 101
+          },
+          "flightNumber": {
+            "type": "string",
+            "description": "Flight number (legacy Flight.FlightNumber).",
+            "example": "AM-101"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure location (legacy Flight.Origin).",
+            "example": "New York (JFK)"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival destination (legacy Flight.Destination).",
+            "example": "London (LHR)"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date, formatted yyyy-MM-dd (legacy Flight.DepartureDate).",
+            "example": "2026-05-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "pattern": "^(0[1-9]|1[0-2]):[0-5]\\d$",
+            "description": "Departure time, formatted hh:mm on a 12-hour clock with no AM/PM marker (legacy Flight.DepartureTime.ToString(\"hh\\:mm\")). Times such as 14:30 are rendered as 02:30 by the legacy code.",
+            "example": "08:30"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?$",
+            "description": "Arrival time of day (legacy Flight.ArrivalTime, a TimeSpan).",
+            "example": "20:45"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Ticket price (legacy Flight.Price, a Decimal). Legacy UI renders it with the 'C' currency format.",
+            "example": 499.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "description": "Number of seats still available. Always at least 1 in a successful response.",
+            "example": 42
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the flight record was created (legacy Flight.CreatedAt).",
+            "example": "2026-01-10T09:15:00Z"
+          },
+          "displayText": {
+            "type": "string",
+            "description": "Human-readable flight information text equivalent to the legacy lblFlightInfo label.",
+            "example": "Flight: AM-101\nRoute: New York (JFK) → London (LHR)\nDeparture: 2026-05-15 at 08:30\nPrice: $499.99"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error payload. The message values mirror the legacy MessageBox texts.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "FLIGHT_NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Flight not found."
+          }
+        }
+      }
+    }
+  }
+}

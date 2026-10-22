@@ -1,0 +1,213 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Migrated API for the AirlineManagement system (source: AirlineManagement_VBNetLegacy). This endpoint replaces the WinForms `ViewFlightForm.LoadFlight` routine.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source reference",
+    "url": "https://example.com/docs/airlinemanagement-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Operations for managing and viewing flights"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}": {
+      "get": {
+        "tags": ["Flights"],
+        "summary": "Get flight details by ID",
+        "description": "Retrieves the details of a single flight by its numeric identifier. Migrated from the legacy `ViewFlightForm.LoadFlight(flightId As Integer)` method, which calls `FlightRepository.GetById`. If no flight exists, the legacy code showed a 'Flight not found.' error and closed the form; this is represented as a 404 response. The legacy UI disabled the 'Book This Flight' action and displayed 'Sold Out' when `availableSeats` equals 0; clients should apply the same rule using the `availableSeats` field.",
+        "operationId": "getFlightById(AirlineManagement_VBNetLegacy.Forms.ViewFlightForm.ViewFlightForm.LoadFlight.1.Integer)",
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "Unique numeric identifier of the flight (maps to the legacy `Flight.Id` / `flightId` Integer argument).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 101
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flight found and returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flight"
+                },
+                "example": {
+                  "id": 101,
+                  "flightNumber": "AM-101",
+                  "origin": "New York (JFK)",
+                  "destination": "London (LHR)",
+                  "departureDate": "2025-06-15",
+                  "departureTime": "08:30:00",
+                  "arrivalTime": "20:45:00",
+                  "price": 499.99,
+                  "availableSeats": 42,
+                  "createdAt": "2025-01-10T09:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. The `flightId` path parameter is not a valid 32-bit integer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "flightId must be a valid integer."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Not applicable to the legacy code (no authentication check); reserved for the modernized gateway if authentication is added."
+          },
+          "403": {
+            "description": "Forbidden. Not applicable to the legacy code (no authorization check)."
+          },
+          "404": {
+            "description": "Flight not found. Corresponds to the legacy branch where `FlightRepository.GetById` returns Nothing and the 'Flight not found.' error is shown.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FLIGHT_NOT_FOUND",
+                  "message": "Flight not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Corresponds to unexpected database or data-access failures in `FlightRepository.GetById`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "message": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Flight": {
+        "type": "object",
+        "description": "Flight details, mapped from the legacy `Flight` model and the `FlightRepository.GetById` SELECT projection.",
+        "required": ["id", "flightNumber", "origin", "destination", "departureDate", "departureTime", "arrivalTime", "price", "availableSeats", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true,
+            "description": "Flight identifier (legacy `Id` Integer).",
+            "example": 101
+          },
+          "flightNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "Flight number (legacy `FlightNumber` String).",
+            "example": "AM-101"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Departure location (legacy `Origin` String).",
+            "example": "New York (JFK)"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Arrival location (legacy `Destination` String).",
+            "example": "London (LHR)"
+          },
+          "departureDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date (legacy `DepartureDate` DateTime, formatted as yyyy-MM-dd in the UI).",
+            "example": "2025-06-15"
+          },
+          "departureTime": {
+            "type": "string",
+            "format": "time",
+            "description": "Departure time of day (legacy `DepartureTime` TimeSpan, rendered as hh:mm in the UI).",
+            "example": "08:30:00"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "format": "time",
+            "description": "Arrival time of day (legacy `ArrivalTime` TimeSpan, rendered as hh:mm in the UI).",
+            "example": "20:45:00"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Ticket price (legacy `Price` Decimal, rendered with currency format 'C' in the UI).",
+            "example": 499.99
+          },
+          "availableSeats": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "description": "Number of seats still available. When 0, the legacy UI disables booking and shows 'Sold Out'.",
+            "example": 42
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Timestamp when the flight record was created (legacy `CreatedAt` DateTime).",
+            "example": "2025-01-10T09:00:00Z"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "FLIGHT_NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Flight not found."
+          }
+        }
+      }
+    }
+  }
+}

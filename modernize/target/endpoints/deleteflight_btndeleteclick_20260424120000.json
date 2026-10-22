@@ -1,0 +1,187 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API",
+    "description": "Endpoint contract migrated from the VB.NET legacy FlightsForm.BtnDelete_Click handler. Supports Markdown (CommonMark).",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: FlightsForm.vb (BtnDelete_Click, GetSelectedFlightId, LoadFlights) and FlightRepository.vb (Delete)",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Operations for managing airline flights",
+      "externalDocs": {
+        "description": "Flight management documentation",
+        "url": "https://example.com/docs/flights"
+      }
+    }
+  ],
+  "paths": {
+    "/flights/{id}": {
+      "summary": "Single flight resource",
+      "description": "Operations on an individual flight identified by its numeric ID.",
+      "delete": {
+        "tags": [
+          "Flights"
+        ],
+        "summary": "Delete a flight",
+        "description": "Deletes the flight identified by `id`. Migrated from the legacy `BtnDelete_Click` handler in `FlightsForm`. In the legacy application the ID was read from the selected row of the flights grid (`GetSelectedFlightId`), the user was asked to confirm, and `FlightRepository.Delete` executed `DELETE FROM Flight WHERE id = @id`. On success the grid is reloaded (`LoadFlights`). The legacy handler returns no data. Only administrators can see the Delete button in the legacy UI; the target API enforces this with a Bearer token and an admin role check.",
+        "operationId": "deleteFlight(Forms.FlightsForm.FlightsForm.BtnDelete_Click.2.Object.EventArgs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Numeric ID of the flight to delete. Maps to the `Id` column of the selected grid row (`Convert.ToInt32`).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            },
+            "example": 101
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer JWT for an authenticated admin session. Replaces the legacy `SessionManager` check.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.signature"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Flight deleted successfully. No content is returned (legacy message: 'Flight deleted successfully!')."
+          },
+          "400": {
+            "description": "Invalid flight ID, or no flight was selected (legacy message: 'Please select a flight.').",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INVALID_FLIGHT_ID",
+                  "message": "Please select a flight."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token (legacy equivalent: SessionManager.IsAuthenticated() is false).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Authentication is required."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated user is not an administrator (legacy equivalent: the Delete button is only created when SessionManager.IsAdmin() is true).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Admin privileges are required."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No flight exists with the given ID. The legacy code issues the DELETE without checking existence and reports success; the target API returns 404 for clarity (see assumptions).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FLIGHT_NOT_FOUND",
+                  "message": "Flight not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database or other unexpected error while deleting (legacy message: 'Error deleting flight: ' & ex.Message). Includes foreign key violations when the flight is still referenced by bookings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "DELETE_FAILED",
+                  "message": "Error deleting flight: 23503: update or delete on table \"Flight\" violates foreign key constraint"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error payload.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "INVALID_FLIGHT_ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Please select a flight."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer JWT issued after login. The user must hold the administrator role."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

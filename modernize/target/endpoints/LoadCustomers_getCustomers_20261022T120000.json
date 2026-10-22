@@ -1,0 +1,167 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Customers",
+    "description": "API contract migrated from the legacy VB.NET CustomersForm.LoadCustomers method. Returns all registered users (customers) ordered by creation date, newest first.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/CustomersForm.vb (LoadCustomers) and Repositories/UserRepository.vb (GetAll)",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Customers",
+      "description": "Operations for viewing registered customers (users)"
+    }
+  ],
+  "paths": {
+    "/customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get all customers",
+        "description": "Retrieves all registered users (customers) ordered by creation date descending (newest first). Mirrors the legacy LoadCustomers grid, which displays ID, Username, Email, Full Name, Role (Admin/User) and Member Since. The password hash is never returned.",
+        "operationId": "getCustomers(AirlineManagement_VBNetLegacy.Forms.CustomersForm.CustomersForm.LoadCustomers.0)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of customers retrieved successfully. An empty array is returned when no users exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Customer"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 3,
+                    "username": "jane_admin",
+                    "email": "jane@example.com",
+                    "fullName": "Jane Doe",
+                    "role": "Admin",
+                    "createdAt": "2026-03-15 10:45:30"
+                  },
+                  {
+                    "id": 2,
+                    "username": "john_doe",
+                    "email": "john@example.com",
+                    "fullName": "John Doe",
+                    "role": "User",
+                    "createdAt": "2026-02-01 08:12:05"
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The customer list could not be retrieved from the database.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "error": "Internal Server Error",
+                  "message": "Failed to retrieve customers."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Customer": {
+        "type": "object",
+        "description": "A registered user displayed as a customer. The password field from the legacy User model is intentionally excluded.",
+        "required": [
+          "id",
+          "username",
+          "email",
+          "fullName",
+          "role",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true,
+            "description": "Unique user identifier (legacy User.Id)",
+            "example": 3
+          },
+          "username": {
+            "type": "string",
+            "description": "Login username (legacy User.Username)",
+            "example": "jane_admin"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address (legacy User.Email)",
+            "example": "jane@example.com"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "Full name of the user (legacy User.FullName)",
+            "example": "Jane Doe"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "Admin",
+              "User"
+            ],
+            "description": "Display role. Legacy code maps role 'admin' to 'Admin' and any other value to 'User'.",
+            "example": "Admin"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Account creation timestamp formatted as yyyy-MM-dd HH:mm:ss (legacy User.CreatedAt.ToString(\"yyyy-MM-dd HH:mm:ss\")). Shown as 'Member Since' in the UI.",
+            "example": "2026-03-15 10:45:30"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 500
+          },
+          "error": {
+            "type": "string",
+            "example": "Internal Server Error"
+          },
+          "message": {
+            "type": "string",
+            "example": "Failed to retrieve customers."
+          }
+        }
+      }
+    }
+  }
+}

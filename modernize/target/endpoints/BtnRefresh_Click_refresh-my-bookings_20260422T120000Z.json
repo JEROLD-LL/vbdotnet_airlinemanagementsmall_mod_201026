@@ -1,0 +1,220 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - My Bookings",
+    "description": "Endpoint migrated from the legacy VB.NET MyBookingsForm.BtnRefresh_Click handler, which calls LoadBookings to reload the logged-in user's bookings. Each booking is enriched with its flight details, matching the legacy grid columns.",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/MyBookingsForm.vb (BtnRefresh_Click, LoadBookings)",
+    "url": "https://example.com/docs/airline-management-legacy"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Primary API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Operations for managing the authenticated user's flight bookings"
+    }
+  ],
+  "paths": {
+    "/bookings/my-bookings/refresh": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Refresh the logged-in user's bookings",
+        "description": "Reloads the list of bookings for the currently authenticated user. Equivalent to the legacy 'Refresh' button in MyBookingsForm, which calls LoadBookings(). The legacy logic: (1) verifies the session is authenticated, (2) loads bookings via BookingRepository.GetByUserId ordered by booking date descending, (3) for each booking loads its flight via FlightRepository.GetById, and (4) returns one row per booking with flight number, route (Origin → Destination), departure date/times, passenger details, seat number (or 'N/A' when empty), price and booking date.",
+        "operationId": "refreshMyBookings(Forms.MyBookingsForm.MyBookingsForm.BtnRefresh_Click.2.Object.EventArgs)",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer access token of the logged-in user. Replaces legacy SessionManager.CurrentUser.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIn0.signature"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookings for the authenticated user refreshed successfully. Returns an empty array when the user has no bookings. Ordered by booking date descending.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "flightId",
+                      "flightNumber",
+                      "route",
+                      "departureDate",
+                      "departureTime",
+                      "arrivalTime",
+                      "passengerName",
+                      "passengerEmail",
+                      "seatNumber",
+                      "price",
+                      "bookingDate"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Booking identifier (legacy Booking.Id)",
+                        "example": 101
+                      },
+                      "flightId": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Flight identifier (legacy Booking.FlightId)",
+                        "example": 5
+                      },
+                      "flightNumber": {
+                        "type": "string",
+                        "description": "Flight number (legacy Flight.FlightNumber)",
+                        "example": "AI-202"
+                      },
+                      "route": {
+                        "type": "string",
+                        "description": "Route formatted as 'Origin → Destination' (legacy Flight.Origin & ' → ' & Flight.Destination)",
+                        "example": "Delhi → Mumbai"
+                      },
+                      "departureDate": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Flight departure date, formatted yyyy-MM-dd",
+                        "example": "2026-05-10"
+                      },
+                      "departureTime": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                        "description": "Flight departure time, formatted HH:mm (legacy TimeSpan 'hh\\:mm')",
+                        "example": "08:30"
+                      },
+                      "arrivalTime": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                        "description": "Flight arrival time, formatted HH:mm (legacy TimeSpan 'hh\\:mm')",
+                        "example": "10:45"
+                      },
+                      "passengerName": {
+                        "type": "string",
+                        "description": "Passenger full name on the booking",
+                        "example": "John Doe"
+                      },
+                      "passengerEmail": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Passenger email on the booking",
+                        "example": "john@example.com"
+                      },
+                      "seatNumber": {
+                        "type": "string",
+                        "description": "Assigned seat number. Returns 'N/A' when the booking has no seat assigned (legacy String.IsNullOrEmpty check).",
+                        "example": "12A"
+                      },
+                      "price": {
+                        "type": "number",
+                        "format": "decimal",
+                        "description": "Flight price (legacy Flight.Price, Decimal). Displayed in currency format in the legacy grid.",
+                        "example": 4500.00
+                      },
+                      "bookingDate": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Booking date formatted yyyy-MM-dd HH:mm (legacy BookingDate.ToString)",
+                        "example": "2026-04-20 14:15"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "id": 101,
+                    "flightId": 5,
+                    "flightNumber": "AI-202",
+                    "route": "Delhi → Mumbai",
+                    "departureDate": "2026-05-10",
+                    "departureTime": "08:30",
+                    "arrivalTime": "10:45",
+                    "passengerName": "John Doe",
+                    "passengerEmail": "john@example.com",
+                    "seatNumber": "12A",
+                    "price": 4500.00,
+                    "bookingDate": "2026-04-20 14:15"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated. Legacy behavior: shows 'Please login first.' and closes the form when no user session exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Please login first."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error while loading bookings or flight details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "An unexpected error occurred while loading bookings."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token of the logged-in user. Replaces the legacy SessionManager session."
+      }
+    }
+  }
+}

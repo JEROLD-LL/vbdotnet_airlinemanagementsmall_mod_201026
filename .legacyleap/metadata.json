@@ -40,7 +40,7 @@
     "modernization_episode_id": "AirlineManagement_664c72_modernization_episode_id",
     "testcase_episode_id": "AirlineManagement_664c72_assessment_episode_id",
     "documentation_episode_id": "AirlineManagement_664c72_documentation_episode_id",
-    "current_service": "metalayer",
+    "current_service": "modernization",
     "application_pretext": "airline-management",
     "application_id": "66d6dc76-4041-4996-8209-fce271916e16",
     "client_id": "<CLIENT_ID>",

@@ -1,0 +1,260 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Flights",
+    "description": "OpenAPI definition migrated from the VB.NET WinForms `EditFlightForm.BtnUpdate_Click` handler. Validates flight input, checks flight number uniqueness, and updates the Flight record.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/EditFlightForm.vb (BtnUpdate_Click)",
+    "url": "https://example.com/docs/legacy/EditFlightForm"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Modernized .NET 9 API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Flight management operations"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}": {
+      "put": {
+        "tags": [
+          "Flights"
+        ],
+        "summary": "Update an existing flight",
+        "description": "Fully replaces the editable fields of an existing flight. Migrated from the legacy `EditFlightForm.BtnUpdate_Click` handler.\n\nLegacy behavior preserved:\n- All string inputs are trimmed before validation.\n- `flightNumber`, `origin`, and `destination` are required.\n- `flightNumber` must be unique unless it is unchanged from the stored value.\n- `price` must be a valid decimal greater than 0.\n- `availableSeats` must be a valid integer that is not negative.\n- All validation errors are collected and returned together.\n- `departureDate` uses only the date portion; `departureTime` and `arrivalTime` use only the time-of-day portion.\n- The update is applied to all eight editable columns of the flight record.\n\nAssumption: the legacy application has no authentication; the bearer token requirement is added for the modernized API.",
+        "operationId": "updateFlight(Forms.EditFlightForm.EditFlightForm.BtnUpdate_Click.2.Object.EventArgs)",
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "Unique identifier of the flight to update. Legacy source: the `selectedFlightId` constructor argument of `EditFlightForm`.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            },
+            "example": 101
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer token. Assumption: not present in the legacy app; added for the modernized API.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.signature"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Editable flight fields. Corresponds to the txt/dtp controls read by `BtnUpdate_Click`.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "flightNumber",
+                  "origin",
+                  "destination",
+                  "departureDate",
+                  "departureTime",
+                  "arrivalTime",
+                  "price",
+                  "availableSeats"
+                ],
+                "properties": {
+                  "flightNumber": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "description": "Flight number. Trimmed. Must be unique unless unchanged from the stored value. Legacy messages: 'Flight number is required.' / 'Flight number already exists. Please use a unique flight number.'",
+                    "example": "AM-101"
+                  },
+                  "origin": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Departure origin. Trimmed. Legacy message: 'Origin is required.'",
+                    "example": "NYC"
+                  },
+                  "destination": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Arrival destination. Trimmed. Legacy message: 'Destination is required.'",
+                    "example": "LAX"
+                  },
+                  "departureDate": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Departure date. Legacy: DateTime from dtpDepartureDate.Value.Date (date part only).",
+                    "example": "2025-06-15"
+                  },
+                  "departureTime": {
+                    "type": "string",
+                    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+                    "description": "Departure time of day (HH:mm:ss). Legacy: TimeSpan from dtpDepartureTime.Value.TimeOfDay.",
+                    "example": "08:30:00"
+                  },
+                  "arrivalTime": {
+                    "type": "string",
+                    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+                    "description": "Arrival time of day (HH:mm:ss). Legacy: TimeSpan from dtpArrivalTime.Value.TimeOfDay.",
+                    "example": "11:45:00"
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "double",
+                    "exclusiveMinimum": true,
+                    "minimum": 0,
+                    "description": "Ticket price. Legacy: Decimal parsed from txtPrice; must be greater than 0 ('Price must be greater than 0.').",
+                    "example": 299.99
+                  },
+                  "availableSeats": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0,
+                    "description": "Seats available for booking. Legacy: Integer parsed from txtAvailableSeats; cannot be negative ('Available seats cannot be negative.').",
+                    "example": 150
+                  }
+                }
+              },
+              "example": {
+                "flightNumber": "AM-101",
+                "origin": "NYC",
+                "destination": "LAX",
+                "departureDate": "2025-06-15",
+                "departureTime": "08:30:00",
+                "arrivalTime": "11:45:00",
+                "price": 299.99,
+                "availableSeats": 150
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flight updated successfully. Legacy: 'Flight updated successfully!' message box, then the form closes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Flight updated successfully!"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Flight updated successfully!"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed. Legacy: all messages shown in lblError, joined by line breaks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed."
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Validation failed.",
+                  "errors": [
+                    "Flight number already exists. Please use a unique flight number.",
+                    "Price must be greater than 0."
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid bearer token. Not in legacy code; required for the modernized API."
+          },
+          "403": {
+            "description": "Forbidden. The caller is not allowed to update flights. Not in legacy code; required for the modernized API."
+          },
+          "404": {
+            "description": "Flight not found. Legacy: LoadFlight shows 'Flight not found.' when no flight matches the id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Flight not found."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Flight not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. Legacy: lblError set to 'An error occurred: ' plus the exception message when the database update fails.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "An error occurred: Database connection failed."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "An error occurred: Database connection failed."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token for the modernized API. Not present in the legacy application."
+      }
+    }
+  }
+}

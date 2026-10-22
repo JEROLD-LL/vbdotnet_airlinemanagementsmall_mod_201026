@@ -1,0 +1,191 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Authentication",
+    "description": "Endpoint migrated from the legacy VB.NET WinForms `LoginForm.BtnLogin_Click` handler. Authenticates a user by username and password and returns the user's profile (without password) on success.\n\n**Legacy behavior:** trims the username, rejects blank credentials, looks up the user by username, verifies the password against the stored SHA-1 (uppercase hex) hash in a case-insensitive comparison, and stores the user in the session on success.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: Forms/LoginForm.vb (BtnLogin_Click), Repositories/UserRepository.vb, Services/SessionManager.vb",
+    "url": "https://example.com/docs/airline-management"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Primary API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication and session endpoints"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Authenticate user with username and password",
+        "description": "Authenticates a user with a username and password. The username is trimmed of surrounding whitespace before lookup. Both fields must be non-blank. The password is hashed with SHA-1 (UTF-8 bytes, uppercase hex) and compared case-insensitively to the stored hash. On success, the user's profile is returned without the password.\n\nQualified legacy name: `Forms.LoginForm.LoginForm.BtnLogin_Click.2.Object.EventArgs`",
+        "operationId": "loginUser(Forms.LoginForm.LoginForm.BtnLogin_Click.2.Object.EventArgs)",
+        "parameters": [],
+        "requestBody": {
+          "description": "User credentials",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Login username. Leading and trailing whitespace is trimmed before lookup.",
+                    "example": "jdoe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "writeOnly": true,
+                    "description": "Plain-text password. Hashed server-side with SHA-1 for comparison.",
+                    "example": "P@ssw0rd123"
+                  }
+                }
+              },
+              "example": {
+                "username": "jdoe",
+                "password": "P@ssw0rd123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful. Returns the authenticated user's profile (without password).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "username",
+                    "email",
+                    "fullName",
+                    "role",
+                    "createdAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 1
+                    },
+                    "username": {
+                      "type": "string",
+                      "example": "jdoe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email",
+                      "example": "jdoe@example.com"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "customer"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-01-15T10:30:00Z"
+                    }
+                  }
+                },
+                "example": {
+                  "id": 1,
+                  "username": "jdoe",
+                  "email": "jdoe@example.com",
+                  "fullName": "John Doe",
+                  "role": "customer",
+                  "createdAt": "2025-01-15T10:30:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Username or password missing or whitespace only. Message: 'Username and password are required.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Username and password are required."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid username or password. Returned when the user does not exist or the password hash does not match. Message: 'Invalid username or password.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid username or password."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (e.g. database unavailable).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      }
+    }
+  }
+}

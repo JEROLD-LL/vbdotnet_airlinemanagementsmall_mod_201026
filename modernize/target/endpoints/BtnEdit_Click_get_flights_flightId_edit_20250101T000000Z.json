@@ -1,0 +1,248 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Flight Edit",
+    "description": "OpenAPI definition migrated from the legacy VB.NET FlightsForm.BtnEdit_Click handler. Retrieves a selected flight so an administrator can edit it (legacy EditFlightForm). Source qualified name: Forms.FlightsForm.FlightsForm.BtnEdit_Click.2.Object.EventArgs",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Flights",
+      "description": "Flight management operations"
+    }
+  ],
+  "paths": {
+    "/flights/{flightId}/edit": {
+      "get": {
+        "tags": ["Flights"],
+        "summary": "Get a flight for editing",
+        "description": "Retrieves the flight identified by `flightId` so an administrator can edit it. Mirrors the legacy flow: the admin selects a row in the flights grid (`GetSelectedFlightId`), the Edit button opens `EditFlightForm` which loads the flight via `FlightRepository.GetById`, and the flight list is refreshed afterwards. The Edit action is only available to users with the admin role (`SessionManager.IsAdmin`).",
+        "operationId": "BtnEdit_Click(Forms.FlightsForm.FlightsForm.BtnEdit_Click.2.Object.EventArgs)",
+        "parameters": [
+          {
+            "name": "flightId",
+            "in": "path",
+            "description": "Id of the flight selected in the flights grid (legacy GetSelectedFlightId, column 'Id').",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "example": 12
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer token for an authenticated administrator session. Replaces the legacy SessionManager.IsAdmin() check (user must be authenticated and have role 'admin').",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4ifQ.signature"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flight retrieved successfully and ready for editing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "flightNumber", "origin", "destination", "departureDate", "departureTime", "arrivalTime", "price", "availableSeats", "createdAt"],
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 12
+                    },
+                    "flightNumber": {
+                      "type": "string",
+                      "example": "AM-1024"
+                    },
+                    "origin": {
+                      "type": "string",
+                      "example": "NYC"
+                    },
+                    "destination": {
+                      "type": "string",
+                      "example": "LHR"
+                    },
+                    "departureDate": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2025-07-15"
+                    },
+                    "departureTime": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                      "description": "Departure time of day in HH:mm (legacy TimeSpan formatted as hh\\:mm).",
+                      "example": "08:30"
+                    },
+                    "arrivalTime": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                      "description": "Arrival time of day in HH:mm (legacy TimeSpan formatted as hh\\:mm).",
+                      "example": "20:45"
+                    },
+                    "price": {
+                      "type": "number",
+                      "format": "decimal",
+                      "minimum": 0,
+                      "example": 499.99
+                    },
+                    "availableSeats": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0,
+                      "example": 120
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true,
+                      "example": "2025-01-10T09:00:00Z"
+                    }
+                  }
+                },
+                "example": {
+                  "id": 12,
+                  "flightNumber": "AM-1024",
+                  "origin": "NYC",
+                  "destination": "LHR",
+                  "departureDate": "2025-07-15",
+                  "departureTime": "08:30",
+                  "arrivalTime": "20:45",
+                  "price": 499.99,
+                  "availableSeats": 120,
+                  "createdAt": "2025-01-10T09:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. No flight was selected, or flightId is not a valid positive integer. Legacy message: 'Please select a flight.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 400,
+                  "title": "Bad Request",
+                  "detail": "Please select a flight."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 401,
+                  "title": "Unauthorized",
+                  "detail": "Authentication is required."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have the admin role (legacy SessionManager.IsAdmin() returned false).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 403,
+                  "title": "Forbidden",
+                  "detail": "Administrator role is required."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Flight not found. Legacy message: 'Flight not found.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "title": "Not Found",
+                  "detail": "Flight not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error while loading the flight.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "title": "Internal Server Error",
+                  "detail": "An unexpected error occurred."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT bearer token for an authenticated administrator."
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["status", "title", "detail"],
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 404
+          },
+          "title": {
+            "type": "string",
+            "example": "Not Found"
+          },
+          "detail": {
+            "type": "string",
+            "example": "Flight not found."
+          }
+        }
+      }
+    }
+  }
+}

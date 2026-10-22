@@ -1,0 +1,201 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Airline Management API - Customers",
+    "description": "OpenAPI definition migrated from the legacy VB.NET WinForms `CustomersForm.BtnRefresh_Click` handler. The legacy handler takes no input, calls `LoadCustomers()`, which calls `UserRepository.GetAll()` and returns all users ordered by `created_at` descending. The `password` field is never displayed by the legacy grid, so it is excluded from this contract.",
+    "version": "1.0.0",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://example.com/license"
+    }
+  },
+  "externalDocs": {
+    "description": "Legacy source: AirlineManagement_VBNetLegacy/Forms/CustomersForm.vb",
+    "url": "https://example.com/docs/legacy/CustomersForm"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Target .NET 9 API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Customers",
+      "description": "Customer (user) listing operations migrated from the legacy Customers form"
+    }
+  ],
+  "paths": {
+    "/customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "List all customers",
+        "description": "Returns all registered customers (users) ordered by creation date, newest first. Maps to the legacy `BtnRefresh_Click` -> `LoadCustomers()` -> `UserRepository.GetAll()` flow. The `role` value is mapped to a display label: `admin` becomes `Admin`, every other value becomes `User`. `createdAt` is formatted as `yyyy-MM-dd HH:mm:ss`.",
+        "operationId": "getCustomers(AirlineManagement_VBNetLegacy.Forms.CustomersForm.CustomersForm.BtnRefresh_Click.2.Object.EventArgs)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customers retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Customer"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 2,
+                    "username": "jdoe",
+                    "email": "jdoe@example.com",
+                    "fullName": "John Doe",
+                    "role": "User",
+                    "createdAt": "2026-04-20 14:32:10"
+                  },
+                  {
+                    "id": 1,
+                    "username": "admin",
+                    "email": "admin@example.com",
+                    "fullName": "System Administrator",
+                    "role": "Admin",
+                    "createdAt": "2026-01-15 09:00:00"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The request is missing a valid bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 401,
+                  "error": "Unauthorized",
+                  "message": "Authentication is required to access this resource."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error while reading users from the database",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "error": "Internal Server Error",
+                  "message": "An unexpected error occurred while retrieving customers."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Customer": {
+        "type": "object",
+        "description": "A customer (user) record as displayed in the legacy Customers grid. The password is intentionally not included.",
+        "required": [
+          "id",
+          "username",
+          "email",
+          "fullName",
+          "role",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique user identifier (legacy column 'Id', header 'ID')",
+            "readOnly": true,
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "description": "Login username (legacy column 'Username')",
+            "example": "jdoe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address (legacy column 'Email')",
+            "example": "jdoe@example.com"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "Full name of the customer (legacy column 'FullName', header 'Full Name')",
+            "example": "John Doe"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "Admin",
+              "User"
+            ],
+            "description": "Display role. The legacy code returns 'Admin' when the stored role is 'admin', otherwise 'User'.",
+            "example": "User"
+          },
+          "createdAt": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+            "description": "Account creation timestamp, formatted as yyyy-MM-dd HH:mm:ss (legacy header 'Member Since')",
+            "example": "2026-04-20 14:32:10"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error response envelope",
+        "required": [
+          "status",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 500
+          },
+          "error": {
+            "type": "string",
+            "example": "Internal Server Error"
+          },
+          "message": {
+            "type": "string",
+            "example": "An unexpected error occurred."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token authentication. Assumed for the target stack; the legacy form relies on the logged-in SessionManager user."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
